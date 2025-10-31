@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    background-color: rgb(235, 228, 224);
+}
+
+/* w-full h-screen flex inset-auto align-center justify-center */
+.main-flex-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    inset: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+/* h-full flex flex-col inset-auto gap-4 align-center justify-center */
+.flex-col-container {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    inset: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.button-container{
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem 1.5rem;
+    margin: 4px 0;
+    background-color: rgb(111, 111, 111);
+    border-radius: 2rem;
+    color: white;
+}
+
+.action-btn:hover {
+    background-color: rgb(0, 0, 0);
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
