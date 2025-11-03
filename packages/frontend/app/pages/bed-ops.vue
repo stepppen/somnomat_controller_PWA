@@ -32,11 +32,15 @@ onMounted(() => {
 });
 
 
-async function sendBoolean(message) {
+async function sendBoolean(action) {
     try {
+        console.log(`Sending ${action} to: ${apiBase}/api/log`);
         const response = await fetch(`${apiBase}/api/log`, {
             method: 'POST',
-            body: message,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({action}),
         })
         const data = await response.json();
     
