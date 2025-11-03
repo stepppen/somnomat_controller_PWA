@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-// const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: process.env.FRONTEND_URL,
@@ -27,6 +27,6 @@ app.post('/api/log', (req: Request, res: Response) => {
   res.json({ action });
 });
 
-// app.listen(PORT, () => {
-//   console.log(`Port: ${PORT}`);
-// });
+app.listen(PORT, () => {
+  console.log(`Port: ${PORT}`);
+});
