@@ -1,7 +1,12 @@
 [build]
   base = "packages/frontend"
-  command = "cd ../.. && ln -sf packages/frontend/.nuxt .nuxt && cd packages/frontend && npm run build"
-  publish = "dist"
+  command = "npm run build"
+  publish = ".output/public"
 
 [build.environment]
   NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
