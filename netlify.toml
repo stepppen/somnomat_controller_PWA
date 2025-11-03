@@ -1,6 +1,6 @@
 [build]
   base = "packages/frontend"
-  command = "npm run build"
+  command = "cd ../.. && ln -sf packages/frontend/.nuxt .nuxt && cd packages/frontend && npm run build"
   publish = "dist"
 
 [build.environment]
