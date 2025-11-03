@@ -1,22 +1,20 @@
 {
-  "name": "somnomat_controller_PWA",
-  "type": "module",
+  "name": "somnomat-monorepo",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "dev:frontend": "npm run dev --workspace=packages/frontend",
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "build:frontend": "npm run build --workspace=packages/frontend",
+    "build:backend": "npm run build --workspace=packages/backend",
+    "dev": "npm run dev:frontend & npm run dev:backend",
+    "install:all": "npm install"
   },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.1.16",
-    "@vite-pwa/nuxt": "^1.0.7",
-    "d3": "^7.9.0",
-    "nuxt": "^4.2.0",
-    "nuxt-mdi": "^2.1.1",
-    "tailwindcss": "^4.1.16",
-    "vue": "^3.5.22",
-    "vue-router": "^4.6.3"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
