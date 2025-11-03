@@ -10,4 +10,24 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+  modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
+  pwa: {
+    manifest: {
+      name: "Calmea",
+      short_name: "Calmea",
+      description: "PWA Nuxt Prototype",
+      icons: [{
+        src: "icons/144_icon.png",
+        sizes: "144x144",
+        type: "image/png"
+      }]
+    },
+    workbox: {
+      navigateFallback: "/",
+    },
+    devOptions: {
+      enabled: true,
+      type: "module",
+    },
+  }
 })
