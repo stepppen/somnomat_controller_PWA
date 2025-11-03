@@ -1,13 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 export default defineNuxtConfig({
-  rootDir: __dirname,
-  buildDir: resolve(__dirname, '.nuxt'), // Explicitly set buildDir
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
@@ -34,7 +27,7 @@ export default defineNuxtConfig({
       theme_color: '#ebe4e0',
       description: "PWA Nuxt Prototype",
       icons: [{
-        src: "/icons/144_icon.png", // Leading slash
+        src: "/icons/144_icon.png",
         sizes: "144x144",
         type: "image/png"
       }]
@@ -47,8 +40,7 @@ export default defineNuxtConfig({
       installPrompt: true,
     },
     devOptions: {
-      enabled: true,
-      type: "module",
+      enabled: false,
     },
   }
 })
