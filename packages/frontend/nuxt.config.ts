@@ -26,6 +26,9 @@ export default defineNuxtConfig({
     manifest: {
       name: "Calmea",
       short_name: "Calmea",
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#ebe4e0',
       description: "PWA Nuxt Prototype",
       icons: [{
         src: "icons/144_icon.png",
