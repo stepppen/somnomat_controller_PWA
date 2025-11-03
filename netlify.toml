@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && mkdir -p .nuxt && cd packages/frontend && npm run build"
+  command = "npm install && cd packages/frontend && npm run build"
   publish = "packages/frontend/.output/public"
 
 [build.environment]

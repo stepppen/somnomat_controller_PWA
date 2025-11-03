@@ -18,6 +18,7 @@ export default defineNuxtConfig({
   modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
   pwa: {
     registerType: 'autoUpdate',
+    includeAssets: ['icons/144_icon.png'],
     manifest: {
       name: "Calmea",
       short_name: "Calmea",
@@ -29,7 +30,8 @@ export default defineNuxtConfig({
       icons: [{
         src: "/icons/144_icon.png",
         sizes: "144x144",
-        type: "image/png"
+        type: "image/png",
+        purpose: "any maskable"
       }]
     },
     workbox: {
@@ -39,6 +41,7 @@ export default defineNuxtConfig({
     client: {
       installPrompt: true,
     },
+    // Disable auto icon generation
     devOptions: {
       enabled: false,
     },
