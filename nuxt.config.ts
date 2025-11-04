@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   ssr: false,
   
   css: ['./app/assets/css/main.css'],
+  
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3001'
@@ -18,18 +19,27 @@ export default defineNuxtConfig({
   },
   modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
   pwa: {
+    registerType: 'autoUpdate',
     manifest: {
       name: "Calmea",
       short_name: "Calmea",
       description: "PWA Nuxt Prototype",
-      icons: [{
-        src: "icons/144_icon.png",
-        sizes: "144x144",
-        type: "image/png"
-      }]
+      theme_color: "#ebe4e0",
+      background_color: "#ebe4e0",
+      display: "standalone",
+      scope: "/",
+      start_url: "/",
+      icons: [
+        {
+          src: "/icons/144_icon.png",
+          sizes: "144x144",
+          type: "image/png",
+          purpose: "any maskable"
+        }
+      ]
     },
     workbox: {
-      navigateFallback: "/",
+      navigateFallback: "/"
     },
     devOptions: {
       enabled: true,
