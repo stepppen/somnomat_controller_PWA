@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+  
   css: ['./app/assets/css/main.css'],
   runtimeConfig: {
     public: {
@@ -43,15 +44,24 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      additionalManifestEntries: [
-        { url: '/', revision: Date.now().toString() }
-      ],
       navigateFallback: "/",
+      navigateFallbackDenylist: [/^\/api\//],
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       cleanupOutdatedCaches: true,
-      clientsClaim: true,
-      skipWaiting: true
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/calmea\.netlify\.app\/.*/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'pages-cache',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 86400
+            }
+          }
+        }
+      ]
     },
     client: {
       installPrompt: true,
