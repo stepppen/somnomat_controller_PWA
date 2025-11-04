@@ -44,6 +44,7 @@ export default defineNuxtConfig({
     // Disable auto icon generation
     devOptions: {
       enabled: false,
+      type: "module",
     },
   }
 })
