@@ -18,31 +18,45 @@ export default defineNuxtConfig({
   modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
   pwa: {
     registerType: 'autoUpdate',
-    includeAssets: ['icons/144_icon.png'],
     manifest: {
       name: "Calmea",
       short_name: "Calmea",
       start_url: '/',
+      scope: '/',
       display: 'standalone',
       background_color: '#ebe4e0',
       theme_color: '#ebe4e0',
       description: "PWA Nuxt Prototype",
-      icons: [{
-        src: "/icons/144_icon.png",
-        sizes: "144x144",
-        type: "image/png",
-        purpose: "any maskable"
-      }]
+      icons: [
+        {
+          src: "/icons/144_icon.png",
+          sizes: "144x144",
+          type: "image/png",
+          purpose: "any"
+        },
+        {
+          src: "/icons/144_icon.png",
+          sizes: "144x144",
+          type: "image/png",
+          purpose: "maskable"
+        }
+      ]
     },
     workbox: {
+      additionalManifestEntries: [
+        { url: '/', revision: Date.now().toString() }
+      ],
       navigateFallback: "/",
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      cleanupOutdatedCaches: true,
+      clientsClaim: true,
+      skipWaiting: true
     },
     client: {
       installPrompt: true,
+      periodicSyncForUpdates: 20
     },
-    // Disable auto icon generation
     devOptions: {
       enabled: false,
       type: "module",
