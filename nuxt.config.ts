@@ -26,15 +26,11 @@ export default defineNuxtConfig({
       description: "PWA Nuxt Prototype",
       theme_color: "#ebe4e0",
       background_color: "#ebe4e0",
-      display: "standalone",
-      scope: "/",
-      start_url: "/",
       icons: [
         {
           src: "/icons/144_icon.png",
           sizes: "144x144",
           type: "image/png",
-          purpose: "any maskable"
         }
       ]
     },
