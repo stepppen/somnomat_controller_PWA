@@ -18,57 +18,21 @@ export default defineNuxtConfig({
   },
   modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
   pwa: {
-    registerType: 'autoUpdate',
     manifest: {
       name: "Calmea",
       short_name: "Calmea",
-      start_url: '/',
-      scope: '/',
-      display: 'standalone',
-      background_color: '#ebe4e0',
-      theme_color: '#ebe4e0',
       description: "PWA Nuxt Prototype",
-      icons: [
-        {
-          src: "/icons/144_icon.png",
-          sizes: "144x144",
-          type: "image/png",
-          purpose: "any"
-        },
-        {
-          src: "/icons/144_icon.png",
-          sizes: "144x144",
-          type: "image/png",
-          purpose: "maskable"
-        }
-      ]
+      icons: [{
+        src: "icons/144_icon.png",
+        sizes: "144x144",
+        type: "image/png"
+      }]
     },
     workbox: {
       navigateFallback: "/",
-      navigateFallbackDenylist: [/^\/api\//],
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-      cleanupOutdatedCaches: true,
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/calmea\.netlify\.app\/.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'pages-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 86400
-            }
-          }
-        }
-      ]
-    },
-    client: {
-      installPrompt: true,
-      periodicSyncForUpdates: 20
     },
     devOptions: {
-      enabled: false,
+      enabled: true,
       type: "module",
     },
   }
