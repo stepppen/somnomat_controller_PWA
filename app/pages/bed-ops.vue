@@ -11,13 +11,20 @@
                 <button id="stop" class="action-btn">Stop</button>
             </div>
             <button id="meditation" class="action-btn">Meditation Mode</button>
+            <div>
+                <p>Server Response: {{serverAnswer}}</p>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
+let serverAnswer = ref()
 const config = useRuntimeConfig();
+//for prod:
 const apiBase = config.public.apiBase;
+//for dev only:
+// const apiBase = "http://localhost:10000";
 onMounted(() => {
     document.getElementById("start").addEventListener("click", function() {
         sendBoolean("start");
@@ -45,6 +52,7 @@ async function sendBoolean(action) {
         const data = await response.json();
     
         console.log("Response: ", data);
+        serverAnswer.value = data
 
     } catch (error) {
         console.error('Error:', error);
