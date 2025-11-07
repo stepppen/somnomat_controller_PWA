@@ -92,14 +92,6 @@
                                 <div class="text-2xl font-bold capitalize">{{ deviceData?.status || '–' }}</div>
                             </primitives-nestedContainer>
                         </div>
-    
-                        <!-- Device Info -->
-                        <div class="mt-4 pt-4 border-slate-700 grid grid-cols-2 gap-2 text-sm">
-                            <div><span class="text-gray-400">MAC:</span> {{ deviceData?.mac || '–' }}</div>
-                            <div><span class="text-gray-400">Partition:</span> {{ deviceData?.partition || '–' }}</div>
-                            <div><span class="text-gray-400">Version:</span> {{ deviceData?.version_factory || '–' }}</div>
-                            <div><span class="text-gray-400">Last Seen:</span> {{ formatTime(deviceData?.last_seen) }}</div>
-                        </div>
                     </primitives-container>
                 </div>
                 <div v-else class="bg-slate-800 rounded-lg p-12 text-center">
@@ -243,10 +235,7 @@ function showCommandStatus(message, type) {
     }, 5000);
 }
 
-function formatTime(timestamp) {
-    if (!timestamp) return '–';
-    return new Date(timestamp).toLocaleTimeString();
-}
+
 function formatTimeAgo(timestamp) {
     if (!timestamp) return 'Never';
     const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
