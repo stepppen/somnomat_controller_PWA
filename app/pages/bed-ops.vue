@@ -32,11 +32,11 @@
                      <primitives-container>
                          <h2 class="text-xl font-bold mb-4">Controls</h2>
                          <div class="grid grid-cols-3 gap-3">
-                             <button @click="sendCommand('power_on')" 
+                             <button @click="sendCommand('on')" 
                                      class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
                                  Power ON
                              </button>
-                             <button @click="sendCommand('power_off')" 
+                             <button @click="sendCommand('off')" 
                                      class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
                                  Power OFF
                              </button>
