@@ -11,17 +11,17 @@
                 <h2 class="text-xl font-bold mb-4">Preferences</h2>
                 <div class="flex gap-3 items-end flex-wrap">
                     <div>
-                        <label for="bedtimeInput" class="block text-xs text-gray-400 mb-1">Target Bedtime (UTC)</label>
+                        <label for="bedtimeInput" class="block text-xs text-blackray-400 mb-1">Target Bedtime (UTC)</label>
                         <input type="time" id="bedtimeInput" v-model="targetBedtime" step="60"
-                                class="bg-slate-700 rounded px-3 py-2 text-gray-100 border border-slate-600">
+                                class="bg-white-700 rounded px-3 py-2 text-blackray-100 border border-slate-600">
                     </div>
                     <button @click="saveTargetBedtime"
-                            class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded transition">
+                            class="bg-white-700 hover:bg-white-600 px-4 py-2 rounded transition">
                         Save
                     </button>
-                    <span v-if="bedtimeSaved" class="text-green-400 text-sm">✓ Saved</span>
+                    <span v-if="bedtimeSaved" class="text-blackreen-400 text-sm">✓ Saved</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-2">We draw a band ±30 minutes around your target bedtime and flag points outside as outliers.</p>
+                <p class="text-xs text-blackray-400 mt-2">We draw a band ±30 minutes around your target bedtime and flag points outside as outliers.</p>
             </primitives-container>
         </div>
         <div class="main-container">
@@ -30,17 +30,17 @@
                     <h2 class="text-xl font-bold mb-4">Summary</h2>
                     <div class="grid md:grid-cols-2 gap-6">
                         <!-- Sleep Consistency Donut -->
-                        <div class="flex items-center gap-4 bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div class="flex items-center gap-4 bg-white rounded-lg p-4 border border-slate-700">
                             <div>
-                                <div class="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
+                                <div class="text-sm font-bold text-black mb-2 flex items-center gap-2">
                                     Sleep Consistency
-                                    <span class="text-xs text-gray-500" title="Uses the START of the first ≥5-min occupied interval per day (UTC). Lower SD = more consistent.">ℹ️</span>
+                                    <span class="text-xs text-blackray-500" title="Uses the START of the first ≥5-min occupied interval per day (UTC). Lower SD = more consistent.">ℹ️</span>
                                 </div>
                                 <svg :id="'consistencyDonut'" width="180" height="180"></svg>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-gray-100">
-                                    {{ consistencySdMin }} <span class="text-sm text-gray-400">min SD</span>
+                                <div class="text-2xl font-bold text-blackray-100">
+                                    {{ consistencySdMin }} <span class="text-sm text-blackray-400">min SD</span>
                                 </div>
                                 <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', consistencyBadgeClass]">
                                     {{ consistencyLabel }}
@@ -49,16 +49,16 @@
                         </div>
 
                         <!-- Bed ON Coverage Donut -->
-                        <div class="flex items-center gap-4 bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div class="flex items-center gap-4 bg-white rounded-lg p-4 border border-slate-700">
                             <div>
-                                <div class="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
+                                <div class="text-sm font-bold text-black mb-2 flex items-center gap-2">
                                     Bed ON while Occupied
-                                    <span class="text-xs text-gray-500" title="Percentage of time bed was ON during occupied periods">ℹ️</span>
+                                    <span class="text-xs text-black" title="Percentage of time bed was ON during occupied periods">ℹ️</span>
                                 </div>
                                 <svg :id="'bedOnDonut'" width="180" height="180"></svg>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-gray-100">
+                                <div class="text-2xl font-bold text-blackray-100">
                                     {{ bedOnCoverage }}%
                                 </div>
                                 <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', bedOnBadgeClass]">
@@ -74,32 +74,32 @@
                 <primitives-container>
                     <h2 class="text-xl font-bold mb-4">Summary (Last 7 Days)</h2>
                     <div class="grid md:grid-cols-3 gap-6">
-                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-sm text-gray-400 mb-2">Total Time Occupied</div>
+                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-sm text-blackray-400 mb-2">Total Time Occupied</div>
                             <div class="text-3xl font-bold text-blue-400">
                                 {{ totalOccupiedFormatted }}
                             </div>
-                            <div class="text-sm text-gray-500 mt-1">
+                            <div class="text-sm text-blackray-500 mt-1">
                                 Avg {{ sleepSummary.summary.avg_sleep_per_night_hours }}h/night
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-sm text-gray-400 mb-2">Occupied Intervals</div>
+                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-sm text-blackray-400 mb-2">Occupied Intervals</div>
                             <div class="text-3xl font-bold text-purple-400">
                                 {{ sleepSummary.summary.total_intervals }}
                             </div>
-                            <div class="text-sm text-gray-500 mt-1">
+                            <div class="text-sm text-blackray-500 mt-1">
                                 {{ sleepSummary.summary.avg_awakenings_per_night.toFixed(1) }} avg awakenings
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-sm text-gray-400 mb-2">Sleep Quality</div>
+                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-sm text-blackray-400 mb-2">Sleep Quality</div>
                             <div class="text-3xl font-bold" :class="qualityColor">
                                 {{ qualityLabel }}
                             </div>
-                            <div class="text-sm text-gray-500 mt-1">
+                            <div class="text-sm text-blackray-500 mt-1">
                                 Based on continuity
                             </div>
                         </div>
@@ -116,12 +116,12 @@
                              :class="suggestion.type === 'good' ? 'bg-green-900/20 border border-green-700' : 
                                      suggestion.type === 'warning' ? 'bg-yellow-900/20 border border-yellow-700' :
                                      'bg-blue-900/20 border border-blue-700'">
-                            <div class="font-medium mb-2" :class="suggestion.type === 'good' ? 'text-green-400' : 
+                            <div class="font-medium mb-2" :class="suggestion.type === 'good' ? 'text-blackreen-400' : 
                                                                     suggestion.type === 'warning' ? 'text-yellow-400' :
                                                                     'text-blue-400'">
                                 {{ suggestion.title }}
                             </div>
-                            <div class="text-sm text-gray-300">
+                            <div class="text-sm text-blackray-300">
                                 {{ suggestion.message }}
                             </div>
                         </div>
@@ -143,7 +143,7 @@
                         <!-- X-axis labels -->
                         <div class="flex items-center gap-4 mb-2">
                             <div class="w-28"></div>
-                            <div class="flex-1 flex justify-between text-xs text-gray-500">
+                            <div class="flex-1 flex justify-between text-xs text-blackray-500">
                                 <span>18:00</span>
                                 <span>21:00</span>
                                 <span>00:00</span>
@@ -156,17 +156,17 @@
                         
                         <div v-for="(dayData, day) in dailyTimeline" :key="day" 
                              class="flex items-center gap-4">
-                            <div class="w-28 text-sm font-bold text-gray-300">
+                            <div class="w-28 text-sm font-bold text-blackray-300">
                                 {{ formatDate(day) }}
                             </div>
-                            <div class="flex-1 relative h-10 bg-slate-900 rounded">
+                            <div class="flex-1 relative h-10 bg-white-900 rounded">
                                 <div v-for="(interval, idx) in dayData.intervals" :key="idx"
                                      class="absolute h-full bg-blue-500 rounded hover:bg-blue-400 transition cursor-pointer"
                                      :style="getTimelineStyle(interval)"
                                      :title="`${formatTime(interval.start)} - ${formatTime(interval.end)} (${interval.duration_min.toFixed(0)}min)`">
                                 </div>
                             </div>
-                            <div class="w-32 text-sm text-gray-500 text-right">
+                            <div class="w-32 text-sm text-blackray-500 text-right">
                                 {{ dayData.totalMin.toFixed(0) }}min
                                 <span v-if="dayData.awakenings > 0" class="text-orange-400 ml-2">
                                     {{ dayData.awakenings }} ⚠
@@ -183,30 +183,30 @@
                         <h2 class="text-xl font-bold">Day Focus</h2>
                         <div class="flex gap-2">
                             <button @click="previousDay" 
-                                    class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition"
+                                    class="bg-white-700 hover:bg-white-600 px-3 py-1 rounded transition"
                                     aria-label="Previous day">‹</button>
                             <button @click="nextDay" 
-                                    class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition"
+                                    class="bg-white-700 hover:bg-white-600 px-3 py-1 rounded transition"
                                     aria-label="Next day">›</button>
                         </div>
                     </div>
                     
-                    <div class="text-sm text-gray-400 mb-4">
-                        Date: <span class="text-gray-100 font-medium">{{ focusedDay }}</span>
+                    <div class="text-sm text-blackray-400 mb-4">
+                        Date: <span class="text-blackray-100 font-medium">{{ focusedDay }}</span>
                     </div>
 
                     <div class="grid md:grid-cols-3 gap-4 mb-4">
-                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-xs text-gray-400 mb-1">Time Occupied</div>
-                            <div class="text-2xl font-bold text-gray-100">{{ focusedDayOccupied }}</div>
+                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-xs text-blackray-400 mb-1">Time Occupied</div>
+                            <div class="text-2xl font-bold text-blackray-100">{{ focusedDayOccupied }}</div>
                         </div>
-                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-xs text-gray-400 mb-1">Awakenings</div>
-                            <div class="text-2xl font-bold text-gray-100">{{ focusedDayAwakenings }}</div>
+                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-xs text-blackray-400 mb-1">Awakenings</div>
+                            <div class="text-2xl font-bold text-blackray-100">{{ focusedDayAwakenings }}</div>
                         </div>
-                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-xs text-gray-400 mb-1">Bed ON Coverage</div>
-                            <div class="text-2xl font-bold text-gray-100">{{ focusedDayCoverage }}%</div>
+                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-xs text-blackray-400 mb-1">Bed ON Coverage</div>
+                            <div class="text-2xl font-bold text-blackray-100">{{ focusedDayCoverage }}%</div>
                         </div>
                     </div>
 
@@ -219,11 +219,11 @@
                     <h2 class="text-xl font-bold mb-4">Recent Bed Activity</h2>
                     <div class="space-y-2 max-h-64 overflow-y-auto">
                         <div v-for="(event, idx) in recentEvents" :key="idx"
-                             class="flex items-center justify-between p-3 bg-slate-900 rounded">
-                            <span class="text-sm text-gray-400">
+                             class="flex items-center justify-between p-3 bg-white-900 rounded">
+                            <span class="text-sm text-blackray-400">
                                 {{ formatDateTime(event.timestamp) }}
                             </span>
-                            <span :class="event.event.includes('ON->OFF') ? 'text-red-400' : 'text-green-400'"
+                            <span :class="event.event.includes('ON->OFF') ? 'text-red-400' : 'text-blackreen-400'"
                                   class="font-medium text-sm">
                                 {{ event.event === 'OFF->ON' ? '🟢 Bed ON' : '🔴 Bed OFF' }}
                             </span>
@@ -234,17 +234,17 @@
             
 
             <!-- Empty State -->
-            <!-- <div v-else class="bg-slate-800 rounded-lg p-12 text-center border border-slate-700">
+            <!-- <div v-else class="bg-white-800 rounded-lg p-12 text-center border border-slate-700">
                 <div class="text-6xl mb-4">🛏️</div>
                 <h2 class="text-2xl font-bold mb-2">No Sleep Data Yet</h2>
-                <p class="text-gray-400 mb-4">
+                <p class="text-blackray-400 mb-4">
                     {{ error || 'Start the ESP32 simulator to generate sleep data' }}
                 </p>
-                <div class="bg-slate-900 rounded-lg p-4 mb-4 text-left max-w-md mx-auto">
-                    <p class="text-sm text-gray-300 font-medium mb-2">Quick Start:</p>
-                    <ol class="text-xs text-gray-400 space-y-1 list-decimal list-inside">
+                <div class="bg-white-900 rounded-lg p-4 mb-4 text-left max-w-md mx-auto">
+                    <p class="text-sm text-blackray-300 font-medium mb-2">Quick Start:</p>
+                    <ol class="text-xs text-blackray-400 space-y-1 list-decimal list-inside">
                         <li>Open a terminal in the backend directory</li>
-                        <li>Run: <code class="bg-slate-700 px-2 py-1 rounded">python test_esp32.py</code></li>
+                        <li>Run: <code class="bg-white-700 px-2 py-1 rounded">python test_esp32.py</code></li>
                         <li>Wait a few seconds, then click Refresh below</li>
                     </ol>
                 </div>
@@ -255,7 +255,7 @@
             </div> -->
 
             <!-- Footer -->
-            <div class="mt-6 text-center text-sm text-gray-500">
+            <div class="mt-6 text-center text-sm text-blackray-500">
                 Auto-refresh every 30 seconds • Last update: {{ lastUpdate }}
             </div>
             </div>
@@ -288,7 +288,7 @@ const qualityLabel = computed(() => {
 
 const qualityColor = computed(() => {
     const label = qualityLabel.value;
-    if (label === 'Excellent') return 'text-green-400';
+    if (label === 'Excellent') return 'text-blackreen-400';
     if (label === 'Good') return 'text-blue-400';
     if (label === 'Fair') return 'text-yellow-400';
     return 'text-red-400';
@@ -336,7 +336,7 @@ const consistencyLabel = computed(() => {
 
 const consistencyBadgeClass = computed(() => {
     const label = consistencyLabel.value;
-    if (label === 'Excellent' || label === 'Good') return 'bg-green-600 text-green-100';
+    if (label === 'Excellent' || label === 'Good') return 'bg-green-600 text-blackreen-100';
     if (label === 'Fair') return 'bg-yellow-600 text-yellow-100';
     return 'bg-red-600 text-red-100';
 });
@@ -355,7 +355,7 @@ const bedOnLabel = computed(() => {
 
 const bedOnBadgeClass = computed(() => {
     const cov = bedOnCoverage.value;
-    if (cov >= 85) return 'bg-green-600 text-green-100';
+    if (cov >= 85) return 'bg-green-600 text-blackreen-100';
     if (cov >= 70) return 'bg-blue-600 text-blue-100';
     return 'bg-red-600 text-red-100';
 });
@@ -664,7 +664,7 @@ function drawScatterPlot() {
     });
     
     if (points.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-8">No data available for scatter plot</p>';
+        container.innerHTML = '<p class="text-blackray-400 text-center py-8">No data available for scatter plot</p>';
         return;
     }
     
@@ -764,7 +764,7 @@ function drawScatterPlot() {
 function drawFocusTimeline() {
     const container = document.getElementById('focusTimeline');
     if (!container || !focusedDayData.value.intervals.length) {
-        if (container) container.innerHTML = '<p class="text-gray-400 text-center py-4">No data for this day</p>';
+        if (container) container.innerHTML = '<p class="text-blackray-400 text-center py-4">No data for this day</p>';
         return;
     }
     

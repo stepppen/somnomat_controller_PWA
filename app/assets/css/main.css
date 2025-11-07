@@ -66,21 +66,21 @@ html, body, #__nuxt {
   display: block;
   width: 100%;
   text-align: center;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 2rem;
   margin: 0.5rem;
   border-radius: 2rem;
   color: #000;
   background-color: rgb(240, 240, 240);
   white-space: nowrap;
-  font-size: 0.875rem;
+  font-size: 1rem;
   -webkit-tap-highlight-color: transparent; /* Prevent blue flash on iOS */
   touch-action: manipulation; /* Ensure taps are recognized immediately */
   transition: background-color 0.15s ease-in-out; /* Smooth transition */
 }
 
 /* 👇 This will now trigger on mobile when pressed */
-.action-btn:active {
-  background-color: rgb(210, 210, 210); /* darker gray */
+button.pressed {
+  background-color: rgb(226 232 240) !important; /* slate-300 */
 }
 
 h1 {

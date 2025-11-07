@@ -161,9 +161,16 @@ onMounted(async () => {
         await loadDevice();
     }
     
-    // Refresh every 5 seconds
-    refreshInterval = setInterval(() => {
-        if (selectedDevice.value) loadDevice();
+    // Refresh every 5 seconds - REFRESH BOTH devices list AND selected device
+    refreshInterval = setInterval(async () => {
+        await loadDevices(); // ← Add this line to refresh the devices list
+        if (selectedDevice.value) {
+            await loadDevice();
+        } else if (devices.value.length > 0) {
+            // Auto-select first device if none selected
+            selectedDevice.value = devices.value[0].device_id;
+            await loadDevice();
+        }
     }, 5000);
 });
 
