@@ -1,6 +1,6 @@
 <template>
     <div>
-        <MdiIcon v-if="navIcon" :icon="navIcon" size="24px" />
+        <MdiIcon v-if="navIcon" :icon="navIcon" size="28px" />
     </div>
 </template>
 <script setup lang="ts">

@@ -1,11 +1,9 @@
 <template>
-  <div class="h-screen overflow-hidden">
-    <div class="p-4">
-      <AppHeader />
-
+  <div>
+    <div class="pb-24">
+      <slot />
     </div>
-    <slot />
-    <div class="fixed flex justify-center w-full bottom-0 p-4">
+    <div class="fixed bottom-0 left-0 right-0 bg-white">
       <TabBar />
     </div>
   </div>

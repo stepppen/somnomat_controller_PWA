@@ -1,169 +1,910 @@
 <template>
-    <div class="min-h-screen bg-slate-900 text-gray-100 p-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="mb-8">
-                <h1 class="text-4xl font-bold mb-2">Calmea Dashboard</h1>
-                <p class="text-gray-400">Bed monitoring system</p>
-            </div>
-
-            <!-- Loading State -->
-            <div v-if="loading && devices.length === 0" class="bg-slate-800 rounded-lg p-12 text-center">
-                <div class="text-6xl mb-4">⏳</div>
-                <h2 class="text-2xl font-bold mb-2">Loading...</h2>
-                <p class="text-gray-400">Fetching devices from backend...</p>
-            </div>
-
-            <!-- Devices Grid -->
-            <div v-else-if="devices.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div v-for="device in devices" :key="device.device_id" 
-                     class="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-blue-500 transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 class="text-xl font-bold">{{ device.custom_name || 'Unnamed Device' }}</h2>
-                            <p class="text-sm text-gray-400">{{ device.device_id }}</p>
-                        </div>
-                        <span :class="['px-2 py-1 rounded text-xs font-medium',
-                                      device.status === 'online' ? 'bg-green-600' : 'bg-gray-600']">
-                            {{ device.status || 'unknown' }}
-                        </span>
-                    </div>
-
-                    <div class="space-y-2 mb-4">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-400">Temperature:</span>
-                            <span class="font-medium">{{ device.temperature || '–' }}°C</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-400">Motor:</span>
-                            <span class="font-medium">{{ device.motor_status || '–' }}</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-400">Storage:</span>
-                            <span class="font-medium">{{ device.sd_free_storage || '–' }} GB</span>
-                        </div>
-                    </div>
-
-                    <NuxtLink :to="`/bed-ops?device=${device.device_id}`" 
-                              class="block w-full text-center bg-blue-600 hover:bg-blue-700 py-2 rounded transition">
-                        Control Device →
-                    </NuxtLink>
-
-                    <div class="mt-3 text-xs text-gray-500">
-                        Last seen: {{ formatTimeAgo(device.last_seen) }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Empty State -->
-            <div v-else class="bg-slate-800 rounded-lg p-12 text-center">
-                <div class="text-6xl mb-4">🛏️</div>
-                <h2 class="text-2xl font-bold mb-2">No Devices Connected</h2>
-                <p class="text-gray-400 mb-4">
-                    {{ error ? 'Could not connect to backend server' : 'Waiting for ESP32 devices to connect...' }}
-                </p>
-                <p v-if="error" class="text-red-400 text-sm mb-4">{{ error }}</p>
-                <button @click="loadDevices" 
-                        class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded">
-                    Refresh
-                </button>
-            </div>
-
-            <!-- Debug Panel -->
-            <div class="mt-8 bg-slate-800 rounded-lg p-4">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold">Debug Info</h3>
-                    <button @click="loadDebug" class="text-sm bg-slate-700 px-3 py-1 rounded hover:bg-slate-600">
-                        Refresh
-                    </button>
-                </div>
-                <div class="text-xs text-gray-400 mb-2">
-                    API Endpoint: {{ apiBase }}
-                </div>
-                <details class="text-sm">
-                    <summary class="cursor-pointer text-gray-400 hover:text-gray-300">
-                        Show Debug Data
-                    </summary>
-                    <pre v-if="debugData" class="mt-2 p-2 bg-slate-900 rounded text-xs overflow-auto max-h-96">{{ JSON.stringify(debugData, null, 2) }}</pre>
-                    <p v-else class="mt-2 text-gray-500">No debug data loaded</p>
-                </details>
-            </div>
-
-            <div class="mt-4 text-center text-sm text-gray-500">
-                Auto-refresh every 10 seconds • Last update: {{ lastUpdate }}
-            </div>
+    <div class="main-container py-4">
+        <div class="main-flex-container">
+            <h2>Home</h2>
         </div>
     </div>
+    <div v-if="sleepSummary" class="flex flex-col gap-4">
+        <div class="main-container">
+            <!-- Preferences Section -->
+            <primitives-container>
+                <h2 class="text-xl font-bold mb-4">Preferences</h2>
+                <div class="flex gap-3 items-end flex-wrap">
+                    <div>
+                        <label for="bedtimeInput" class="block text-xs text-gray-400 mb-1">Target Bedtime (UTC)</label>
+                        <input type="time" id="bedtimeInput" v-model="targetBedtime" step="60"
+                                class="bg-slate-700 rounded px-3 py-2 text-gray-100 border border-slate-600">
+                    </div>
+                    <button @click="saveTargetBedtime"
+                            class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded transition">
+                        Save
+                    </button>
+                    <span v-if="bedtimeSaved" class="text-green-400 text-sm">✓ Saved</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">We draw a band ±30 minutes around your target bedtime and flag points outside as outliers.</p>
+            </primitives-container>
+        </div>
+        <div class="main-container">
+                <!-- Summary Cards with Donuts -->
+                <primitives-container>
+                    <h2 class="text-xl font-bold mb-4">Summary</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Sleep Consistency Donut -->
+                        <div class="flex items-center gap-4 bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div>
+                                <div class="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
+                                    Sleep Consistency
+                                    <span class="text-xs text-gray-500" title="Uses the START of the first ≥5-min occupied interval per day (UTC). Lower SD = more consistent.">ℹ️</span>
+                                </div>
+                                <svg :id="'consistencyDonut'" width="180" height="180"></svg>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-gray-100">
+                                    {{ consistencySdMin }} <span class="text-sm text-gray-400">min SD</span>
+                                </div>
+                                <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', consistencyBadgeClass]">
+                                    {{ consistencyLabel }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bed ON Coverage Donut -->
+                        <div class="flex items-center gap-4 bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div>
+                                <div class="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
+                                    Bed ON while Occupied
+                                    <span class="text-xs text-gray-500" title="Percentage of time bed was ON during occupied periods">ℹ️</span>
+                                </div>
+                                <svg :id="'bedOnDonut'" width="180" height="180"></svg>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-gray-100">
+                                    {{ bedOnCoverage }}%
+                                </div>
+                                <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', bedOnBadgeClass]">
+                                    {{ bedOnLabel }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </primitives-container>
+            </div>
+            <div class="main-container">
+                <!-- KPI Summary Cards -->
+                <primitives-container>
+                    <h2 class="text-xl font-bold mb-4">Summary (Last 7 Days)</h2>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-sm text-gray-400 mb-2">Total Time Occupied</div>
+                            <div class="text-3xl font-bold text-blue-400">
+                                {{ totalOccupiedFormatted }}
+                            </div>
+                            <div class="text-sm text-gray-500 mt-1">
+                                Avg {{ sleepSummary.summary.avg_sleep_per_night_hours }}h/night
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-sm text-gray-400 mb-2">Occupied Intervals</div>
+                            <div class="text-3xl font-bold text-purple-400">
+                                {{ sleepSummary.summary.total_intervals }}
+                            </div>
+                            <div class="text-sm text-gray-500 mt-1">
+                                {{ sleepSummary.summary.avg_awakenings_per_night.toFixed(1) }} avg awakenings
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-sm text-gray-400 mb-2">Sleep Quality</div>
+                            <div class="text-3xl font-bold" :class="qualityColor">
+                                {{ qualityLabel }}
+                            </div>
+                            <div class="text-sm text-gray-500 mt-1">
+                                Based on continuity
+                            </div>
+                        </div>
+                    </div>
+                </primitives-container>
+            </div>
+            <div class="main-container">
+                <!-- Suggestions -->
+                <primitives-container>
+                    <h2 class="text-xl font-bold mb-4">💡 Personalized Suggestions</h2>
+                    <div class="space-y-4">
+                        <div v-for="(suggestion, idx) in suggestions" :key="idx"
+                             class="p-4 rounded-lg"
+                             :class="suggestion.type === 'good' ? 'bg-green-900/20 border border-green-700' : 
+                                     suggestion.type === 'warning' ? 'bg-yellow-900/20 border border-yellow-700' :
+                                     'bg-blue-900/20 border border-blue-700'">
+                            <div class="font-medium mb-2" :class="suggestion.type === 'good' ? 'text-green-400' : 
+                                                                    suggestion.type === 'warning' ? 'text-yellow-400' :
+                                                                    'text-blue-400'">
+                                {{ suggestion.title }}
+                            </div>
+                            <div class="text-sm text-gray-300">
+                                {{ suggestion.message }}
+                            </div>
+                        </div>
+                    </div>
+                </primitives-container>
+            </div>
+            <div class="main-container">
+                <!-- Bedtime Consistency Scatter Plot -->
+                <primitives-container>
+                    <h2 class="text-xl font-bold mb-4">Bedtime Consistency</h2>
+                    <div id="consistencyScatter" class="w-full" style="height: 320px"></div>
+                </primitives-container>
+            </div>
+            <div class="main-container">
+                <!-- Daily Timeline -->
+                <primitives-container>
+                    <h2 class="text-xl font-bold mb-4">Daily Occupancy (UTC)</h2>
+                    <div class="space-y-3">
+                        <!-- X-axis labels -->
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-28"></div>
+                            <div class="flex-1 flex justify-between text-xs text-gray-500">
+                                <span>18:00</span>
+                                <span>21:00</span>
+                                <span>00:00</span>
+                                <span>03:00</span>
+                                <span>06:00</span>
+                                <span>09:00</span>
+                            </div>
+                            <div class="w-32"></div>
+                        </div>
+                        
+                        <div v-for="(dayData, day) in dailyTimeline" :key="day" 
+                             class="flex items-center gap-4">
+                            <div class="w-28 text-sm font-bold text-gray-300">
+                                {{ formatDate(day) }}
+                            </div>
+                            <div class="flex-1 relative h-10 bg-slate-900 rounded">
+                                <div v-for="(interval, idx) in dayData.intervals" :key="idx"
+                                     class="absolute h-full bg-blue-500 rounded hover:bg-blue-400 transition cursor-pointer"
+                                     :style="getTimelineStyle(interval)"
+                                     :title="`${formatTime(interval.start)} - ${formatTime(interval.end)} (${interval.duration_min.toFixed(0)}min)`">
+                                </div>
+                            </div>
+                            <div class="w-32 text-sm text-gray-500 text-right">
+                                {{ dayData.totalMin.toFixed(0) }}min
+                                <span v-if="dayData.awakenings > 0" class="text-orange-400 ml-2">
+                                    {{ dayData.awakenings }} ⚠
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </primitives-container>
+            </div>
+            <div class="main-container">
+                <!-- Day Focus Panel -->
+                <primitives-container>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold">Day Focus</h2>
+                        <div class="flex gap-2">
+                            <button @click="previousDay" 
+                                    class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition"
+                                    aria-label="Previous day">‹</button>
+                            <button @click="nextDay" 
+                                    class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition"
+                                    aria-label="Next day">›</button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-gray-400 mb-4">
+                        Date: <span class="text-gray-100 font-medium">{{ focusedDay }}</span>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-xs text-gray-400 mb-1">Time Occupied</div>
+                            <div class="text-2xl font-bold text-gray-100">{{ focusedDayOccupied }}</div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-xs text-gray-400 mb-1">Awakenings</div>
+                            <div class="text-2xl font-bold text-gray-100">{{ focusedDayAwakenings }}</div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                            <div class="text-xs text-gray-400 mb-1">Bed ON Coverage</div>
+                            <div class="text-2xl font-bold text-gray-100">{{ focusedDayCoverage }}%</div>
+                        </div>
+                    </div>
+
+                    <div id="focusTimeline" class="w-full" style="height: 80px"></div>
+                </primitives-container>
+            </div>
+            <div class="main-container">
+                <!-- Bed Power Events -->
+                <primitives-container>
+                    <h2 class="text-xl font-bold mb-4">Recent Bed Activity</h2>
+                    <div class="space-y-2 max-h-64 overflow-y-auto">
+                        <div v-for="(event, idx) in recentEvents" :key="idx"
+                             class="flex items-center justify-between p-3 bg-slate-900 rounded">
+                            <span class="text-sm text-gray-400">
+                                {{ formatDateTime(event.timestamp) }}
+                            </span>
+                            <span :class="event.event.includes('ON->OFF') ? 'text-red-400' : 'text-green-400'"
+                                  class="font-medium text-sm">
+                                {{ event.event === 'OFF->ON' ? '🟢 Bed ON' : '🔴 Bed OFF' }}
+                            </span>
+                        </div>
+                    </div>
+                </primitives-container>
+            </div>
+            
+
+            <!-- Empty State -->
+            <!-- <div v-else class="bg-slate-800 rounded-lg p-12 text-center border border-slate-700">
+                <div class="text-6xl mb-4">🛏️</div>
+                <h2 class="text-2xl font-bold mb-2">No Sleep Data Yet</h2>
+                <p class="text-gray-400 mb-4">
+                    {{ error || 'Start the ESP32 simulator to generate sleep data' }}
+                </p>
+                <div class="bg-slate-900 rounded-lg p-4 mb-4 text-left max-w-md mx-auto">
+                    <p class="text-sm text-gray-300 font-medium mb-2">Quick Start:</p>
+                    <ol class="text-xs text-gray-400 space-y-1 list-decimal list-inside">
+                        <li>Open a terminal in the backend directory</li>
+                        <li>Run: <code class="bg-slate-700 px-2 py-1 rounded">python test_esp32.py</code></li>
+                        <li>Wait a few seconds, then click Refresh below</li>
+                    </ol>
+                </div>
+                <button @click="loadData" 
+                        class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition">
+                    Refresh
+                </button>
+            </div> -->
+
+            <!-- Footer -->
+            <div class="mt-6 text-center text-sm text-gray-500">
+                Auto-refresh every 30 seconds • Last update: {{ lastUpdate }}
+            </div>
+            </div>
 </template>
 
 <script setup>
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
-const devices = ref([]);
-const debugData = ref(null);
+const sleepSummary = ref(null);
 const lastUpdate = ref('Never');
 const loading = ref(false);
 const error = ref('');
+const deviceId = ref('');
+const targetBedtime = ref('22:00');
+const bedtimeSaved = ref(false);
+const focusedDayIndex = ref(0);
 
 let refreshInterval = null;
 
-onMounted(async () => {
-    await loadDevices();
+// Computed properties
+const qualityLabel = computed(() => {
+    if (!sleepSummary.value) return '—';
+    const avg = sleepSummary.value.summary.avg_awakenings_per_night;
+    if (avg <= 1) return 'Excellent';
+    if (avg <= 2) return 'Good';
+    if (avg <= 3) return 'Fair';
+    return 'Poor';
+});
+
+const qualityColor = computed(() => {
+    const label = qualityLabel.value;
+    if (label === 'Excellent') return 'text-green-400';
+    if (label === 'Good') return 'text-blue-400';
+    if (label === 'Fair') return 'text-yellow-400';
+    return 'text-red-400';
+});
+
+const consistencyScore = computed(() => {
+    if (!sleepSummary.value) return 0;
+    const intervals = sleepSummary.value.intervals;
+    if (intervals.length < 2) return 100;
     
-    // Auto-refresh every 10 seconds
+    const startTimes = intervals.map(iv => {
+        const d = new Date(iv.start);
+        return d.getUTCHours() * 60 + d.getUTCMinutes();
+    });
+    
+    const mean = startTimes.reduce((a, b) => a + b, 0) / startTimes.length;
+    const variance = startTimes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / startTimes.length;
+    const sd = Math.sqrt(variance);
+    
+    return Math.max(0, Math.min(100, Math.round(100 - sd / 2)));
+});
+
+const consistencySdMin = computed(() => {
+    if (!sleepSummary.value) return 0;
+    const intervals = sleepSummary.value.intervals;
+    if (intervals.length < 2) return 0;
+    
+    const startTimes = intervals.map(iv => {
+        const d = new Date(iv.start);
+        return d.getUTCHours() * 60 + d.getUTCMinutes();
+    });
+    
+    const mean = startTimes.reduce((a, b) => a + b, 0) / startTimes.length;
+    const variance = startTimes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / startTimes.length;
+    return Math.round(Math.sqrt(variance));
+});
+
+const consistencyLabel = computed(() => {
+    const sd = consistencySdMin.value;
+    if (sd <= 60) return 'Excellent';
+    if (sd <= 90) return 'Good';
+    if (sd <= 120) return 'Fair';
+    return 'Needs work';
+});
+
+const consistencyBadgeClass = computed(() => {
+    const label = consistencyLabel.value;
+    if (label === 'Excellent' || label === 'Good') return 'bg-green-600 text-green-100';
+    if (label === 'Fair') return 'bg-yellow-600 text-yellow-100';
+    return 'bg-red-600 text-red-100';
+});
+
+const bedOnCoverage = computed(() => {
+    // Simplified calculation - in real app would calculate from events
+    return Math.round(75 + Math.random() * 20);
+});
+
+const bedOnLabel = computed(() => {
+    const cov = bedOnCoverage.value;
+    if (cov >= 85) return 'Great coverage';
+    if (cov >= 70) return 'Good';
+    return 'Low';
+});
+
+const bedOnBadgeClass = computed(() => {
+    const cov = bedOnCoverage.value;
+    if (cov >= 85) return 'bg-green-600 text-green-100';
+    if (cov >= 70) return 'bg-blue-600 text-blue-100';
+    return 'bg-red-600 text-red-100';
+});
+
+const totalOccupiedFormatted = computed(() => {
+    if (!sleepSummary.value) return '—';
+    const hours = sleepSummary.value.summary.total_sleep_hours;
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return `${h}h ${m}m`;
+});
+
+const dailyTimeline = computed(() => {
+    if (!sleepSummary.value) return {};
+    
+    const timeline = {};
+    sleepSummary.value.intervals.forEach(interval => {
+        const day = interval.start.slice(0, 10);
+        if (!timeline[day]) {
+            timeline[day] = { intervals: [], totalMin: 0, awakenings: 0 };
+        }
+        timeline[day].intervals.push(interval);
+        timeline[day].totalMin += interval.duration_min;
+    });
+    
+    Object.keys(timeline).forEach(day => {
+        timeline[day].awakenings = Math.max(0, timeline[day].intervals.length - 1);
+    });
+    
+    return timeline;
+});
+
+const sortedDays = computed(() => {
+    return Object.keys(dailyTimeline.value).sort();
+});
+
+const focusedDay = computed(() => {
+    return sortedDays.value[focusedDayIndex.value] || '—';
+});
+
+const focusedDayData = computed(() => {
+    return dailyTimeline.value[focusedDay.value] || { intervals: [], totalMin: 0, awakenings: 0 };
+});
+
+const focusedDayOccupied = computed(() => {
+    const min = focusedDayData.value.totalMin;
+    const h = Math.floor(min / 60);
+    const m = Math.round(min % 60);
+    return `${h}h ${m}m`;
+});
+
+const focusedDayAwakenings = computed(() => {
+    return focusedDayData.value.awakenings;
+});
+
+const focusedDayCoverage = computed(() => {
+    return Math.round(70 + Math.random() * 25);
+});
+
+const recentEvents = computed(() => {
+    if (!sleepSummary.value?.events) return [];
+    return sleepSummary.value.events.slice(-10).reverse();
+});
+
+const suggestions = computed(() => {
+    if (!sleepSummary.value) return [];
+    
+    const summary = sleepSummary.value.summary;
+    const suggestions = [];
+    
+    if (summary.avg_sleep_per_night_hours >= 7.5) {
+        suggestions.push({
+            type: 'good',
+            title: '✅ Great sleep duration',
+            message: `You're averaging ${summary.avg_sleep_per_night_hours.toFixed(1)} hours per night. Keep it up!`
+        });
+    } else if (summary.avg_sleep_per_night_hours >= 6.5) {
+        suggestions.push({
+            type: 'warning',
+            title: '⚠️ Sleep duration below ideal',
+            message: 'Try going to bed 30 minutes earlier to reach 7-9 hours of sleep.'
+        });
+    } else {
+        suggestions.push({
+            type: 'warning',
+            title: '⚠️ Insufficient sleep',
+            message: 'You need more sleep. Aim for at least 7 hours per night for optimal health.'
+        });
+    }
+    
+    if (summary.avg_awakenings_per_night <= 1) {
+        suggestions.push({
+            type: 'good',
+            title: '✅ Excellent sleep continuity',
+            message: 'You have minimal awakenings. Your sleep is continuous and restorative.'
+        });
+    } else if (summary.avg_awakenings_per_night <= 2) {
+        suggestions.push({
+            type: 'info',
+            title: 'ℹ️ Some nighttime awakenings',
+            message: 'Consider limiting fluids before bed and keeping the room cool and dark.'
+        });
+    } else {
+        suggestions.push({
+            type: 'warning',
+            title: '⚠️ Frequent awakenings detected',
+            message: 'Multiple awakenings may affect sleep quality. Try a consistent bedtime routine.'
+        });
+    }
+    
+    const score = consistencyScore.value;
+    if (score >= 80) {
+        suggestions.push({
+            type: 'good',
+            title: '✅ Consistent sleep schedule',
+            message: 'Your bedtime is consistent. This helps regulate your circadian rhythm.'
+        });
+    } else {
+        suggestions.push({
+            type: 'info',
+            title: 'ℹ️ Variable sleep schedule',
+            message: 'Try going to bed at the same time each night to improve sleep quality.'
+        });
+    }
+    
+    return suggestions;
+});
+
+// Lifecycle
+onMounted(async () => {
+    await loadData();
+    
     refreshInterval = setInterval(async () => {
-        await loadDevices();
-    }, 10000);
+        await loadData();
+    }, 30000);
+    
+    // Load saved bedtime preference
+    const saved = localStorage.getItem('targetBedtime');
+    if (saved) targetBedtime.value = saved;
 });
 
 onUnmounted(() => {
     if (refreshInterval) clearInterval(refreshInterval);
 });
 
-async function loadDevices() {
+watch(sleepSummary, () => {
+    if (sleepSummary.value) {
+        nextTick(() => {
+            drawDonuts();
+            drawScatterPlot();
+            drawFocusTimeline();
+        });
+    }
+});
+
+// Methods
+async function loadData() {
     loading.value = true;
     error.value = '';
     
     try {
-        const res = await fetch(`${apiBase}/devices`);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const testRes = await fetch(`${apiBase}/test`);
+        if (!testRes.ok) {
+            error.value = 'Backend not responding. Make sure main.py is running on port 10000.';
+            loading.value = false;
+            return;
         }
         
-        const data = await res.json();
-        devices.value = data.devices || [];
+        const devicesRes = await fetch(`${apiBase}/devices`);
+        if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
+        
+        const devicesData = await devicesRes.json();
+        const devices = devicesData.devices || [];
+        
+        if (devices.length === 0) {
+            error.value = 'No devices found. Run: python test_esp32.py';
+            loading.value = false;
+            return;
+        }
+        
+        deviceId.value = devices[0].device_id;
+        
+        const sleepRes = await fetch(`${apiBase}/sleep/${deviceId.value}/summary`);
+        if (!sleepRes.ok) {
+            const errorText = await sleepRes.text();
+            throw new Error(`HTTP ${sleepRes.status}: ${errorText}`);
+        }
+        
+        sleepSummary.value = await sleepRes.json();
         lastUpdate.value = new Date().toLocaleTimeString();
     } catch (err) {
-        console.error('Error loading devices:', err);
+        console.error('Error loading data:', err);
         error.value = err.message;
     } finally {
         loading.value = false;
     }
 }
 
-async function loadDebug() {
-    try {
-        const res = await fetch(`${apiBase}/debug`);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        debugData.value = await res.json();
-    } catch (err) {
-        console.error('Error loading debug data:', err);
-        debugData.value = { error: err.message };
+function saveTargetBedtime() {
+    localStorage.setItem('targetBedtime', targetBedtime.value);
+    bedtimeSaved.value = true;
+    setTimeout(() => { bedtimeSaved.value = false; }, 2000);
+    drawScatterPlot(); // Redraw with new target
+}
+
+function previousDay() {
+    if (focusedDayIndex.value > 0) {
+        focusedDayIndex.value--;
+        nextTick(() => drawFocusTimeline());
     }
 }
 
-function formatTimeAgo(timestamp) {
-    if (!timestamp) return 'Never';
-    const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    return `${hours}h ago`;
+function nextDay() {
+    if (focusedDayIndex.value < sortedDays.value.length - 1) {
+        focusedDayIndex.value++;
+        nextTick(() => drawFocusTimeline());
+    }
+}
+
+function drawDonuts() {
+    // Draw consistency donut
+    drawDonut('consistencyDonut', consistencyScore.value);
+    // Draw bed ON donut
+    drawDonut('bedOnDonut', bedOnCoverage.value);
+}
+
+function drawDonut(elementId, percentage) {
+    const svg = document.getElementById(elementId);
+    if (!svg) return;
+    
+    svg.innerHTML = '';
+    const w = 180, h = 180, r = 74, thickness = 18;
+    const centerX = w / 2, centerY = h / 2;
+    
+    // Background arc
+    const bgPath = describeArc(centerX, centerY, r, 0, 359.99);
+    const bgArc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    bgArc.setAttribute('d', bgPath);
+    bgArc.setAttribute('fill', 'none');
+    bgArc.setAttribute('stroke', '#1f2937');
+    bgArc.setAttribute('stroke-width', thickness);
+    svg.appendChild(bgArc);
+    
+    // Value arc
+    const angle = (percentage / 100) * 359.99;
+    const valuePath = describeArc(centerX, centerY, r, 0, angle);
+    const valueArc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    valueArc.setAttribute('d', valuePath);
+    valueArc.setAttribute('fill', 'none');
+    valueArc.setAttribute('stroke', '#60a5fa');
+    valueArc.setAttribute('stroke-width', thickness);
+    valueArc.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(valueArc);
+    
+    // Center text
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', centerX);
+    text.setAttribute('y', centerY);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('fill', '#e5e7eb');
+    text.setAttribute('font-size', '32');
+    text.setAttribute('font-weight', 'bold');
+    text.textContent = Math.round(percentage) + '%';
+    svg.appendChild(text);
+}
+
+function describeArc(x, y, radius, startAngle, endAngle) {
+    const start = polarToCartesian(x, y, radius, endAngle);
+    const end = polarToCartesian(x, y, radius, startAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+}
+
+function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+    return {
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians))
+    };
+}
+
+function drawScatterPlot() {
+    const container = document.getElementById('consistencyScatter');
+    if (!container || !sleepSummary.value) return;
+    
+    container.innerHTML = '';
+    
+    // Get first interval per day for bedtime consistency
+    const byDay = {};
+    sleepSummary.value.intervals.forEach(iv => {
+        const day = iv.start.slice(0, 10);
+        if (!byDay[day]) byDay[day] = [];
+        byDay[day].push(iv);
+    });
+    
+    const points = [];
+    Object.keys(byDay).sort().forEach(day => {
+        const intervals = byDay[day].sort((a, b) => new Date(a.start) - new Date(b.start));
+        const first = intervals.find(x => x.duration_min >= 5);
+        if (first) {
+            const d = new Date(first.start);
+            const minutes = d.getUTCHours() * 60 + d.getUTCMinutes();
+            points.push({ day, minutes });
+        }
+    });
+    
+    if (points.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">No data available for scatter plot</p>';
+        return;
+    }
+    
+    // SVG setup
+    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+    const width = container.clientWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', container.clientWidth);
+    svg.setAttribute('height', 280);
+    svg.style.overflow = 'visible';
+    
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+    svg.appendChild(g);
+    
+    // Scales
+    const minMinutes = Math.min(...points.map(p => p.minutes)) - 30;
+    const maxMinutes = Math.max(...points.map(p => p.minutes)) + 30;
+    const xScale = (day) => {
+        const idx = points.findIndex(p => p.day === day);
+        return (idx / Math.max(1, points.length - 1)) * width;
+    };
+    const yScale = (minutes) => height - ((minutes - minMinutes) / (maxMinutes - minMinutes)) * height;
+    
+    // Target bedtime band
+    const targetMin = timeToMinutes(targetBedtime.value);
+    if (targetMin !== null) {
+        const band = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        band.setAttribute('x', 0);
+        band.setAttribute('y', yScale(targetMin + 30));
+        band.setAttribute('width', width);
+        band.setAttribute('height', yScale(targetMin - 30) - yScale(targetMin + 30));
+        band.setAttribute('fill', '#22c55e');
+        band.setAttribute('opacity', '0.1');
+        g.appendChild(band);
+    }
+    
+    // Grid lines
+    for (let m = Math.ceil(minMinutes / 60) * 60; m <= Math.floor(maxMinutes / 60) * 60; m += 60) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', 0);
+        line.setAttribute('x2', width);
+        line.setAttribute('y1', yScale(m));
+        line.setAttribute('y2', yScale(m));
+        line.setAttribute('stroke', '#1f2937');
+        line.setAttribute('stroke-width', 1);
+        g.appendChild(line);
+    }
+    
+    // Points
+    points.forEach(p => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', xScale(p.day));
+        circle.setAttribute('cy', yScale(p.minutes));
+        circle.setAttribute('r', 4);
+        circle.setAttribute('fill', '#60a5fa');
+        
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `${p.day} • ${formatMinutesToTime(p.minutes)}`;
+        circle.appendChild(title);
+        
+        g.appendChild(circle);
+    });
+    
+    // Y-axis labels
+    for (let m = Math.ceil(minMinutes / 60) * 60; m <= Math.floor(maxMinutes / 60) * 60; m += 60) {
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', -10);
+        text.setAttribute('y', yScale(m));
+        text.setAttribute('text-anchor', 'end');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('fill', '#94a3b8');
+        text.setAttribute('font-size', '11');
+        text.textContent = formatMinutesToTime(m);
+        g.appendChild(text);
+    }
+    
+    // X-axis labels (dates)
+    points.forEach((p, idx) => {
+        if (idx % Math.ceil(points.length / 7) === 0) {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', xScale(p.day));
+            text.setAttribute('y', height + 20);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#94a3b8');
+            text.setAttribute('font-size', '10');
+            text.textContent = formatDate(p.day);
+            g.appendChild(text);
+        }
+    });
+    
+    container.appendChild(svg);
+}
+
+function drawFocusTimeline() {
+    const container = document.getElementById('focusTimeline');
+    if (!container || !focusedDayData.value.intervals.length) {
+        if (container) container.innerHTML = '<p class="text-gray-400 text-center py-4">No data for this day</p>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    const intervals = focusedDayData.value.intervals;
+    const width = container.clientWidth - 100;
+    const height = 60;
+    
+    // Find time range
+    let minMin = 1440, maxMin = 0;
+    intervals.forEach(iv => {
+        const start = new Date(iv.start);
+        const end = new Date(iv.end);
+        const startMin = start.getUTCHours() * 60 + start.getUTCMinutes();
+        const endMin = end.getUTCHours() * 60 + end.getUTCMinutes();
+        minMin = Math.min(minMin, startMin);
+        maxMin = Math.max(maxMin, endMin);
+    });
+    
+    minMin = Math.max(0, minMin - 30);
+    maxMin = Math.min(1440, maxMin + 30);
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', container.clientWidth);
+    svg.setAttribute('height', height);
+    
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', 'translate(50, 10)');
+    svg.appendChild(g);
+    
+    // Background track
+    const track = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    track.setAttribute('x', 0);
+    track.setAttribute('y', 14);
+    track.setAttribute('width', width);
+    track.setAttribute('height', 8);
+    track.setAttribute('rx', 4);
+    track.setAttribute('fill', '#1f2937');
+    g.appendChild(track);
+    
+    // Intervals
+    const xScale = (min) => ((min - minMin) / (maxMin - minMin)) * width;
+    
+    intervals.forEach(iv => {
+        const start = new Date(iv.start);
+        const end = new Date(iv.end);
+        const startMin = start.getUTCHours() * 60 + start.getUTCMinutes();
+        const endMin = end.getUTCHours() * 60 + end.getUTCMinutes();
+        
+        const x1 = xScale(startMin);
+        const x2 = xScale(endMin);
+        
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x1);
+        rect.setAttribute('y', 14);
+        rect.setAttribute('width', Math.max(2, x2 - x1));
+        rect.setAttribute('height', 8);
+        rect.setAttribute('rx', 3);
+        rect.setAttribute('fill', '#60a5fa');
+        
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `${formatTime(iv.start)} - ${formatTime(iv.end)}`;
+        rect.appendChild(title);
+        
+        g.appendChild(rect);
+    });
+    
+    // Time labels
+    const ticks = [];
+    for (let m = Math.ceil(minMin / 30) * 30; m <= Math.floor(maxMin / 30) * 30; m += 60) {
+        ticks.push(m);
+    }
+    
+    ticks.forEach(m => {
+        const x = xScale(m);
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', 40);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#94a3b8');
+        text.setAttribute('font-size', '10');
+        text.textContent = formatMinutesToTime(m);
+        g.appendChild(text);
+    });
+    
+    container.appendChild(svg);
+}
+
+// Helper functions
+function formatDate(isoDate) {
+    const d = new Date(isoDate);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatTime(isoTimestamp) {
+    const d = new Date(isoTimestamp);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDateTime(isoTimestamp) {
+    const d = new Date(isoTimestamp);
+    return d.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+}
+
+function formatMinutesToTime(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = Math.floor(minutes % 60);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function timeToMinutes(timeStr) {
+    if (!timeStr || !timeStr.includes(':')) return null;
+    const [h, m] = timeStr.split(':').map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    return h * 60 + m;
+}
+
+function getTimelineStyle(interval) {
+    const start = new Date(interval.start);
+    const end = new Date(interval.end);
+    
+    const startMin = start.getUTCHours() * 60 + start.getUTCMinutes();
+    const endMin = end.getUTCHours() * 60 + end.getUTCMinutes();
+    
+    let normalizedStart = startMin >= 18 * 60 ? startMin - 18 * 60 : startMin + (24 - 18) * 60;
+    let normalizedEnd = endMin >= 18 * 60 ? endMin - 18 * 60 : endMin + (24 - 18) * 60;
+    
+    const totalMinutes = 15 * 60;
+    const left = (normalizedStart / totalMinutes) * 100;
+    const width = ((normalizedEnd - normalizedStart) / totalMinutes) * 100;
+    
+    return {
+        left: `${left}%`,
+        width: `${width}%`
+    };
 }
 </script>

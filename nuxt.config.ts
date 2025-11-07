@@ -24,8 +24,8 @@ export default defineNuxtConfig({
       name: "Calmea",
       short_name: "Calmea",
       description: "PWA Nuxt Prototype",
-      theme_color: "#ebe4e0",
-      background_color: "#ebe4e0",
+      theme_color: "#F4F4F5",
+      background_color: "#F4F4F5",
       icons: [
         {
           src: "/icons/144_icon.png",
