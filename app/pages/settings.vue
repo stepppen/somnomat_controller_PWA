@@ -33,7 +33,7 @@
                 </div>
             </primitives-container>
         </div>
-            <div class="main-container">
+        <div class="main-container">
             <!-- Device Selector -->
             <primitives-container>
                 <label class="block text-sm mb-2">Your Device</label>
@@ -46,6 +46,39 @@
                 </div>
             </primitives-container>
         </div>
+        <div class="main-container">
+            <!-- Device Selector -->
+            <primitives-container>
+                <label class="block text-sm mb-2">Over the Air Update</label>
+                    <button @click="sendCommand('OTA')" 
+                    class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
+                        Update Device
+                    </button>
+            </primitives-container>
+        </div>
+            <!-- Debug Panel -->
+            <div class="main-container">
+                <primitives-container>
+                    <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold">Debug Info</h3>
+                    <button @click="loadDebug" class="text-sm bg-slate-200 px-3 py-1 rounded hover:bg-slate-600">
+                        Refresh
+                    </button>
+                    </div>
+
+                    <div class="text-xs text-gray-400 mb-2">
+                    API Endpoint: {{ apiBase }}
+                    </div>
+
+                    <details class="text-sm">
+                    <summary class="cursor-pointer text-gray-400 hover:text-gray-300">
+                        Show Debug Data
+                    </summary>
+                    <pre v-if="debugData" class="mt-2 p-2 bg-slate-200 rounded text-xs overflow-auto max-h-96">{{ JSON.stringify(debugData, null, 2) }}</pre>
+                    <p v-else class="mt-2 text-gray-500">No debug data loaded</p>
+                    </details>
+                </primitives-container>
+            </div>
     </div>
 </template>
 

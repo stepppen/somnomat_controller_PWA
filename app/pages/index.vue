@@ -213,24 +213,6 @@
                     <div id="focusTimeline" class="w-full" style="height: 80px"></div>
                 </primitives-container>
             </div>
-            <div class="main-container">
-                <!-- Bed Power Events -->
-                <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">Recent Bed Activity</h2>
-                    <div class="space-y-2 max-h-64 overflow-y-auto">
-                        <div v-for="(event, idx) in recentEvents" :key="idx"
-                             class="flex items-center justify-between p-3 bg-white-900 rounded">
-                            <span class="text-sm text-blackray-400">
-                                {{ formatDateTime(event.timestamp) }}
-                            </span>
-                            <span :class="event.event.includes('ON->OFF') ? 'text-red-400' : 'text-blackreen-400'"
-                                  class="font-medium text-sm">
-                                {{ event.event === 'OFF->ON' ? '🟢 Bed ON' : '🔴 Bed OFF' }}
-                            </span>
-                        </div>
-                    </div>
-                </primitives-container>
-            </div>
             
 
             <!-- Empty State -->
@@ -263,9 +245,11 @@
 
 <script setup>
 const config = useRuntimeConfig();
-const apiBase = config.public.apiBase;
+const apiBase = "http://0.0.0.0:10000"
+// const apiBase = config.public.apiBase;
 
 const sleepSummary = ref(null);
+const totalDevices = ref(null);
 const lastUpdate = ref('Never');
 const loading = ref(false);
 const error = ref('');
@@ -296,7 +280,7 @@ const qualityColor = computed(() => {
 
 const consistencyScore = computed(() => {
     if (!sleepSummary.value) return 0;
-    const intervals = sleepSummary.value.intervals;
+    const intervals = sleepSummary.value.summary.intervals;
     if (intervals.length < 2) return 100;
     
     const startTimes = intervals.map(iv => {
@@ -313,8 +297,10 @@ const consistencyScore = computed(() => {
 
 const consistencySdMin = computed(() => {
     if (!sleepSummary.value) return 0;
-    const intervals = sleepSummary.value.intervals;
-    if (intervals.length < 2) return 0;
+    const intervals = sleepSummary.value.summary.intervals;
+    if (!intervals || !Array.isArray(intervals) || intervals.length < 2) {
+        return 0;
+    }
     
     const startTimes = intervals.map(iv => {
         const d = new Date(iv.start);
@@ -342,7 +328,6 @@ const consistencyBadgeClass = computed(() => {
 });
 
 const bedOnCoverage = computed(() => {
-    // Simplified calculation - in real app would calculate from events
     return Math.round(75 + Math.random() * 20);
 });
 
@@ -372,7 +357,7 @@ const dailyTimeline = computed(() => {
     if (!sleepSummary.value) return {};
     
     const timeline = {};
-    sleepSummary.value.intervals.forEach(interval => {
+    sleepSummary.value.summary.intervals.forEach(interval => {
         const day = interval.start.slice(0, 10);
         if (!timeline[day]) {
             timeline[day] = { intervals: [], totalMin: 0, awakenings: 0 };
@@ -415,10 +400,6 @@ const focusedDayCoverage = computed(() => {
     return Math.round(70 + Math.random() * 25);
 });
 
-const recentEvents = computed(() => {
-    if (!sleepSummary.value?.events) return [];
-    return sleepSummary.value.events.slice(-10).reverse();
-});
 
 const suggestions = computed(() => {
     if (!sleepSummary.value) return [];
@@ -429,19 +410,19 @@ const suggestions = computed(() => {
     if (summary.avg_sleep_per_night_hours >= 7.5) {
         suggestions.push({
             type: 'good',
-            title: '✅ Great sleep duration',
+            title: 'Great sleep duration',
             message: `You're averaging ${summary.avg_sleep_per_night_hours.toFixed(1)} hours per night. Keep it up!`
         });
     } else if (summary.avg_sleep_per_night_hours >= 6.5) {
         suggestions.push({
             type: 'warning',
-            title: '⚠️ Sleep duration below ideal',
+            title: 'Sleep duration below ideal',
             message: 'Try going to bed 30 minutes earlier to reach 7-9 hours of sleep.'
         });
     } else {
         suggestions.push({
             type: 'warning',
-            title: '⚠️ Insufficient sleep',
+            title: 'Insufficient sleep',
             message: 'You need more sleep. Aim for at least 7 hours per night for optimal health.'
         });
     }
@@ -517,7 +498,7 @@ async function loadData() {
     error.value = '';
     
     try {
-        const testRes = await fetch(`${apiBase}/test`);
+        const testRes = await fetch(`${apiBase}/debug`);
         if (!testRes.ok) {
             error.value = 'Backend not responding. Make sure main.py is running on port 10000.';
             loading.value = false;
@@ -527,24 +508,33 @@ async function loadData() {
         const devicesRes = await fetch(`${apiBase}/devices`);
         if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
         
-        const devicesData = await devicesRes.json();
-        const devices = devicesData.devices || [];
+        totalDevices.value = await devicesRes.json();
+        const targetDevice = totalDevices.value.data.find(d => d.device_id === 'esp32-bed-002');
+        deviceId.value = targetDevice?.device_id || null;
+        console.log("device:", deviceId.value)
         
-        if (devices.length === 0) {
-            error.value = 'No devices found. Run: python test_esp32.py';
-            loading.value = false;
-            return;
-        }
-        
-        deviceId.value = devices[0].device_id;
-        
+        // if (devices.length === 0) {
+        //     error.value = 'No devices found. Run: python test_esp32.py';
+        //     loading.value = false;
+        //     return;
+        // }
+
+        totalDevices.value = devicesRes
+        // console.log(`${apiBase}/sleep/${deviceId.value}/summary`)
+
+
         const sleepRes = await fetch(`${apiBase}/sleep/${deviceId.value}/summary`);
+        // const sleepdata = await sleepRes.json();
+        // console.log(sleepdata)
         if (!sleepRes.ok) {
             const errorText = await sleepRes.text();
             throw new Error(`HTTP ${sleepRes.status}: ${errorText}`);
         }
         
-        sleepSummary.value = await sleepRes.json();
+        const sleepdata = await sleepRes.json();
+        console.log(sleepdata);
+        sleepSummary.value = sleepdata;
+        console.log(sleepSummary.value.summary.intervals)
         lastUpdate.value = new Date().toLocaleTimeString();
     } catch (err) {
         console.error('Error loading data:', err);
