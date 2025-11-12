@@ -245,8 +245,7 @@
 
 <script setup>
 const config = useRuntimeConfig();
-const apiBase = "http://0.0.0.0:10000"
-// const apiBase = config.public.apiBase;
+const apiBase = config.public.apiBase;
 
 const sleepSummary = ref(null);
 const totalDevices = ref(null);
