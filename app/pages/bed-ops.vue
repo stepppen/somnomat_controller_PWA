@@ -8,30 +8,33 @@
         <div class="main-container">
                 <primitives-container>
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div v-for="device in devices" :key="device.device_id">
+                        <div>
                             <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h2 class="text-xl font-bold">{{ device.custom_name || 'Unnamed Device' }}</h2>
-                                    <p class="text-sm text-gray-400">{{ device.device_id }}</p>
+                                <div v-if="targetDevice">
+                                    <h2 class="text-xl font-bold">{{ targetDevice.custom_name || 'Unnamed Device' }}</h2>
+                                    <p class="text-sm text-gray-400">{{ targetDevice.device_id }}</p>
                                 </div>
-                                <span :class="['px-2 py-1 rounded text-xs font-medium',
-                                            device.status === 'online' ? 'bg-green-600' : 'bg-gray-600']">
-                                    {{ device.status || 'unknown' }}
+                                <span v-if="targetDevice" :class="['px-2 py-1 rounded text-xs font-medium',
+                                            targetDevice.status === 'online' ? 'bg-green-600' : 'bg-gray-600']">
+                                    {{ targetDevice.status || 'unknown' }}
                                 </span>
                             </div>
 
-                            <div class="pt-3 text-xs text-gray-500">
-                                Last seen: {{ formatTimeAgo(device.last_seen) }}
+                            <div v-if="targetDevice" class="pt-3 text-xs text-gray-500" >
+                                Last seen: {{ formatTimeAgo(targetDevice.last_seen) }}
                             </div>
                         </div>
                     </div>
                 </primitives-container>
         </div>
-        <div class="main-container">
+        <div class="main-container" >
                     <!-- Control Panel -->
                      <primitives-container>
                          <h2 class="text-xl font-bold mb-4">Controls</h2>
                          <div class="grid grid-cols-3 gap-3">
+                              <button class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition" @click="playBack">
+                                Play Sound 
+                            </button>
                              <button @click="sendCommand('on')" 
                                      class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
                                  Power ON
@@ -46,7 +49,7 @@
                              </button>
                          </div>
                         <!-- Motor Speed -->
-                        <div class="pt-4">
+                        <div class="pt-4" >
                             <label class="block text-sm mb-2">Motor Speed: {{ motorSpeed }}%</label>
                             <input v-model.number="motorSpeed" type="range" min="0" max="100" 
                                    @change="sendCommand('motor_speed', {speed: motorSpeed})"
@@ -70,33 +73,32 @@
                     </primitives-container>
             </div>
             <div class="main-container">
-                <div v-if="selectedDevice">
+                <div v-if="targetDevice">
                     <!-- Device Status -->
                     <primitives-container>
                         <h2 class="text-xl font-bold mb-4">Device Status</h2>
                         <div class="grid grid-cols-2 gap-4">
                             <primitives-nestedContainer>
                                 <div class="text-sm text-gray-400">Temperature</div>
-                                <div class="text-2xl font-bold">{{ deviceData?.temperature || '–' }}°C</div>
+                                <div class="text-2xl font-bold">{{ targetDevice?.temperature || '–' }}°C</div>
                             </primitives-nestedContainer>
                             <primitives-nestedContainer>
                                 <div class="text-sm text-gray-400">Motor Status</div>
-                                <div class="text-2xl font-bold">{{ deviceData?.motor_status || '–' }}</div>
+                                <div class="text-2xl font-bold">{{ targetDevice?.motor_status || '–' }}</div>
                             </primitives-nestedContainer>
                             <primitives-nestedContainer>
                                 <div class="text-sm text-gray-400">SD Storage</div>
-                                <div class="text-2xl font-bold">{{ deviceData?.sd_free_storage || '–' }} GB</div>
+                                <div class="text-2xl font-bold">{{ targetDevice?.sd_free_storage || '–' }} GB</div>
                             </primitives-nestedContainer>
                             <primitives-nestedContainer>
                                 <div class="text-sm text-gray-400">Status</div>
-                                <div class="text-2xl font-bold capitalize">{{ deviceData?.status || '–' }}</div>
+                                <div class="text-2xl font-bold capitalize">{{ targetDevice?.status || '–' }}</div>
                             </primitives-nestedContainer>
                         </div>
                     </primitives-container>
                 </div>
                 <div v-else class="bg-slate-800 rounded-lg p-12 text-center">
-                        <div class="text-6xl mb-4">🎮</div>
-                        <p class="text-gray-400">Select a device to start controlling it</p>
+                        <p class="text-gray-400">No device selected</p>
                     </div>
             </div>
             
@@ -104,8 +106,14 @@
 </template>
 
 <script setup>
+const playBack = () => {
+  const audio = new Audio('/audio/example.wav')
+  audio.volume = 0.25
+  audio.play()
+}
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
+
 const route = useRoute();
 const debugData = ref(null);
 
@@ -115,70 +123,79 @@ const deviceData = ref(null);
 const lastEcho = ref(null);
 const motorSpeed = ref(50);
 const commandStatus = ref(null);
-
+const sleepSummary = ref(null);
+const targetDevice = ref(null);
+const lastUpdate = ref('Never');
+const totalDevices = ref(null);
+const deviceId = ref('');
 let refreshInterval = null;
+const loading = ref(false);
+const error = ref('');
 
+// Lifecycle
 onMounted(async () => {
-    await loadDevices();
+    await loadData();
     
-    // Check if device is pre-selected from URL query parameter
-    const deviceFromQuery = route.query.device;
-    if (deviceFromQuery && devices.value.some(d => d.device_id === deviceFromQuery)) {
-        selectedDevice.value = deviceFromQuery;
-        await loadDevice();
-    } else if (devices.value.length > 0) {
-        selectedDevice.value = devices.value[0].device_id;
-        await loadDevice();
-    }
-    
-    // Refresh every 5 seconds - REFRESH BOTH devices list AND selected device
     refreshInterval = setInterval(async () => {
-        await loadDevices(); // ← Add this line to refresh the devices list
-        if (selectedDevice.value) {
-            await loadDevice();
-        } else if (devices.value.length > 0) {
-            // Auto-select first device if none selected
-            selectedDevice.value = devices.value[0].device_id;
-            await loadDevice();
-        }
-    }, 5000);
+        await loadData();
+    }, 30000);
+    
+    // Load saved bedtime preference
+    // const saved = localStorage.getItem('targetBedtime');
+    // if (saved) targetBedtime.value = saved;
 });
 
 onUnmounted(() => {
     if (refreshInterval) clearInterval(refreshInterval);
 });
 
-async function loadDevices() {
+// Methods
+async function loadData() {
+    loading.value = true;
+    error.value = '';
+    
     try {
-        const res = await fetch(`${apiBase}/devices`);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const testRes = await fetch(`${apiBase}/debug`);
+        if (!testRes.ok) {
+            error.value = 'Backend not responding. Make sure main.py is running on port 10000.';
+            loading.value = false;
+            return;
         }
         
-        const data = await res.json();
-        devices.value = data.devices || [];
-    } catch (error) {
-        console.error('Error loading devices:', error);
-        showCommandStatus('Failed to load devices', 'error');
+        const devicesRes = await fetch(`${apiBase}/devices`);
+        if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
+        
+        totalDevices.value = await devicesRes.json();
+        targetDevice.value = totalDevices.value.data.find(d => d.device_id === 'esp32-bed-002');
+        deviceId.value = targetDevice?.device_id || null;
+        console.log("device:", targetDevice.value.custom_name)
+
+
+        totalDevices.value = devicesRes
+        // console.log(`${apiBase}/sleep/${deviceId.value}/summary`)
+
+
+        const sleepRes = await fetch(`${apiBase}/sleep/${deviceId.value}/summary`);
+        // const sleepdata = await sleepRes.json();
+        // console.log(sleepdata)
+        if (!sleepRes.ok) {
+            const errorText = await sleepRes.text();
+            throw new Error(`HTTP ${sleepRes.status}: ${errorText}`);
+        }
+        
+        const sleepdata = await sleepRes.json();
+        console.log(sleepdata);
+        sleepSummary.value = sleepdata;
+        console.log(sleepSummary.value.summary.intervals)
+        lastUpdate.value = new Date().toLocaleTimeString();
+    } catch (err) {
+        console.error('Error loading data:', err);
+        error.value = err.message;
+    } finally {
+        loading.value = false;
     }
 }
 
-async function loadDevice() {
-    if (!selectedDevice.value) return;
-    
-    try {
-        const res = await fetch(`${apiBase}/devices/${selectedDevice.value}`);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        deviceData.value = await res.json();
-    } catch (error) {
-        console.error('Error loading device:', error);
-    }
-}
 
 async function sendCommand(command, payload = {}) {
     try {

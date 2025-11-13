@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   ssr: false,
   
   css: ['./app/assets/css/main.css'],
-  
+
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE
@@ -17,6 +17,7 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+
   modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
   pwa: {
     registerType: 'autoUpdate',
