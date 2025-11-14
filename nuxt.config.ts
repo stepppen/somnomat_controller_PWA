@@ -68,10 +68,10 @@ export default defineNuxtConfig({
   app: {
     head: {
       link: [
-        { rel: 'icon', type: 'image/png', sizes: '64x64', href: '/pwa-64x64.png' },
-        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/pwa-192x192.png' },
-        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/pwa-512x512.png' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }
+        { rel: 'icon', type: 'image/png', sizes: '64x64', href: '/icons/pwa-64x64.png' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/icons/pwa-192x192.png' },
+        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/icons/pwa-512x512.png' },
+        { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon-180x180.png' }
       ],
       meta: [
         { 
