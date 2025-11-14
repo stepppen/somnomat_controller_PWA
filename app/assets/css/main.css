@@ -5,17 +5,35 @@
     margin: 0;
 }
 
+:root {
+/* light mode */
+  --primary-bg-body: #F2F2F2;
+  --primary-bg-container: #FFFFFF;
+  --primary-contrast: #00033D;
+  --gradient-start: #0600AB;
+  --gradient-end: #977DFF;
+
+  /* dark mode */
+/* --primary-bg-body: #F2F2F2;
+--primary-bg-container: #FFFFFF;
+--primary-contrast: #00033D;
+--gradient-start: #0600AB;
+--gradient-end: #977DFF; */
+
+}
+
 html {
     overflow-x: hidden;
     width: 100%;
 }
 
 body {
-    background-color: rgb(245, 244, 244);
+    background-color: var(--primary-bg-body);
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
 }
+
 
 #__nuxt {
     overflow-x: hidden;
@@ -23,8 +41,8 @@ body {
 }
 
 html, body, #__nuxt {
-  min-height: 100vh;  /* ensures at least full screen */
-  height: auto;       /* grows beyond that if content overflows */
+  min-height: 100vh; 
+  height: auto;     
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -73,14 +91,13 @@ html, body, #__nuxt {
   background-color: rgb(240, 240, 240);
   white-space: nowrap;
   font-size: 1rem;
-  -webkit-tap-highlight-color: transparent; /* Prevent blue flash on iOS */
-  touch-action: manipulation; /* Ensure taps are recognized immediately */
-  transition: background-color 0.15s ease-in-out; /* Smooth transition */
+  -webkit-tap-highlight-color: transparent; 
+  touch-action: manipulation; 
+  transition: background-color 0.15s ease-in-out; 
 }
 
-/* 👇 This will now trigger on mobile when pressed */
 button.pressed {
-  background-color: rgb(226 232 240) !important; /* slate-300 */
+  background-color: rgb(226 232 240) !important; 
 }
 
 h1 {

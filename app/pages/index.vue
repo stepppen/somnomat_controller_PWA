@@ -493,7 +493,7 @@ onMounted(async () => {
     
     refreshInterval = setInterval(async () => {
         await loadData();
-    }, 30000);
+    }, 600000); //10 mins
     
     // Load saved bedtime preference
     const saved = localStorage.getItem('targetBedtime');
@@ -658,7 +658,7 @@ function drawScatterPlot() {
     
     // Get first interval per day for bedtime consistency
     const byDay = {};
-    sleepSummary.value.intervals.forEach(iv => {
+    sleepSummary.value.summary.intervals.forEach(iv => {
         const day = iv.start.slice(0, 10);
         if (!byDay[day]) byDay[day] = [];
         byDay[day].push(iv);
