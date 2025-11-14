@@ -199,12 +199,12 @@ async function loadData() {
 
 async function sendCommand(command, payload = {}) {
     try {
-        console.log("device_id: ", deviceId.value)
+        console.log("device_id: ", targetDevice.value)
         const res = await fetch(`${apiBase}/commands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                device_id: deviceId.value.toString(),
+                device_id: targetDevice.value.toString(),
                 command: command.toString(),
                 payload: payload
             })
