@@ -1,13 +1,25 @@
 <template>
   <Transition name="fade">
     <div v-if="showSplash" class="splash-screen">
-      <img src="/icons/pwa-512x512.png" alt="Logo" class="splash-logo" />
+      <img 
+        src="/icons/144_icon.png" 
+        alt="Logo" 
+        class="splash-logo"
+        @error="handleImageError"
+      />
+      <p v-if="imageError" style="color: white;">Image failed to load</p>
     </div>
   </Transition>
 </template>
 
 <script setup>
 const showSplash = ref(false)
+const imageError = ref(false)
+
+const handleImageError = () => {
+  console.error('Image failed to load')
+  imageError.value = true
+}
 
 onMounted(() => {
   const hasShownSplash = sessionStorage.getItem('hasShownSplash')
@@ -22,44 +34,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style scoped>
-.splash-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh; 
-  background: #00033D;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.splash-logo {
-  width: 192px;
-  height: 192px;
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

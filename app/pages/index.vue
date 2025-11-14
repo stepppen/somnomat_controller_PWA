@@ -491,9 +491,10 @@ const suggestions = computed(() => {
 onMounted(async () => {
     await loadData();
     
-    refreshInterval = setInterval(async () => {
-        await loadData();
-    }, 600000); //10 mins
+    //only update on GET request
+    // refreshInterval = setInterval(async () => {
+    //     await loadData();
+    // }, 600000); //10 mins
     
     // Load saved bedtime preference
     const saved = localStorage.getItem('targetBedtime');
