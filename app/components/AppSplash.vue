@@ -1,6 +1,8 @@
 <template>
   <Transition name="fade">
     <div v-if="showSplash" class="splash-screen">
+
+
       <img 
         src="/icons/144_icon.png" 
         alt="Logo" 
@@ -23,6 +25,7 @@ const handleImageError = () => {
 
 onMounted(() => {
   const hasShownSplash = sessionStorage.getItem('hasShownSplash')
+  console.log("splash screen active")
   
   if (!hasShownSplash) {
     showSplash.value = true
