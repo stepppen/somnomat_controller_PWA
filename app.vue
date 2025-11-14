@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppSplash />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
