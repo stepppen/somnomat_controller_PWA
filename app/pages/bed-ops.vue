@@ -203,7 +203,7 @@ async function sendCommand(command, payload = {}) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                device_id: selectedDevice.value,
+                device_id: deviceId.value,
                 command: command,
                 payload: payload
             })
