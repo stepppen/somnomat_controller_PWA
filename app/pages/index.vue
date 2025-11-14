@@ -4,7 +4,7 @@
             <h2>Home</h2>
         </div>
     </div>
-    <div v-if="sleepSummary" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4">
         <div class="main-container">
             <!-- Preferences Section -->
             <primitives-container>
@@ -36,14 +36,19 @@
                                     Sleep Consistency
                                     <span class="text-xs text-blackray-500" title="Uses the START of the first ≥5-min occupied interval per day (UTC). Lower SD = more consistent.">ℹ️</span>
                                 </div>
-                                <svg :id="'consistencyDonut'" width="180" height="180"></svg>
+                                    <svg :id="'consistencyDonut'" width="180" height="180"></svg>
                             </div>
-                            <div>
+                            <div v-if="sleepSummary">
                                 <div class="text-2xl font-bold text-blackray-100">
                                     {{ consistencySdMin }} <span class="text-sm text-blackray-400">min SD</span>
                                 </div>
                                 <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', consistencyBadgeClass]">
                                     {{ consistencyLabel }}
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div class="text-2xl font-bold text-blackray-100">
+                                     <span class="text-sm text-blackray-400">Can't find device</span>
                                 </div>
                             </div>
                         </div>
@@ -55,14 +60,22 @@
                                     Bed ON while Occupied
                                     <span class="text-xs text-black" title="Percentage of time bed was ON during occupied periods">ℹ️</span>
                                 </div>
+                                <div >
+
+                                </div>
                                 <svg :id="'bedOnDonut'" width="180" height="180"></svg>
                             </div>
-                            <div>
+                            <div v-if="sleepSummary">
                                 <div class="text-2xl font-bold text-blackray-100">
                                     {{ bedOnCoverage }}%
                                 </div>
                                 <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', bedOnBadgeClass]">
                                     {{ bedOnLabel }}
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div class="text-2xl font-bold text-blackray-100">
+                                     <span class="text-sm text-blackray-400">Can't find device</span>
                                 </div>
                             </div>
                         </div>
@@ -73,7 +86,7 @@
                 <!-- KPI Summary Cards -->
                 <primitives-container>
                     <h2 class="text-xl font-bold mb-4">Summary (Last 7 Days)</h2>
-                    <div class="grid md:grid-cols-3 gap-6">
+                    <div v-if="sleepSummary" class="grid md:grid-cols-3 gap-6">
                         <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
                             <div class="text-sm text-blackray-400 mb-2">Total Time Occupied</div>
                             <div class="text-3xl font-bold text-blue-400">
@@ -104,13 +117,18 @@
                             </div>
                         </div>
                     </div>
+                    <div v-else>
+                        <div class="text-2xl font-bold text-blackray-100">
+                                <span class="text-sm text-blackray-400">Can't find device</span>
+                        </div>
+                    </div>
                 </primitives-container>
             </div>
             <div class="main-container">
                 <!-- Suggestions -->
                 <primitives-container>
                     <h2 class="text-xl font-bold mb-4">💡 Personalized Suggestions</h2>
-                    <div class="space-y-4">
+                    <div v-if="sleepSummary" class="space-y-4">
                         <div v-for="(suggestion, idx) in suggestions" :key="idx"
                              class="p-4 rounded-lg"
                              :class="suggestion.type === 'good' ? 'bg-green-900/20 border border-green-700' : 
@@ -124,6 +142,11 @@
                             <div class="text-sm text-blackray-300">
                                 {{ suggestion.message }}
                             </div>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <div class="text-2xl font-bold text-blackray-100">
+                                <span class="text-sm text-blackray-400">Can't find device</span>
                         </div>
                     </div>
                 </primitives-container>
@@ -237,9 +260,9 @@
             </div> -->
 
             <!-- Footer -->
-            <div class="mt-6 text-center text-sm text-blackray-500">
+            <!-- <div class="mt-6 text-center text-sm text-blackray-500">
                 Auto-refresh every 30 seconds • Last update: {{ lastUpdate }}
-            </div>
+            </div> -->
             </div>
 </template>
 
