@@ -1,7 +1,7 @@
 <template>
   <Transition name="fade">
     <div v-if="showSplash" class="splash-screen">
-      <img src="/pwa-512x512.png" alt="Logo" class="splash-logo" />
+      <img src="/icons/pwa-512x512.png" alt="Logo" class="splash-logo" />
     </div>
   </Transition>
 </template>
@@ -18,7 +18,7 @@ onMounted(() => {
     
     setTimeout(() => {
       showSplash.value = false
-    }, 2000)
+    }, 3000)
   }
 })
 </script>
@@ -30,8 +30,8 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Better mobile support */
-  background: #ffffff; /* Match your theme_color */
+  height: 100dvh; 
+  background: var(--primary-contrast);
   display: flex;
   align-items: center;
   justify-content: center;
