@@ -11,8 +11,8 @@
                         <div>
                             <div class="flex justify-between items-start mb-4">
                                 <div v-if="targetDevice">
-                                    <h2 class="text-xl font-bold">{{ targetDevice.custom_name || 'Unnamed Device' }}</h2>
-                                    <p class="text-sm text-gray-400">{{ targetDevice.device_id }}</p>
+                                    <h2 class="text-xl font-bold">{{ targetDevice.name || 'Unnamed Device' }}</h2>
+                                    <p class="text-sm text-gray-400">{{ targetDevice.id }}</p>
                                 </div>
                                 <span v-if="targetDevice" :class="['px-2 py-1 rounded text-xs font-medium',
                                             targetDevice.status === 'online' ? 'bg-green-600' : 'bg-gray-600']">
@@ -166,9 +166,9 @@ async function loadData() {
         if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
         
         totalDevices.value = await devicesRes.json();
-        targetDevice.value = totalDevices.value.data.find(d => d.device_id === 'esp32-bed-002');
-        deviceId.value = targetDevice?.device_id || null;
-        console.log("device:", targetDevice.value.custom_name)
+        targetDevice.value = totalDevices.value.data.find(d => d.id === 999);
+        deviceId.value = (targetDevice?.id).toString() || null;
+        console.log("device:", targetDevice.value.name)
 
 
         totalDevices.value = devicesRes
@@ -204,7 +204,7 @@ async function sendCommand(command, payload = {}) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                device_id: targetDevice.value.device_id.toString(),
+                device_id: targetDevice.value.id.toString(),
                 command: command.toString(),
                 payload: payload
             })
