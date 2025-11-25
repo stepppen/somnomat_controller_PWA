@@ -9,7 +9,7 @@
     <div class="pb-24">
       <slot />
     </div>
-    <div class="fixed bottom-0 left-0 right-0 bg-white">
+    <div class="fixed bottom-10 left-5 right-5">
       <TabBar />
     </div>
   </div>

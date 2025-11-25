@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     ],
   },
 
-  modules: ['nuxt-mdi', '@vite-pwa/nuxt'],
+  modules: ['nuxt-mdi', '@vite-pwa/nuxt', '@nuxt/icon'],
   pwa: {
     registerType: 'autoUpdate',
     manifest: {

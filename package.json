@@ -11,6 +11,7 @@
     "generate:pwa": "pwa-assets-generator --config pwa-assets.config.ts"
   },
   "dependencies": {
+    "@nuxt/icon": "^2.1.0",
     "@tailwindcss/vite": "^4.1.16",
     "@vite-pwa/nuxt": "^1.0.7",
     "d3": "^7.9.0",
