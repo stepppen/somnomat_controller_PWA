@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     ],
   },
 
-  modules: ['nuxt-mdi', '@vite-pwa/nuxt', '@nuxt/icon'],
+  modules: ['nuxt-mdi', '@vite-pwa/nuxt', '@nuxt/icon', '@nuxt/fonts', '@nuxtjs/google-fonts'],
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
@@ -64,6 +64,12 @@ export default defineNuxtConfig({
       enabled: true,
       type: "module",
     },
+  },
+  googleFonts: {
+    families: {
+      Poppins: [300, 400, 500],
+      Montserrat: [300, 400, 500]
+    }
   },
   app: {
     head: {

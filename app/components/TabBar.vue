@@ -71,7 +71,7 @@ watch (
     display: flex;
     position: relative;
     background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 1rem;
+    border-radius: 4rem;
     padding: 4px;
     height: 3.2rem;
     cursor: pointer;
@@ -93,7 +93,7 @@ watch (
     justify-content: center;
     height: 100%;
     padding: 0 4px;
-    border-radius: 25px;
+    border-radius: 4rem;
     white-space: nowrap;
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -120,7 +120,7 @@ watch (
     top: 4px;
     height: calc(100% - 8px);
     background: var(--primary-contrast);
-    border-radius: 1rem;
+    border-radius: 4rem;
     box-shadow: 
         0 2px 8px rgba(0, 0, 0, 0.15),
         0 1px 3px rgba(0, 0, 0, 0.1);
