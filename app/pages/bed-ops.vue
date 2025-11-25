@@ -53,72 +53,23 @@
                 </div>
             </div>
         </div>
-        <div class="main-container" >
+        <div class="main-container flex flex-col gap-4" >
                     <!-- Control Panel -->
                      <primitives-container>
-                         <h2 class="text-xl font-bold mb-4">Controls</h2>
-                         <div class="grid grid-cols-3 gap-3">
-                              <button class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition" @click="playBack">
-                                Play Sound 
-                            </button>
-                             <button @click="sendCommand('meditation')" 
-                                     class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
-                                 Meditation
-                             </button>
-                         </div>
-                        <!-- Motor Speed -->
-                        <div class="pt-4" >
-                            <label class="block text-sm mb-2">Motor Speed: {{ motorSpeed }}%</label>
-                            <input v-model.number="motorSpeed" type="range" min="0" max="100" 
-                                   @change="sendCommand('motor_speed', {speed: motorSpeed})"
-                                   class="w-full accent-blue-600">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex flex-col gap-2">
+                                <h3>Intensity</h3>
+                                <USlider size="xl" :default-value="50" />
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <h3>Vibration</h3>
+                                <USlider size="xl" :default-value="50" />
+                            </div>
                         </div>
                      </primitives-container>
-
-                    <primitives-container v-if="lastEcho">
-                        <!-- Last Command Echo -->
-                        <div  class="mt-4 p-3 bg-slate-700 rounded">
-                            <div class="text-sm text-gray-400">Last Command Echo:</div>
-                            <pre class="text-xs text-green-400 mt-1">{{ JSON.stringify(lastEcho, null, 2) }}</pre>
-                        </div>
-    
-                        <!-- Command Status -->
-                        <div v-if="commandStatus" class="mt-4 p-3 rounded"
-                             :class="commandStatus.type === 'error' ? 'bg-red-900/50 text-red-300' : 'bg-green-900/50 text-green-300'">
-                            <div class="text-sm">{{ commandStatus.message }}</div>
-                        </div>
-
-                    </primitives-container>
+                     <PrimitivesFullButton navIcon="material-symbols:spa-outline-rounded" buttonText="Meditation Mode"/>
             </div>
-            <div class="main-container">
-                <div v-if="targetDevice">
-                    <!-- Device Status -->
-                    <primitives-container>
-                        <h2 class="text-xl font-bold mb-4">Device Status</h2>
-                        <div class="grid grid-cols-2 gap-4">
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">Temperature</div>
-                                <div class="text-2xl font-bold">{{ targetDevice?.temperature || '–' }}°C</div>
-                            </primitives-nestedContainer>
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">Motor Status</div>
-                                <div class="text-2xl font-bold">{{ targetDevice?.motor_status || '–' }}</div>
-                            </primitives-nestedContainer>
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">SD Storage</div>
-                                <div class="text-2xl font-bold">{{ targetDevice?.sd_free_storage || '–' }} GB</div>
-                            </primitives-nestedContainer>
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">Status</div>
-                                <div class="text-2xl font-bold capitalize">{{ targetDevice?.status || '–' }}</div>
-                            </primitives-nestedContainer>
-                        </div>
-                    </primitives-container>
-                </div>
-                <div v-else class="bg-slate-800 rounded-lg p-12 text-center">
-                        <p class="text-gray-400">No device selected</p>
-                    </div>
-            </div>
+
             
     </div>
 </template>
@@ -142,7 +93,7 @@ const lastEcho = ref(null);
 const motorSpeed = ref(50);
 const commandStatus = ref(null);
 const sleepSummary = ref(null);
-const targetDevice = ref(null);
+const targetDevice = ref("not null");
 const lastUpdate = ref('Never');
 const totalDevices = ref(null);
 const deviceId = ref('');

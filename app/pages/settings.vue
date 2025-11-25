@@ -93,6 +93,35 @@
                 </primitives-container>
             </div>
     </div>
+                <div class="main-container">
+                <div v-if="targetDevice">
+                    <!-- Device Status -->
+                    <primitives-container>
+                        <h2 class="text-xl font-bold mb-4">Device Status</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <primitives-nestedContainer>
+                                <div class="text-sm text-gray-400">Temperature</div>
+                                <div class="text-2xl font-bold">{{ targetDevice?.temperature || '–' }}°C</div>
+                            </primitives-nestedContainer>
+                            <primitives-nestedContainer>
+                                <div class="text-sm text-gray-400">Motor Status</div>
+                                <div class="text-2xl font-bold">{{ targetDevice?.motor_status || '–' }}</div>
+                            </primitives-nestedContainer>
+                            <primitives-nestedContainer>
+                                <div class="text-sm text-gray-400">SD Storage</div>
+                                <div class="text-2xl font-bold">{{ targetDevice?.sd_free_storage || '–' }} GB</div>
+                            </primitives-nestedContainer>
+                            <primitives-nestedContainer>
+                                <div class="text-sm text-gray-400">Status</div>
+                                <div class="text-2xl font-bold capitalize">{{ targetDevice?.status || '–' }}</div>
+                            </primitives-nestedContainer>
+                        </div>
+                    </primitives-container>
+                </div>
+                <div v-else class="bg-slate-800 rounded-lg p-12 text-center">
+                        <p class="text-gray-400">No device selected</p>
+                    </div>
+            </div>
 </template>
 
 <script setup>
