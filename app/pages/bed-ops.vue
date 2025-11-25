@@ -1,31 +1,57 @@
 <template>
-    <div class="main-container py-4">
-        <div class="main-flex-container">
-            <h2>Bed Operation</h2>
+    <div class="main-container py-4 flex justify-between w-full">
+        <div>
+            <h2 class="text-left">Bed Operation</h2>
         </div>
+        <div class="flex gap-4">
+            <div class="nav-button"
+            @click="navigateTo('/')"
+            :class="{active: currentPath === 'home'}">
+                <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
+            </div>
+            <div class="nav-button"
+            @click="navigateTo('/')"
+            :class="{active: currentPath === 'home'}">
+                <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
+            </div>
+        </div>
+        
     </div>
     <div class="flex flex-col gap-4">
-        <div class="main-container">
-                <primitives-container>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div>
-                            <div class="flex justify-between items-start mb-4">
-                                <div v-if="targetDevice">
-                                    <h2 class="text-xl font-bold">{{ targetDevice.name || 'Unnamed Device' }}</h2>
-                                    <p class="text-sm text-gray-400">{{ targetDevice.id }}</p>
-                                </div>
-                                <span v-if="targetDevice" :class="['px-2 py-1 rounded text-xs font-medium',
-                                            targetDevice.status === 'online' ? 'bg-green-600' : 'bg-gray-600']">
-                                    {{ targetDevice.status || 'unknown' }}
-                                </span>
-                            </div>
-
-                            <div v-if="targetDevice" class="pt-3 text-xs text-gray-500" >
-                                Last seen: {{ formatTimeAgo(targetDevice.last_seen) }}
-                            </div>
-                        </div>
-                    </div>
-                </primitives-container>
+        <div class="main-container w-full flex justify-center pt-16">
+            <div class="flex flex-col gap-2 align-items-center justify-center">
+                <div v-if="targetDevice">
+                    <h3 class="text-xl font-bold">{{ targetDevice.name || 'Unnamed Device' }}</h3>
+                </div>
+                <div class="flex justify-center gap-2">
+                    <span v-if="targetDevice" :class="['px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium',
+                                targetDevice.status === 'online' ? 'online' : 'bg-gray-600']">
+                        <p class="p-small">
+                            {{ targetDevice.status || 'unknown' }}
+                        </p>
+                    </span>
+                      <USwitch
+                        v-model="isOn"
+                        unchecked-icon="material-symbols:mode-off-on"
+                        checked-icon="material-symbols:mode-off-on"
+                        size="xl"
+                        color="primary"
+                        @update:modelValue="handleToggle"
+                        default-value
+                    />
+                </div>
+            </div>
+        </div>
+        <div class="main-container w-full flex justify-center pt-16">
+            <div class="flex flex-col gap-1 w-3/4 opacity-20">
+                <div class="h-5 w-14 rounded-full bg-(--gradient-start)"></div>
+                <div class="h-8 w-full rounded-t-xl bg-(--gradient-start)"> </div>
+                <div class="h-4 w-full bg-(--gradient-start)"> </div>
+                <div class="flex justify-between px-4">
+                    <div class="h-4 w-4 bg-(--gradient-start)"></div>
+                    <div class="h-4 w-4 bg-(--gradient-start)"></div>
+                </div>
+            </div>
         </div>
         <div class="main-container" >
                     <!-- Control Panel -->
@@ -35,14 +61,6 @@
                               <button class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition" @click="playBack">
                                 Play Sound 
                             </button>
-                             <button @click="sendCommand('on')" 
-                                     class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
-                                 Power ON
-                             </button>
-                             <button @click="sendCommand('off')" 
-                                     class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
-                                 Power OFF
-                             </button>
                              <button @click="sendCommand('meditation')" 
                                      class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
                                  Meditation
@@ -131,6 +149,7 @@ const deviceId = ref('');
 let refreshInterval = null;
 const loading = ref(false);
 const error = ref('');
+const isOn = ref(false);
 
 // Lifecycle
 onMounted(async () => {
@@ -256,4 +275,15 @@ async function loadDebug() {
         debugData.value = { error: err.message };
     }
 }
+function handleToggle(value){
+    console.log('Toggle value:', value);
+    sendCommand(value ? "on" : "off");
+}
 </script>
+
+<style scoped>
+.online{
+    background-color: var(--light-blue);
+}
+
+</style>

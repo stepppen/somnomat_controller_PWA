@@ -1,8 +1,21 @@
 <template>
-    <div class="main-container py-4">
-        <div class="main-flex-container">
-            <h2>Home</h2>
+    <div class="main-container py-4 flex justify-between w-full">
+        <div>
+            <h2 class="text-left">Insights</h2>
         </div>
+        <div class="flex gap-4">
+            <!-- <div class="nav-button"
+            @click="navigateTo('/')"
+            :class="{active: currentPath === 'home'}">
+                <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
+            </div> -->
+            <div class="nav-button"
+            @click="navigateTo('/')"
+            :class="{active: currentPath === 'home'}">
+                <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
+            </div>
+        </div>
+        
     </div>
     <div class="flex flex-col gap-4">
         <div class="main-container">

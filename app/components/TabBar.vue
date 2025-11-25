@@ -98,6 +98,10 @@ watch (
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+.nav-button:active {
+    color: rgb(206, 206, 206);
+}
+
 .nav-button :deep(svg) {
     color: #666;
     transition: color 0.3s ease;

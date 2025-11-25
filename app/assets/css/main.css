@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
 
 * {
     box-sizing: border-box;
@@ -12,6 +13,9 @@
   --primary-contrast: #00033D;
   --gradient-start: #0600AB;
   --gradient-end: #977DFF;
+  --light-blue: #D9D8FF;
+
+  --ui-primary: var(--gradient-start);
 
   /* dark mode */
 /* --primary-bg-body: #F2F2F2;
@@ -114,13 +118,19 @@ h2 {
 
 h3 {
     font-family: "Montserrat", sans-serif;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 500;
 }
 
 p {
     font-family: "Poppins", sans-serif;
     font-size: 1rem;
+    font-weight: 300;
+}
+
+.p-small {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8rem;
     font-weight: 300;
 }
 
