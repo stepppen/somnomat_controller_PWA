@@ -19,6 +19,7 @@ export default defineNuxtConfig({
   },
 
   modules: ['nuxt-mdi', '@vite-pwa/nuxt', '@nuxt/icon', '@nuxt/fonts', '@nuxtjs/google-fonts', '@nuxt/ui'],
+
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
@@ -86,7 +87,13 @@ export default defineNuxtConfig({
         },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
-      ]
+      ],
+      htmlAttrs: {
+        class: 'light'
+      }
     }
+  },
+  ui: {
+    colorMode: false
   }
 })

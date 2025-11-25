@@ -16,6 +16,7 @@
   --light-blue: #D9D8FF;
 
   --ui-primary: var(--gradient-start);
+  color-scheme: light only;
 
   /* dark mode */
 /* --primary-bg-body: #F2F2F2;
