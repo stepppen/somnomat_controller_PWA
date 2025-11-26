@@ -1,14 +1,14 @@
 <template>
-    <div class="wide-button p-4 rounded-2xl">
-        <div class="flex justify-between align-items-center w-full">
-            <div class="flex gap-2 align-items-center">
-                <div class="bg-color-red rounded-full">
-                    <Icon :name="navIcon" style="color: black" size="2em"/>
+    <div class="wide-button p-2 rounded-2xl" @click="navigateTo(buttonPath)">
+        <div class="flex justify-between items-center w-full">
+            <div class="flex gap-2 items-center justify-center">
+                <div class="bg-[#F2F3FC] rounded-xl p-2 flex align-items-center justify-center">
+                    <Icon :name="navIcon" class="iconColor" size="1.5em"/>
                 </div>
-                <p>{{ buttonText }}</p>
+                <p class="align-bottom">{{ buttonText }}</p>
             </div>
             <div>
-                <Icon name="material-symbols:arrow-forward-ios-rounded" style="color: black" size="1.5em"/>
+                <Icon name="material-symbols:arrow-forward-ios-rounded" class="iconColor" size="1em"/>
             </div>
         </div>
         <slot></slot>
@@ -16,8 +16,9 @@
 </template>
 <script setup lang="ts">
 interface Props{
-    navIcon?: String | undefined,
-    buttonText?: String,
+    navIcon?: string | undefined,
+    buttonText?: string,
+    buttonPath?: string,
     sizeIcon?: Number | undefined
 }
 defineProps<Props>()
@@ -26,13 +27,14 @@ defineProps<Props>()
 
 </script>
 
-<style scoped>
+<style>
 .wide-button {
     background-color: white;
-    padding: 1rem;
+    padding: 0.8rem;
 }
 .wide-button:active {
-    background-color: grey;
+    background-color: rgb(236, 236, 236);
 }
+
 
 </style>

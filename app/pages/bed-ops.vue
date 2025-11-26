@@ -67,7 +67,7 @@
                             </div>
                         </div>
                      </primitives-container>
-                     <PrimitivesFullButton navIcon="material-symbols:spa-outline-rounded" buttonText="Meditation Mode"/>
+                     <PrimitivesFullButton buttonPath="/meditation" navIcon="material-symbols:spa-outline-rounded" buttonText="Meditation Mode"/>
             </div>
 
             

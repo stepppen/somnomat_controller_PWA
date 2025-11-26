@@ -2,7 +2,7 @@
   <div>
     <Transition name="fade">
       <div v-if="showSplash" class="splash-screen">
-        <img src="/icons/144_icon.png" alt="Logo" class="splash-logo" />
+        <img src="/icons/logo_dark.svg" alt="Logo" class="splash-logo" />
       </div>
     </Transition>
 
@@ -45,7 +45,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #F2F2F2;
+  background-color: var(--primary-contrast);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -54,12 +54,12 @@ onMounted(() => {
 }
 
 .splash-logo {
-  width: 144px;
-  height: 144px;
-  animation: pulse 2s ease-in-out infinite;
+  width: 100px;
+  height: 100px;
+  /* animation: pulse 2s ease-in-out infinite; */
 }
 
-@keyframes pulse {
+/* @keyframes pulse {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
@@ -68,7 +68,7 @@ onMounted(() => {
     opacity: 0.8;
     transform: scale(1.05);
   }
-}
+} */
 
 .fade-enter-active,
 .fade-leave-active {

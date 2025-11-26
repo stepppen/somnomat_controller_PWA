@@ -4,6 +4,8 @@
 * {
     box-sizing: border-box;
     margin: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none
 }
 
 :root {
@@ -16,8 +18,9 @@
   --light-blue: #D9D8FF;
 
   --ui-primary: var(--gradient-start);
+  --ui-secondary: var(--primary-bg-container);
   color-scheme: light only;
-
+  
   /* dark mode */
 /* --primary-bg-body: #F2F2F2;
 --primary-bg-container: #FFFFFF;
@@ -37,6 +40,10 @@ body {
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 
@@ -138,4 +145,9 @@ p {
 svg {
     max-width: 100%;
     height: auto;
+}
+
+.iconColor{
+    color: #707288;
+    background-color: #707288;
 }

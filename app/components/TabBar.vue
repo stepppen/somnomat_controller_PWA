@@ -50,7 +50,7 @@ watch (
     (newPath) => {
         if (newPath === '/'){
             currentPath.value = "home"
-        } else if (newPath === '/bed-ops'){
+        } else if (newPath === '/bed-ops' || newPath === '/meditation'){
             currentPath.value = "bed-ops"
         } else {
             currentPath.value = "settings"

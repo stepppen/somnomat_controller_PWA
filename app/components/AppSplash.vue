@@ -1,6 +1,5 @@
 <template>
   <div class="splash-screen">
-    <p style="color: black; font-size: 24px;">SPLASH SCREEN TEST</p>
     <img 
       src="/icons/144_icon.png" 
       alt="Logo" 
@@ -9,14 +8,6 @@
   </div>
 </template>
 
-<script setup>
-console.log('=== AppSplash component loaded ===')
-
-onMounted(() => {
-  console.log('=== AppSplash mounted ===')
-})
-</script>
-
 <style scoped>
 .splash-screen {
   position: fixed;
@@ -24,7 +15,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #F2F2F2;
+  background-color: var(--primary-contrast);
   display: flex;
   flex-direction: column;
   justify-content: center;
