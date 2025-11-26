@@ -25,9 +25,9 @@
                 </div>
                 <div class="flex justify-center gap-2">
                     <span v-if="targetDevice" :class="['px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium',
-                                targetDevice.status === 'online' ? 'online' : 'bg-gray-600']">
+                                targetDevice.status === 'online' ? 'online' : 'bg-gray-300']">
                         <p class="p-small">
-                            {{ targetDevice.status || 'unknown' }}
+                            {{ targetDevice.status || 'offline' }}
                         </p>
                     </span>
                       <USwitch
@@ -75,11 +75,7 @@
 </template>
 
 <script setup>
-const playBack = () => {
-  const audio = new Audio('/audio/example.wav')
-  audio.volume = 0.25
-  audio.play()
-}
+
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
