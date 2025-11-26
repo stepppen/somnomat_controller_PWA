@@ -22,31 +22,46 @@
             </div>
         </div>
     </div>
-    <div class="main-container flex gap-2 badge-filter">
-        <PrimitivesFilterBadge v-model="RelaxSelected" badgeIcon="material-symbols:self-improvement-rounded" badgeText="Relax" @click="filterBy()"/> 
-        <PrimitivesFilterBadge badgeIcon="material-symbols:nest-eco-leaf-outline-rounded" badgeText="Nature" />
-        <PrimitivesFilterBadge badgeIcon="material-symbols:rainy-outline" badgeText="Rain" />
-        <PrimitivesFilterBadge badgeIcon="material-symbols:waves" badgeText="Waves" />
-        <PrimitivesFilterBadge badgeIcon="material-symbols:forest-outline-rounded" badgeText="Forest" />
+    <div class="main-container flex gap-2 badge-filter py-2">
+        <PrimitivesFilterBadge :isActive="activeFilters.includes('relax')" badgeIcon="material-symbols:self-improvement-rounded" badgeText="Relax" @click="() => filterBy('relax')"/> 
+        <PrimitivesFilterBadge :isActive="activeFilters.includes('nature')" badgeIcon="material-symbols:nest-eco-leaf-outline-rounded" badgeText="Nature" @click="() => filterBy('nature')" />
+        <PrimitivesFilterBadge :isActive="activeFilters.includes('rain')" badgeIcon="material-symbols:rainy-outline" badgeText="Rain" @click="() => filterBy('rain')"/>
+        <PrimitivesFilterBadge :isActive="activeFilters.includes('waves')" badgeIcon="material-symbols:waves" badgeText="Waves" @click="() => filterBy('waves')"/>
+        <PrimitivesFilterBadge :isActive="activeFilters.includes('forest')" badgeIcon="material-symbols:forest-outline-rounded" badgeText="Forest" @click="() => filterBy('forest')"/>
     </div>
-    <div class="main-container ">
-        <primitives-container>
-                <button class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition" @click="playBack">
-                Play Sound 
-            </button>
-                <button
-                        class="bg-slate-200 active:bg-slate-300 py-3 rounded-2xl font-medium transition">
-                    Meditation
+    <div class="main-container grid grid-cols-2">
+        <primitives-container class="w-full h-full flex flex-col">
+            <div>
+                <p>Sound 01</p>
+            </div>
+            <div class=" w-full flex justify-end">
+                <button class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition w-16" @click="playBack">
+                    Play Sound 
                 </button>
+            </div>
         </primitives-container>
     </div>
 </template>
 
 <script setup>
-const RelaxSelected = ref(false)
-function filterBy(){
+const activeFilters = ref([])
 
+function filterBy(filter) {
+  const index = activeFilters.value.indexOf(filter)
+  if (index > -1) {
+    activeFilters.value.splice(index, 1)
+  } else {
+    activeFilters.value.push(filter)
+  }
 }
+
+// function filterRelax(value){
+//     console.log('Toggle value:', value);
+//     setFilter(value ? "on" : "off");
+// }
+// function setFilter(cmd) {
+//     console.log("command:", cmd)
+// }
 
 </script>
 <style scoped>
