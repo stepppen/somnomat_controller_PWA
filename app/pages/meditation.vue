@@ -29,7 +29,7 @@
         <PrimitivesFilterBadge :isActive="activeFilters.includes('waves')" badgeIcon="material-symbols:waves" badgeText="Waves" @click="() => filterBy('waves')"/>
         <PrimitivesFilterBadge :isActive="activeFilters.includes('forest')" badgeIcon="material-symbols:forest-outline-rounded" badgeText="Forest" @click="() => filterBy('forest')"/>
     </div>
-    <div v-if="filteredSounds.length > 0" class="main-container grid grid-cols-2 pt-8 ">
+    <div v-if="filteredSounds.length > 0" class="main-container grid grid-cols-2 pt-8 " :class="{'disableGrid': !isOn}">
         <primitives-container v-for="sound in filteredSounds" :key="sound.id" class="w-full h-full flex flex-col gradient-bg">
             <div>
                 <p class="text-white">{{sound.name}}</p>
@@ -45,6 +45,7 @@
             </div>
         </primitives-container>
     </div>
+    
     <div v-else class="empty-state">
         <p class="text-gray-500">No sounds found</p>
     </div>
@@ -53,6 +54,11 @@
 <script setup>
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
+const isOn = useState('isOnChecked', () => false)
+onMounted(() => {
+  console.log("isOn: ", isOn.value) 
+})
+
 
 const route = useRoute();
 const debugData = ref(null);
@@ -72,7 +78,7 @@ const deviceId = ref('');
 let refreshInterval = null;
 const loading = ref(false);
 const error = ref('');
-const isOn = ref(false);
+// const isOn = ref(false);
 const activeFilters = ref([])
 let audio = ref(null)
 
@@ -103,7 +109,9 @@ function filterBy(filter) {
 }
 
 function playBack(soundId){
-
+    if (!isOn.value){ 
+        return;
+    }
     // Grab sound using: sounds.soundId
     let rightSound = ""
 
@@ -259,5 +267,9 @@ function showCommandStatus(message, type) {
 
 .play-button-bg{
     background-color: rgba(0, 0, 0, 0.2);
+}
+
+.disableGrid{
+    opacity: 0.25;
 }
 </style>

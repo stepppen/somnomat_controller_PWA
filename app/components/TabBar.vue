@@ -26,6 +26,7 @@
 const route = useRoute()
 const router = useRouter()
 const currentPath = ref('home')
+const previousPath = ref("home")
 
 const navigateTo = (path) => {
     router.push(path)
@@ -45,16 +46,25 @@ const sliderPos = computed (() => {
     }
 })
 
+const originPath = ref("home") // The tab they came from
+
 watch (
     () => route.path,
     (newPath) => {
-        if (newPath === '/'){
-            currentPath.value = "home"
-        } else if (newPath === '/bed-ops' || newPath === '/meditation'){
-            currentPath.value = "bed-ops"
-        } else {
-            currentPath.value = "settings"
+        // Don't update originPath if navigating TO notifications
+        if (newPath !== '/notifications') {
+            if (newPath === '/'){
+                currentPath.value = "home"
+                originPath.value = "home"
+            } else if (newPath === '/bed-ops' || newPath === '/meditation'){
+                currentPath.value = "bed-ops"
+                originPath.value = "bed-ops"
+            } else {
+                currentPath.value = "settings"
+                originPath.value = "settings"
+            }
         }
+        // If on notifications, currentPath stays as originPath (doesn't change)
     }, { immediate: true }
 )
 </script>

@@ -5,7 +5,10 @@
     box-sizing: border-box;
     margin: 0;
     scrollbar-width: none;
-    -ms-overflow-style: none
+    -ms-overflow-style: none;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; 
 }
 
 :root {
@@ -19,6 +22,7 @@
 
   --ui-primary: var(--gradient-start);
   --ui-secondary: var(--primary-bg-container);
+  --ui-neutral: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 0%);
   color-scheme: light only;
   
   /* dark mode */

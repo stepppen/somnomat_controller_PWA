@@ -10,7 +10,7 @@
                 <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
             </div>
             <div class="nav-button"
-            @click="navigateTo('/')"
+            @click="navigateTo('/notifications')"
             :class="{active: currentPath === 'home'}">
                 <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
             </div>
@@ -58,12 +58,38 @@
                      <primitives-container>
                         <div class="flex flex-col gap-2">
                             <div class="flex flex-col gap-2">
-                                <h3>Intensity</h3>
-                                <USlider size="xl" :default-value="50" />
+                                <div class="flex w-full justify-between">
+                                    <h3>Intensity</h3>
+                                    <div class="flex gap-1">
+                                        <h3>
+                                            {{ valueIntensity }}
+                                        </h3>
+                                        <h3 class="opacity-40">
+                                             / 8
+                                        </h3>
+                                    </div>
+                                </div>
+                                <USlider color="primary" :disabled="!isOn" class="custom-sider" size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
+                                    root: isOn ? '' : 'opacity-25',
+                                    thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                    track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
                             </div>
                             <div class="flex flex-col gap-2">
-                                <h3>Vibration</h3>
-                                <USlider size="xl" :default-value="50" />
+                                <div class="flex w-full justify-between">
+                                    <h3>Vibration</h3>
+                                    <div class="flex gap-1">
+                                        <h3>
+                                            {{ valueVibration }}
+                                        </h3>
+                                        <h3 class="opacity-40">
+                                             / 8
+                                        </h3>
+                                    </div>
+                                </div>
+                                <USlider :disabled="!isOn" class="custom-sider" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
+                                    root: isOn ? '' : 'opacity-25',
+                                    thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                    track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
                             </div>
                         </div>
                      </primitives-container>
@@ -75,7 +101,8 @@
 </template>
 
 <script setup>
-
+const valueIntensity = ref(0)
+const valueVibration = ref(0)
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
@@ -96,7 +123,9 @@ const deviceId = ref('');
 let refreshInterval = null;
 const loading = ref(false);
 const error = ref('');
-const isOn = ref(false);
+
+// const isOn = ref(false);
+const isOn = useState('isOnChecked', () => false)
 
 // Lifecycle
 onMounted(async () => {
@@ -223,6 +252,7 @@ async function loadDebug() {
     }
 }
 function handleToggle(value){
+    isOn.value = value
     console.log('Toggle value:', value);
     sendCommand(value ? "on" : "off");
 }
@@ -231,6 +261,10 @@ function handleToggle(value){
 <style scoped>
 .online{
     background-color: var(--light-blue);
+}
+
+.custom-sider :deep(.slider-track){ 
+    background: var(--ui-neutral);
 }
 
 </style>
