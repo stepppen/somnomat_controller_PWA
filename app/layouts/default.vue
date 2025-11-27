@@ -2,7 +2,7 @@
   <div>
     <Transition name="fade">
       <div v-if="showSplash" class="splash-screen">
-        <img src="/icons/logo_dark.svg" alt="Logo" class="splash-logo" />
+        <img src="/icons/logo_light.svg" alt="Logo" class="splash-logo" />
       </div>
     </Transition>
 
@@ -45,7 +45,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--primary-contrast);
+  background-color: var(--primary-bg-body);
   display: flex;
   flex-direction: column;
   justify-content: center;

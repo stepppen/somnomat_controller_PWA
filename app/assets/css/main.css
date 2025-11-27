@@ -6,8 +6,8 @@
     margin: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none; /* IE 10 and IE 11 */
+    -webkit-user-select: none;
+    -ms-user-select: none; 
     user-select: none; 
 }
 
@@ -22,6 +22,7 @@
 
   --ui-primary: var(--gradient-start);
   --ui-secondary: var(--primary-bg-container);
+  --ui-warning: var(--primary-contrast);
   --ui-neutral: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 0%);
   color-scheme: light only;
   

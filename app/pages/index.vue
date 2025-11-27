@@ -16,6 +16,9 @@
         </div>
         
     </div>
+    <div class="main-container">
+        <ScopeBar />
+    </div>
     <div class="flex flex-col gap-4">
         <div class="main-container">
             <!-- Preferences Section -->
