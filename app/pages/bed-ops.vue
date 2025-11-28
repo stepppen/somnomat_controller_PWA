@@ -161,7 +161,7 @@ async function loadData() {
         if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
         
         totalDevices.value = await devicesRes.json();
-        targetDevice.value = totalDevices.value.data.find(d => d.id === 999);
+        targetDevice.value = totalDevices.value.data.find(d => d.id === 987);
         deviceId.value = (targetDevice?.id).toString() || null;
         console.log("device:", targetDevice.value.name)
 
