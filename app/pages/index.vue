@@ -17,7 +17,31 @@
         
     </div>
     <div class="main-container">
-        <ScopeBar />
+          <UTabs @update:modelValue="handleToggle" :items="items" color="warning" :ui="{ 
+            indicator: 'rounded-full',
+            list: 'bg-white rounded-full'}">
+            
+            <!-- day -->
+            <template #dayData >
+                <div class="w-full flex justify-between items-center py-4 px-4">
+                    <Icon name="material-symbols:arrow-back-ios-rounded" size="1.3em" @click="dayBack"/>
+                    <!-- <div class="p-2 bg-white rounded-full flex items-center justify-center w-10 h-10 pl-3">
+                    </div> -->
+                    <DateRange :startDate="newDateArr" :endDate="newDateArr"/>
+                    <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em" :class="{disabledButton: isToday}" @click="dayForward"/>
+                </div>
+            </template>
+
+            <!-- week -->
+            <template #weekData>
+                <DateRange :startDate="[2022, 1, 20]" :endDate="[2022, 1, 22]"/>
+            </template>
+
+            <!-- month -->
+            <template #monthData>
+                <DateRange />
+            </template>
+        </UTabs>
     </div>
     <div class="flex flex-col gap-4">
         <div class="main-container">
@@ -142,7 +166,7 @@
             <div class="main-container">
                 <!-- Suggestions -->
                 <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">💡 Personalized Suggestions</h2>
+                    <h2 class="text-xl font-bold mb-4">Personalized Suggestions</h2>
                     <div v-if="sleepSummary" class="space-y-4">
                         <div v-for="(suggestion, idx) in suggestions" :key="idx"
                              class="p-4 rounded-lg"
@@ -282,6 +306,8 @@
 </template>
 
 <script setup>
+import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
+
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
@@ -294,8 +320,102 @@ const deviceId = ref('');
 const targetBedtime = ref('22:00');
 const bedtimeSaved = ref(false);
 const focusedDayIndex = ref(0);
+let isToday = ref(true)
+
+const startWeek = ref(null)
+const endWeek = ref(null)
 
 let refreshInterval = null;
+
+
+
+const df = new DateFormatter('en-US', {
+  dateStyle: 'medium'
+})
+
+// const modelValue = shallowRef({
+//   // start: new CalendarDate(2022, 1, 20),
+//   start: new CalendarDate(startYear, startMonth, startDay),
+//   end: new CalendarDate(endYear, endMonth, endDay)
+// })
+let currentDate = today(
+    getLocalTimeZone()
+);
+let previousDate = ref(null)
+let newDate = ref([])
+let newDateArr = ref([currentDate.day, currentDate.month, currentDate.year]);
+
+// const modelValue = shallowRef({
+//   // start: new CalendarDate(2022, 1, 20),
+//   start: new CalendarDate(startDay, startMonth, startYear),
+//   end: new CalendarDate(endDay, endMonth, endYear)
+// })
+
+
+const dayArr = ref([currentDate.day, currentDate.month, currentDate.year])
+
+function handleToggle(value){
+
+    console.log('Value:', value);
+    if(value == 0){ 
+        // startWeek =
+
+        // dayArr.value = []
+        // dayArr.value.push(localDate.day)
+        // dayArr.value.push(localDate.month)
+        // dayArr.value.push(localDate.year)
+        console.log('Value:', dayArr.value);
+    }
+    else if(value == 1){ 
+
+    }
+    // isOn.value = value
+    // sendCommand(value ? "on" : "off");
+}
+
+function dayBack(){ 
+    isToday.value = false;
+    console.log("is it today in dayBack: ", isToday.value)
+    const newDate  = currentDate.subtract({ days: 1 });
+    newDateArr.value = [newDate.day, newDate.month, newDate.year ]
+    console.log("Current Date: ", newDateArr.value);
+    currentDate = newDate;
+}
+
+function dayForward(){ 
+    console.log("is it today: ", isToday.value)
+    if(isToday.value) return;
+    else { 
+        const newDate  = currentDate.add({ days: 1 });
+        newDateArr.value = [newDate.day, newDate.month, newDate.year ]
+        console.log("got here, this is isToday: ", isToday.value);
+        currentDate = newDate;
+        console.log("currentDate:", currentDate.day, "today thingy: ", today(getLocalTimeZone()).day)
+        if (currentDate.day === today(getLocalTimeZone()).day){ 
+            isToday.value = true;
+            console.log("Its the same day ");
+        }
+
+    }
+}
+
+
+
+
+const items = [
+  {
+    label: 'Day',
+    slot: 'dayData'
+  },
+  {
+    label: 'Week',
+    slot: 'weekData'
+  },
+    {
+    label: 'Month',
+    slot: 'monthData'
+  }
+]
 
 // Computed properties
 const qualityLabel = computed(() => {
@@ -936,3 +1056,11 @@ function getTimelineStyle(interval) {
     };
 }
 </script>
+
+<style scoped>
+
+.disabledButton { 
+    opacity: 0.5;
+}
+
+</style>
