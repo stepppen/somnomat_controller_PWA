@@ -23,23 +23,48 @@
             
             <!-- day -->
             <template #dayData >
-                <div class="w-full flex justify-between items-center py-4 px-4">
-                    <Icon name="material-symbols:arrow-back-ios-rounded" size="1.3em" @click="dayBack"/>
+                <div class="w-full flex justify-between items-center py-4">
+                    <div class="bg-white p-3 rounded-full flex items-center justify-center" @click="dayBack">
+                        <Icon class="" name="material-symbols:arrow-back-ios-new-rounded" size="1.3em" />
+                    </div>
                     <!-- <div class="p-2 bg-white rounded-full flex items-center justify-center w-10 h-10 pl-3">
                     </div> -->
                     <DateRange :startDate="newDateArr" :endDate="newDateArr"/>
-                    <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em" :class="{disabledButton: isToday}" @click="dayForward"/>
+                    <div class="bg-white p-3 rounded-full flex items-center justify-center" :class="{disabledButton: isToday}" @click="dayForward">
+                        <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
+
+                    </div>
                 </div>
             </template>
 
             <!-- week -->
             <template #weekData>
-                <DateRange :startDate="[2022, 1, 20]" :endDate="[2022, 1, 22]"/>
+                <div class="w-full flex justify-between items-center py-4">
+                    <div class="bg-white p-3 rounded-full flex items-center justify-center">
+                        <Icon class="" name="material-symbols:arrow-back-ios-new-rounded" size="1.3em" @click="weekBack"/>
+                    </div>
+                    <!-- <div class="p-2 bg-white rounded-full flex items-center justify-center w-10 h-10 pl-3">
+                    </div> -->
+                    <DateRange :startDate="startWeek" :endDate="endWeek"/>
+                    <div class="bg-white p-3 rounded-full flex items-center justify-center" :class="{disabledButton: isThisWeek}" @click="weekForward">
+                        <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
+                    </div>
+                </div>
             </template>
 
             <!-- month -->
             <template #monthData>
-                <DateRange />
+                <div class="w-full flex justify-between items-center py-4">
+                    <div class="bg-white p-3 rounded-full flex items-center justify-center" @click="monthBack">
+                        <Icon class="" name="material-symbols:arrow-back-ios-new-rounded" size="1.3em" />
+                    </div>
+                    <!-- <div class="p-2 bg-white rounded-full flex items-center justify-center w-10 h-10 pl-3">
+                    </div> -->
+                    <DateRange :startDate="startMonth" :endDate="endMonth"/>
+                    <div class="bg-white p-3 rounded-full flex items-center justify-center" :class="{disabledButton: isThisMonth}" @click="monthForward">
+                        <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
+                    </div>
+                </div>
             </template>
         </UTabs>
     </div>
@@ -306,7 +331,7 @@
 </template>
 
 <script setup>
-import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
+import { CalendarDate, DateFormatter, getLocalTimeZone, today, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from '@internationalized/date'
 
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
@@ -321,9 +346,11 @@ const targetBedtime = ref('22:00');
 const bedtimeSaved = ref(false);
 const focusedDayIndex = ref(0);
 let isToday = ref(true)
+let isThisWeek = ref(true)
+let isThisMonth = ref(true)
 
-const startWeek = ref(null)
-const endWeek = ref(null)
+// const startWeek = ref(null)
+// const endWeek = ref(null)
 
 let refreshInterval = null;
 
@@ -341,9 +368,35 @@ const df = new DateFormatter('en-US', {
 let currentDate = today(
     getLocalTimeZone()
 );
+
+let currentWeek = today(getLocalTimeZone());
+
+let currentMonth = today(getLocalTimeZone());
+
+
+
 let previousDate = ref(null)
 let newDate = ref([])
 let newDateArr = ref([currentDate.day, currentDate.month, currentDate.year]);
+
+
+let startWeek = ref([(startOfWeek(currentWeek, 'de-DE')).day, (startOfWeek(currentWeek, 'de-DE')).month, (startOfWeek(currentWeek, 'de-DE')).year]);
+let endWeek = ref([(endOfWeek(currentWeek, 'de-DE')).day, (endOfWeek(currentWeek, 'de-DE')).month, (endOfWeek(currentWeek, 'de-DE')).year]);
+
+
+let startMonth = ref([(startOfMonth(currentMonth, 'de-DE')).day, (startOfMonth(currentMonth, 'de-DE')).month, (startOfMonth(currentMonth, 'de-DE')).year]);
+let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(currentMonth, 'de-DE')).month, (endOfMonth(currentMonth, 'de-DE')).year]);
+
+function getThisWeek() {
+    // console.log("got here week")
+    // let start = new CalendarDate(currentDate.year, currentDate.month, currentDate.day);
+    // let end = new CalendarDate(currentDate.year, currentDate.month, currentDate.day);
+    let start = startOfWeek(currentDate, 'de-DE');
+    let end = endOfWeek(currentDate, 'de-DE');
+    // // let endOfWeek = date.endOfWeek(date, 'en-US');
+    console.log("This week start on: ", start, "and ends on: ", end)
+
+}
 
 // const modelValue = shallowRef({
 //   // start: new CalendarDate(2022, 1, 20),
@@ -373,6 +426,8 @@ function handleToggle(value){
     // sendCommand(value ? "on" : "off");
 }
 
+//for one day forward/back
+
 function dayBack(){ 
     isToday.value = false;
     console.log("is it today in dayBack: ", isToday.value)
@@ -394,6 +449,70 @@ function dayForward(){
         if (currentDate.day === today(getLocalTimeZone()).day){ 
             isToday.value = true;
             console.log("Its the same day ");
+        }
+
+    }
+}
+
+//for one week forward/back
+
+function weekBack(){ 
+    isThisWeek.value = false;
+    const newDate = currentWeek.subtract({ weeks: 1 });
+    startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
+    endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
+    console.log("newDate is: ", newDate)
+    // endWeek.subtract({ week: 1 });
+    // const newDate  = currentWeek.subtract({ week: 1 });
+    // newDateArr.value = [newDate.day, newDate.month, newDate.year ]
+    // console.log("Current Date: ", newDateArr.value);
+    currentWeek = newDate;
+}
+
+function weekForward(){ 
+    console.log("is it today: ", isThisWeek.value)
+    if(isThisWeek.value) return;
+    else { 
+        const newDate  = currentWeek.add({ weeks: 1 });
+        startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
+        endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
+        currentWeek = newDate;
+        console.log("currentWeek:", currentWeek.day, "today thingy: ", today(getLocalTimeZone()).day)
+        if (currentWeek.day === today(getLocalTimeZone()).day && currentWeek.month === today(getLocalTimeZone()).month){ 
+            isThisWeek.value = true;
+            console.log("Its the same week");
+        }
+
+    }
+}
+
+//for one month forward/back
+
+function monthBack(){ 
+    isThisMonth.value = false;
+    const newDate = currentMonth.subtract({ months: 1 });
+    startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
+    endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
+    console.log("newDate is: ", newDate)
+    // endWeek.subtract({ week: 1 });
+    // const newDate  = currentWeek.subtract({ week: 1 });
+    // newDateArr.value = [newDate.day, newDate.month, newDate.year ]
+    // console.log("Current Date: ", newDateArr.value);
+    currentMonth = newDate;
+}
+
+function monthForward(){ 
+    console.log("is it today: ", isThisMonth.value)
+    if(isThisMonth.value) return;
+    else { 
+        const newDate  = currentMonth.add({ months: 1 });
+        startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
+        endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
+        currentMonth = newDate;
+        console.log("currentMonth:", currentMonth.day, "today thingy: ", today(getLocalTimeZone()).day)
+        if (currentMonth.month === today(getLocalTimeZone()).month && currentMonth.year === today(getLocalTimeZone()).year){ 
+            isThisMonth.value = true;
+            console.log("Its the same month ");
         }
 
     }
