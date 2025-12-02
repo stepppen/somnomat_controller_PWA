@@ -1,102 +1,104 @@
 <template>
-    <div class="main-container py-4 flex justify-between w-full">
-        <div>
-            <h2 class="text-left">Bed Operation</h2>
-        </div>
-        <div class="flex gap-4">
-            <div class="nav-button"
-            @click="navigateTo('/')"
-            :class="{active: currentPath === 'home'}">
-                <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
+    <div class="max-h-[90vh]">
+        <div class="main-container py-4 flex justify-between w-full">
+            <div>
+                <h2 class="text-left">Bed Operation</h2>
             </div>
-            <div class="nav-button"
-            @click="navigateTo('/notifications')"
-            :class="{active: currentPath === 'home'}">
-                <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
-            </div>
-        </div>
-        
-    </div>
-    <div class="flex flex-col gap-4">
-        <div class="main-container w-full flex justify-center pt-16">
-            <div class="flex flex-col gap-2 align-items-center justify-center">
-                <div v-if="targetDevice">
-                    <h3 class="text-xl font-bold">{{ targetDevice.name || 'Unnamed Device' }}</h3>
+            <div class="flex gap-4">
+                <div class="nav-button"
+                @click="navigateTo('/')"
+                :class="{active: currentPath === 'home'}">
+                    <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
                 </div>
-                <div class="flex justify-center gap-2">
-                    <span v-if="targetDevice" :class="['px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium',
-                                targetDevice.status === 'online' ? 'online' : 'bg-gray-300']">
-                        <p class="p-small">
-                            {{ targetDevice.status || 'offline' }}
-                        </p>
-                    </span>
-                      <USwitch
-                        v-model="isOn"
-                        unchecked-icon="material-symbols:mode-off-on"
-                        checked-icon="material-symbols:mode-off-on"
-                        size="xl"
-                        color="primary"
-                        @update:modelValue="handleToggle"
-                        default-value
-                    />
+                <div class="nav-button"
+                @click="navigateTo('/notifications')"
+                :class="{active: currentPath === 'home'}">
+                    <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
                 </div>
             </div>
-        </div>
-        <div class="main-container w-full flex justify-center pt-16">
-            <div class="flex flex-col gap-1 w-3/4 opacity-20">
-                <div class="h-5 w-14 rounded-full bg-(--gradient-start)"></div>
-                <div class="h-8 w-full rounded-t-xl bg-(--gradient-start)"> </div>
-                <div class="h-4 w-full bg-(--gradient-start)"> </div>
-                <div class="flex justify-between px-4">
-                    <div class="h-4 w-4 bg-(--gradient-start)"></div>
-                    <div class="h-4 w-4 bg-(--gradient-start)"></div>
-                </div>
-            </div>
-        </div>
-        <div class="main-container flex flex-col gap-4" >
-                    <!-- Control Panel -->
-                     <primitives-container>
-                        <div class="flex flex-col gap-2">
-                            <div class="flex flex-col gap-2">
-                                <div class="flex w-full justify-between">
-                                    <h3>Intensity</h3>
-                                    <div class="flex gap-1">
-                                        <h3>
-                                            {{ valueIntensity }}
-                                        </h3>
-                                        <h3 class="opacity-40">
-                                             / 8
-                                        </h3>
-                                    </div>
-                                </div>
-                                <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
-                                    root: isOn ? '' : 'opacity-25',
-                                    thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
-                                    track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
-                            </div>
-                            <div class="flex flex-col gap-2">
-                                <div class="flex w-full justify-between">
-                                    <h3>Vibration</h3>
-                                    <div class="flex gap-1">
-                                        <h3>
-                                            {{ valueVibration }}
-                                        </h3>
-                                        <h3 class="opacity-40">
-                                             / 8
-                                        </h3>
-                                    </div>
-                                </div>
-                                <USlider :disabled="!isOn" class="custom-sider" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
-                                    root: isOn ? '' : 'opacity-25',
-                                    thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
-                                    track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
-                            </div>
-                        </div>
-                     </primitives-container>
-                     <PrimitivesFullButton class="p-4" buttonPath="/meditation" navIcon="material-symbols:spa-outline-rounded" buttonText="Meditation Mode"/>
-            </div>
-
             
+        </div>
+        <div class="flex flex-col gap-4">
+            <div class="main-container w-full flex justify-center pt-16">
+                <div class="flex flex-col gap-2 align-items-center justify-center">
+                    <div v-if="targetDevice">
+                        <h3 class="text-xl font-bold">{{ targetDevice.name || 'Unnamed Device' }}</h3>
+                    </div>
+                    <div class="flex justify-center gap-2">
+                        <span v-if="targetDevice" :class="['px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium',
+                                    targetDevice.status === 'online' ? 'online' : 'bg-gray-300']">
+                            <p class="p-small">
+                                {{ targetDevice.status || 'offline' }}
+                            </p>
+                        </span>
+                          <USwitch
+                            v-model="isOn"
+                            unchecked-icon="material-symbols:mode-off-on"
+                            checked-icon="material-symbols:mode-off-on"
+                            size="xl"
+                            color="primary"
+                            @update:modelValue="handleToggle"
+                            default-value
+                        />
+                    </div>
+                </div>
+            </div>
+            <div class="main-container w-full flex justify-center pt-16">
+                <div class="flex flex-col gap-1 w-3/4 opacity-20">
+                    <div class="h-5 w-14 rounded-full bg-(--gradient-start)"></div>
+                    <div class="h-8 w-full rounded-t-xl bg-(--gradient-start)"> </div>
+                    <div class="h-4 w-full bg-(--gradient-start)"> </div>
+                    <div class="flex justify-between px-4">
+                        <div class="h-4 w-4 bg-(--gradient-start)"></div>
+                        <div class="h-4 w-4 bg-(--gradient-start)"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="main-container flex flex-col gap-4" >
+                        <!-- Control Panel -->
+                         <primitives-container>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex w-full justify-between">
+                                        <h3>Intensity</h3>
+                                        <div class="flex gap-1">
+                                            <h3>
+                                                {{ valueIntensity }}
+                                            </h3>
+                                            <h3 class="opacity-40">
+                                                 / 8
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
+                                        root: isOn ? '' : 'opacity-25',
+                                        thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                        track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex w-full justify-between">
+                                        <h3>Vibration</h3>
+                                        <div class="flex gap-1">
+                                            <h3>
+                                                {{ valueVibration }}
+                                            </h3>
+                                            <h3 class="opacity-40">
+                                                 / 8
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <USlider :disabled="!isOn" class="custom-sider" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
+                                        root: isOn ? '' : 'opacity-25',
+                                        thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                        track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
+                                </div>
+                            </div>
+                         </primitives-container>
+                         <PrimitivesFullButton class="p-4" buttonPath="/meditation" navIcon="material-symbols:spa-outline-rounded" buttonText="Meditation Mode"/>
+                </div>
+    
+                
+        </div>
     </div>
 </template>
 
@@ -129,6 +131,7 @@ const isOn = useState('isOnChecked', () => false)
 
 // Lifecycle
 onMounted(async () => {
+    document.body.style.overflow = 'hidden'
     await loadData();
     
     refreshInterval = setInterval(async () => {
@@ -141,6 +144,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+    document.body.style.overflow = ''
     if (refreshInterval) clearInterval(refreshInterval);
 });
 
