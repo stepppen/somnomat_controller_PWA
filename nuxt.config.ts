@@ -19,7 +19,6 @@ export default defineNuxtConfig({
   },
 
   modules: ['nuxt-mdi', '@vite-pwa/nuxt', '@nuxt/icon', '@nuxt/fonts', '@nuxtjs/google-fonts', '@nuxt/ui'],
-
   pwa: {
     registerType: 'autoUpdate',
     manifest: {

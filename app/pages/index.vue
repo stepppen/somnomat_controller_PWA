@@ -35,6 +35,7 @@
 
                     </div>
                 </div>
+                <DataOverview :startDate="newDateArr" :endDate="newDateArr" />
             </template>
 
             <!-- week -->
@@ -50,6 +51,7 @@
                         <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
                     </div>
                 </div>
+                <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
             </template>
 
             <!-- month -->
@@ -348,86 +350,30 @@ const focusedDayIndex = ref(0);
 let isToday = ref(true)
 let isThisWeek = ref(true)
 let isThisMonth = ref(true)
-
-// const startWeek = ref(null)
-// const endWeek = ref(null)
-
 let refreshInterval = null;
 
 
-
-const df = new DateFormatter('en-US', {
-  dateStyle: 'medium'
-})
-
-// const modelValue = shallowRef({
-//   // start: new CalendarDate(2022, 1, 20),
-//   start: new CalendarDate(startYear, startMonth, startDay),
-//   end: new CalendarDate(endYear, endMonth, endDay)
-// })
-let currentDate = today(
-    getLocalTimeZone()
-);
-
+let currentDate = today(getLocalTimeZone());
 let currentWeek = today(getLocalTimeZone());
-
 let currentMonth = today(getLocalTimeZone());
-
-
-
-let previousDate = ref(null)
-let newDate = ref([])
 let newDateArr = ref([currentDate.day, currentDate.month, currentDate.year]);
-
-
 let startWeek = ref([(startOfWeek(currentWeek, 'de-DE')).day, (startOfWeek(currentWeek, 'de-DE')).month, (startOfWeek(currentWeek, 'de-DE')).year]);
 let endWeek = ref([(endOfWeek(currentWeek, 'de-DE')).day, (endOfWeek(currentWeek, 'de-DE')).month, (endOfWeek(currentWeek, 'de-DE')).year]);
-
-
 let startMonth = ref([(startOfMonth(currentMonth, 'de-DE')).day, (startOfMonth(currentMonth, 'de-DE')).month, (startOfMonth(currentMonth, 'de-DE')).year]);
 let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(currentMonth, 'de-DE')).month, (endOfMonth(currentMonth, 'de-DE')).year]);
 
-function getThisWeek() {
-    // console.log("got here week")
-    // let start = new CalendarDate(currentDate.year, currentDate.month, currentDate.day);
-    // let end = new CalendarDate(currentDate.year, currentDate.month, currentDate.day);
-    let start = startOfWeek(currentDate, 'de-DE');
-    let end = endOfWeek(currentDate, 'de-DE');
-    // // let endOfWeek = date.endOfWeek(date, 'en-US');
-    console.log("This week start on: ", start, "and ends on: ", end)
-
-}
-
-// const modelValue = shallowRef({
-//   // start: new CalendarDate(2022, 1, 20),
-//   start: new CalendarDate(startDay, startMonth, startYear),
-//   end: new CalendarDate(endDay, endMonth, endYear)
-// })
+let sleepQuality = ref(82)
+let sleepComment = ref("Good Job")
+let duration = ref(82)
+let activity = ref(42)
 
 
-const dayArr = ref([currentDate.day, currentDate.month, currentDate.year])
 
 function handleToggle(value){
-
     console.log('Value:', value);
-    if(value == 0){ 
-        // startWeek =
-
-        // dayArr.value = []
-        // dayArr.value.push(localDate.day)
-        // dayArr.value.push(localDate.month)
-        // dayArr.value.push(localDate.year)
-        console.log('Value:', dayArr.value);
-    }
-    else if(value == 1){ 
-
-    }
-    // isOn.value = value
-    // sendCommand(value ? "on" : "off");
 }
 
 //for one day forward/back
-
 function dayBack(){ 
     isToday.value = false;
     console.log("is it today in dayBack: ", isToday.value)
@@ -462,10 +408,6 @@ function weekBack(){
     startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
     endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
     console.log("newDate is: ", newDate)
-    // endWeek.subtract({ week: 1 });
-    // const newDate  = currentWeek.subtract({ week: 1 });
-    // newDateArr.value = [newDate.day, newDate.month, newDate.year ]
-    // console.log("Current Date: ", newDateArr.value);
     currentWeek = newDate;
 }
 
@@ -482,22 +424,16 @@ function weekForward(){
             isThisWeek.value = true;
             console.log("Its the same week");
         }
-
     }
 }
 
 //for one month forward/back
-
 function monthBack(){ 
     isThisMonth.value = false;
     const newDate = currentMonth.subtract({ months: 1 });
     startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
     endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
     console.log("newDate is: ", newDate)
-    // endWeek.subtract({ week: 1 });
-    // const newDate  = currentWeek.subtract({ week: 1 });
-    // newDateArr.value = [newDate.day, newDate.month, newDate.year ]
-    // console.log("Current Date: ", newDateArr.value);
     currentMonth = newDate;
 }
 
