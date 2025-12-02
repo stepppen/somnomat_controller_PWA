@@ -1,13 +1,13 @@
 <template>
     <primitives-container>
-        <h1>Overview</h1>
+        <h3>Overview</h3>
         
         <div class="w-full flex items-center gap-8">
           <div class="relative w-48 h-48 flex items-center justify-center">
             <svg ref="chartSvg" :width="160" :height="160" class="absolute"></svg>
             
             <div class="relative z-10 flex flex-col items-center justify-center">
-                <p>Quality</p>
+                <p class="p-small text-gray-400">Quality</p>
                 <h1>{{ quality }}
                   <span class="text-xs text-gray-400">/100</span></h1>
             </div>
@@ -15,12 +15,12 @@
 
           <div class="flex flex-col gap-6">
               <div class="flex flex-col">
-                  <h2 class="text-4xl font-bold text-[#000080]">{{ sleepDuration }}%</h2>
-                  <p class="text-gray-400">Sleep Duration</p>
+                  <h1 class="text-[#000080]">{{ sleepDuration }}%</h1>
+                  <p class="p-small text-gray-400">Sleep Duration</p>
               </div>
               <div class="flex flex-col">
-                  <h2 class="text-4xl font-bold text-[#9b87f5]">{{ bedActivity }}%</h2>
-                  <p class="text-gray-400">Bed Activity</p>
+                  <h1 class="text-[#9b87f5]">{{ bedActivity }}%</h1>
+                  <p class="p-small text-gray-400">Bed Activity</p>
               </div>
           </div>
         </div>

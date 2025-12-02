@@ -21,107 +21,34 @@
         <div class="main-container">
             <!-- Device Selector -->
             <primitives-container>
-                <label class="block text-sm mb-2">Your Account</label>
-                <div class="flex gap-4 justify-between">
-                    <div class="w-full">
-                        <ul>
-                            <li>
-                                Name: Person 01
-                            </li>
-                        </ul>
-                        <ul>
-                            <li>
-                                Name: Person 01
-                            </li>
-                        </ul>
-                        <ul>
-                            <li>
-                                Name: Person 01
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <img src="/acc_default.png" alt="acc default" width="100px">
-                    </div>
-                </div>
+                <h3>Jan Frischknecht</h3>
+                <PrimitivesFullButton buttonPath="/personal-settings" navIcon="" buttonText="email"/>
             </primitives-container>
         </div>
         <div class="main-container">
             <!-- Device Selector -->
             <primitives-container>
-                <label class="block text-sm mb-2">Your Device</label>
-                <!-- Device Info -->
-                <div class="mt-4 pt-4 border-slate-700 grid grid-cols-2 gap-2 text-sm">
-                    <div><span class="text-gray-400">MAC:</span> <p>{{ deviceData?.mac || '–' }}</p></div>
-                    <div><span class="text-gray-400">Partition:</span> <p>{{ deviceData?.partition || '–' }}</p></div>
-                    <div><span class="text-gray-400">Version:</span> <p>{{ deviceData?.version_factory || '–' }}</p></div>
-                    <div><span class="text-gray-400">Last Seen:</span> <p>{{ formatTime(deviceData?.last_seen) }}</p></div>
-                </div>
+                <h3>App Settings</h3>
+                <PrimitivesFullButton buttonPath="/bed-time" navIcon="material-symbols:alarm-outline-rounded" buttonText="Adjust Bed Time"/>
+                <PrimitivesFullButton buttonPath="/about-app" navIcon="material-symbols:info-outline-rounded" buttonText="About App"/>
             </primitives-container>
         </div>
         <div class="main-container">
             <!-- Device Selector -->
             <primitives-container>
-                <label class="block text-sm mb-2">Over the Air Update</label>
-                    <button @click="sendCommand('OTA')" 
-                    class="bg-slate-200 active:bg-slate-300 py-3 rounded font-medium transition">
-                        Update Device
-                    </button>
+                <h3>Device Settings</h3>
+                <PrimitivesFullButton buttonPath="/device-management" navIcon="material-symbols:bigtop-updates-rounded" buttonText="Device Management"/>
+                <PrimitivesFullButton buttonPath="/debug-info" navIcon="material-symbols:privacy-tip-outline-rounded" buttonText="Debug Info"/>
             </primitives-container>
         </div>
-            <!-- Debug Panel -->
-            <div class="main-container">
-                <primitives-container>
-                    <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold">Debug Info</h3>
-                    <button @click="loadDebug" class="text-sm bg-slate-200 px-3 py-1 rounded hover:bg-slate-600">
-                        Refresh
-                    </button>
-                    </div>
-
-                    <div class="text-xs text-gray-400 mb-2">
-                    API Endpoint: {{ apiBase }}
-                    </div>
-
-                    <details class="text-sm">
-                    <summary class="cursor-pointer text-gray-400 hover:text-gray-300">
-                        Show Debug Data
-                    </summary>
-                    <pre v-if="debugData" class="mt-2 p-2 bg-slate-200 rounded text-xs overflow-auto max-h-96">{{ JSON.stringify(debugData, null, 2) }}</pre>
-                    <p v-else class="mt-2 text-gray-500">No debug data loaded</p>
-                    </details>
-                </primitives-container>
-            </div>
+        <div class="main-container">
+            <!-- Device Selector -->
+            <primitives-container>
+                <h3>Help & Info</h3>
+                <PrimitivesFullButton buttonPath="/privacy-policy" navIcon="material-symbols:spa-outline-rounded" buttonText="Privacy Policy"/>
+            </primitives-container>
+        </div>
     </div>
-                <div class="main-container">
-                <div v-if="targetDevice">
-                    <!-- Device Status -->
-                    <primitives-container>
-                        <h2 class="text-xl font-bold mb-4">Device Status</h2>
-                        <div class="grid grid-cols-2 gap-4">
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">Temperature</div>
-                                <div class="text-2xl font-bold">{{ targetDevice?.temperature || '–' }}°C</div>
-                            </primitives-nestedContainer>
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">Motor Status</div>
-                                <div class="text-2xl font-bold">{{ targetDevice?.motor_status || '–' }}</div>
-                            </primitives-nestedContainer>
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">SD Storage</div>
-                                <div class="text-2xl font-bold">{{ targetDevice?.sd_free_storage || '–' }} GB</div>
-                            </primitives-nestedContainer>
-                            <primitives-nestedContainer>
-                                <div class="text-sm text-gray-400">Status</div>
-                                <div class="text-2xl font-bold capitalize">{{ targetDevice?.status || '–' }}</div>
-                            </primitives-nestedContainer>
-                        </div>
-                    </primitives-container>
-                </div>
-                <div v-else class="bg-slate-800 rounded-lg p-12 text-center">
-                        <p class="text-gray-400">No device selected</p>
-                    </div>
-            </div>
 </template>
 
 <script setup>

@@ -30,7 +30,8 @@ defineProps<Props>()
 <style>
 .wide-button {
     background-color: white;
-    padding: 0.8rem;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
 }
 .wide-button:active {
     background-color: rgb(236, 236, 236);
