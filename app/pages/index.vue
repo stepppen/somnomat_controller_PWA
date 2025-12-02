@@ -32,10 +32,9 @@
                     <DateRange :startDate="newDateArr" :endDate="newDateArr"/>
                     <div class="bg-white p-3 rounded-full flex items-center justify-center" :class="{disabledButton: isToday}" @click="dayForward">
                         <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
-
                     </div>
                 </div>
-                <DataOverview :startDate="newDateArr" :endDate="newDateArr" />
+                <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
             </template>
 
             <!-- week -->
@@ -745,7 +744,7 @@ async function loadData() {
         }
         
         const sleepdata = await sleepRes.json();
-        console.log(sleepdata);
+        console.log("Sleep data from server: ", sleepdata);
         sleepSummary.value = sleepdata;
         console.log(sleepSummary.value.summary.intervals)
         lastUpdate.value = new Date().toLocaleTimeString();

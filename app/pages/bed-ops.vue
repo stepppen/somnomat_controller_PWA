@@ -69,7 +69,7 @@
                                         </h3>
                                     </div>
                                 </div>
-                                <USlider color="primary" :disabled="!isOn" class="custom-sider" size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
+                                <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
                                     root: isOn ? '' : 'opacity-25',
                                     thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
                                     track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
@@ -86,7 +86,7 @@
                                         </h3>
                                     </div>
                                 </div>
-                                <USlider :disabled="!isOn" class="custom-sider" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
+                                <USlider :disabled="!isOn" class="custom-sider" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
                                     root: isOn ? '' : 'opacity-25',
                                     thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
                                     track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
@@ -217,6 +217,16 @@ async function sendCommand(command, payload = {}) {
         console.error('Error sending command:', error);
         showCommandStatus(`Failed to send command: ${error.message}`, 'error');
     }
+}
+
+function sendVibration() { 
+    console.log("send vibration of: ", valueVibration.value)
+    sendCommand("vibration_", valueVibration.value)
+}
+
+function sendIntensity() { 
+    console.log("send intensity of: ", (valueIntensity.value).toString())
+    sendCommand("intensity_", (valueIntensity.value).toString())
 }
 
 function showCommandStatus(message, type) {
