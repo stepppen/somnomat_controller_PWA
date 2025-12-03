@@ -1,8 +1,11 @@
 export const useDevice = () => {
-    let globalDeviceId = useState('globalDeviceId', () => "")
+    //default ID is set to 987 (bed esp); not best practise but 
+    //removes the need to constantly enter ID by hand
+    let globalDeviceId = useState('globalDeviceId', () => "987")
     let globalDeviceName = useState('globalDeviceName', () => "")
     let globalTargetDevice = useState('globalTargetDevice', () => null)
     let globalSleepSummary = useState('globalSleepSummary', () => null)
+    let globalDeviceSettings = useState('globalDeviceSettings', () => null)
     let globalLoading = useState('globalLoading', () => false)
     let globalError = useState('globalError', () => '')
     let globalCommandStatus = useState('globalError', () => null)
@@ -38,6 +41,44 @@ export const useDevice = () => {
             if (deviceData.data && deviceData.data.length > 0) {
                 globalTargetDevice.value = deviceData.data[0];
                 console.log("Loaded device:", globalTargetDevice.value.name)
+            } else {
+                globalError.value = "Device not found";
+                return;
+            }
+
+        } catch (err) {
+            console.error('Error loading data:', err);
+            globalError.value = err.message;
+        } finally {
+            globalLoading.value = false;
+        }
+    }
+
+    const loadDeviceSettings = async () => {
+        if (!globalDeviceId.value) {
+            console.log("No device ID set");
+            return;
+        }
+        globalLoading.value = true;
+        globalError.value = '';
+        
+        try {
+            const testRes = await fetch(`${apiBase}/debug`);
+            if (!testRes.ok) {
+                globalError.value = 'Backend not responding. Make sure main.py is running on port 10000.';
+                globalLoading.value = false;
+                return;
+            }
+            
+            //fetch device settings with global state id
+            const deviceRes = await fetch(`${apiBase}/devices/${globalDeviceId.value}/settings`);
+            if (!deviceRes.ok) throw new Error(`HTTP ${deviceRes.status}`);
+            
+            const deviceSettings = await deviceRes.json();
+            
+            if (deviceSettings.data && deviceSettings.data.length > 0) {
+                globalDeviceSettings.value = deviceSettings.data[0];
+                console.log("Device settings:", globalDeviceSettings.value)
             } else {
                 globalError.value = "Device not found";
                 return;
@@ -147,6 +188,7 @@ export const useDevice = () => {
         globalDeviceName,
         globalTargetDevice, 
         globalSleepSummary,
+        globalDeviceSettings,
         globalLoading,
         globalError,
         globalCommandStatus,
@@ -155,6 +197,7 @@ export const useDevice = () => {
         // Functions
         loadDeviceData,
         loadSleepSummary,
+        loadDeviceSettings,
         sendCommand,
         showCommandStatus,
         

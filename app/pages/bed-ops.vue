@@ -103,13 +103,15 @@ const {
   globalDeviceId,
   globalDeviceName,
   globalTargetDevice,
+  globalDeviceSettings,
   isOn,
   loadDeviceData,
+  loadDeviceSettings,
   sendCommand
 } = useDevice()
 
-const valueIntensity = ref(0)
-const valueVibration = ref(0)
+const valueIntensity = ref(globalDeviceSettings.intensity ?? 0);
+const valueVibration = ref(globalDeviceSettings.vibration ?? 0)
 let refreshInterval = null;
 
 // Lifecycle
@@ -118,9 +120,14 @@ onMounted(async () => {
     document.body.style.overflow = 'hidden'
     if (globalDeviceId.value) {
         await loadDeviceData()
+        await loadDeviceSettings()
+        console.log("global target device: ", globalTargetDevice)
+        console.log("with motor status: ", globalTargetDevice.motor_status)
+        
         
         refreshInterval = setInterval(async () => {
             await loadDeviceData()
+            await loadDeviceSettings()
         }, 30000);
     }
     
