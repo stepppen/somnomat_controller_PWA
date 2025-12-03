@@ -52,33 +52,16 @@
 </template>
 
 <script setup>
-const config = useRuntimeConfig();
-const apiBase = config.public.apiBase;
-const isOn = useState('isOnChecked', () => false)
-onMounted(() => {
-  console.log("isOn: ", isOn.value) 
-})
+const { 
+  globalDeviceId,
+  isOn,
+  loadDeviceData,
+  sendCommand,
+} = useDevice()
 
-
-const route = useRoute();
-const debugData = ref(null);
 
 const isPlaying = ref(false)
-const devices = ref([]);
-const selectedDevice = ref('');
-const deviceData = ref(null);
-const lastEcho = ref(null);
-const motorSpeed = ref(50);
-const commandStatus = ref(null);
-const sleepSummary = ref(null);
-const targetDevice = ref("not null");
-const lastUpdate = ref('Never');
-const totalDevices = ref(null);
-const deviceId = ref('');
 let refreshInterval = null;
-const loading = ref(false);
-const error = ref('');
-// const isOn = ref(false);
 const activeFilters = ref([])
 let audio = ref(null)
 
@@ -118,7 +101,7 @@ function playBack(soundId){
     for (let i = 0; i < sounds.value.length; i++){ 
         if(sounds.value[i].id === soundId){ 
             rightSound = sounds.value[i].file
-            console.log("wooo: ", rightSound)
+            // console.log("wooo: ", rightSound)
         }
     }
     // const soundPath = rightSound.path
@@ -149,104 +132,21 @@ function playBack(soundId){
 
 // Lifecycle
 onMounted(async () => {
-    await loadData();
-    
-    refreshInterval = setInterval(async () => {
-        await loadData();
-    }, 30000);
-    
-    // Load saved bedtime preference
-    // const saved = localStorage.getItem('targetBedtime');
-    // if (saved) targetBedtime.value = saved;
+    if (globalDeviceId.value) {
+            await loadDeviceData()
+            
+            refreshInterval = setInterval(async () => {
+                await loadDeviceData()
+            }, 30000);
+        }
 });
 
 onUnmounted(() => {
     if (refreshInterval) clearInterval(refreshInterval);
 });
-
-// Methods
-async function loadData() {
-    loading.value = true;
-    error.value = '';
-    
-    try {
-        const testRes = await fetch(`${apiBase}/debug`);
-        if (!testRes.ok) {
-            error.value = 'Backend not responding. Make sure main.py is running on port 10000.';
-            loading.value = false;
-            return;
-        }
-        
-        const devicesRes = await fetch(`${apiBase}/devices`);
-        if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
-        
-        totalDevices.value = await devicesRes.json();
-        targetDevice.value = totalDevices.value.data.find(d => d.id === 999);
-        deviceId.value = (targetDevice?.id).toString() || null;
-        console.log("device:", targetDevice.value.name)
-
-
-        totalDevices.value = devicesRes
-        // console.log(`${apiBase}/sleep/${deviceId.value}/summary`)
-
-
-        const sleepRes = await fetch(`${apiBase}/sleep/${deviceId.value}/summary`);
-        // const sleepdata = await sleepRes.json();
-        // console.log(sleepdata)
-        if (!sleepRes.ok) {
-            const errorText = await sleepRes.text();
-            throw new Error(`HTTP ${sleepRes.status}: ${errorText}`);
-        }
-        
-        const sleepdata = await sleepRes.json();
-        console.log(sleepdata);
-        sleepSummary.value = sleepdata;
-        console.log(sleepSummary.value.summary.intervals)
-        lastUpdate.value = new Date().toLocaleTimeString();
-    } catch (err) {
-        console.error('Error loading data:', err);
-        error.value = err.message;
-    } finally {
-        loading.value = false;
-    }
-}
-
-
-async function sendCommand(command, payload = {}) {
-    try {
-        console.log("device_id: ", targetDevice.value)
-        const res = await fetch(`${apiBase}/commands`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                device_id: targetDevice.value.id.toString(),
-                command: command.toString(),
-                payload: payload
-            })
-        });
-        
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        const data = await res.json();
-        lastEcho.value = data.echo;
-        showCommandStatus(`Command '${command}' sent successfully`, 'success');
-        console.log('Command sent:', data);
-    } catch (error) {
-        console.error('Error sending command:', error);
-        showCommandStatus(`Failed to send command: ${error.message}`, 'error');
-    }
-
-}
-function showCommandStatus(message, type) {
-    commandStatus.value = { message, type };
-    setTimeout(() => {
-        commandStatus.value = null;
-    }, 5000);
-}
-
 </script>
+
+
 <style scoped>
 .badge-filter{
     overflow-x: scroll;

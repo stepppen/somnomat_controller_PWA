@@ -103,7 +103,7 @@
                                 </div>
                                     <svg :id="'consistencyDonut'" width="180" height="180"></svg>
                             </div>
-                            <div v-if="sleepSummary">
+                            <div v-if="globalSleepSummary">
                                 <div class="text-2xl font-bold text-blackray-100">
                                     {{ consistencySdMin }} <span class="text-sm text-blackray-400">min SD</span>
                                 </div>
@@ -130,7 +130,7 @@
                                 </div>
                                 <svg :id="'bedOnDonut'" width="180" height="180"></svg>
                             </div>
-                            <div v-if="sleepSummary">
+                            <div v-if="globalSleepSummary">
                                 <div class="text-2xl font-bold text-blackray-100">
                                     {{ bedOnCoverage }}%
                                 </div>
@@ -151,24 +151,24 @@
                 <!-- KPI Summary Cards -->
                 <primitives-container>
                     <h2 class="text-xl font-bold mb-4">Summary (Last 7 Days)</h2>
-                    <div v-if="sleepSummary" class="grid md:grid-cols-3 gap-6">
+                    <div v-if="globalSleepSummary" class="grid md:grid-cols-3 gap-6">
                         <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
                             <div class="text-sm text-blackray-400 mb-2">Total Time Occupied</div>
                             <div class="text-3xl font-bold text-blue-400">
                                 {{ totalOccupiedFormatted }}
                             </div>
                             <div class="text-sm text-blackray-500 mt-1">
-                                Avg {{ sleepSummary.summary.avg_sleep_per_night_hours }}h/night
+                                Avg {{ globalSleepSummary.summary.avg_sleep_per_night_hours }}h/night
                             </div>
                         </div>
 
                         <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
                             <div class="text-sm text-blackray-400 mb-2">Occupied Intervals</div>
                             <div class="text-3xl font-bold text-purple-400">
-                                {{ sleepSummary.summary.total_intervals }}
+                                {{ globalSleepSummary.summary.total_intervals }}
                             </div>
                             <div class="text-sm text-blackray-500 mt-1">
-                                {{ sleepSummary.summary.avg_awakenings_per_night.toFixed(1) }} avg awakenings
+                                {{ globalSleepSummary.summary.avg_awakenings_per_night.toFixed(1) }} avg awakenings
                             </div>
                         </div>
 
@@ -193,7 +193,7 @@
                 <!-- Suggestions -->
                 <primitives-container>
                     <h2 class="text-xl font-bold mb-4">Personalized Suggestions</h2>
-                    <div v-if="sleepSummary" class="space-y-4">
+                    <div v-if="globalSleepSummary" class="space-y-4">
                         <div v-for="(suggestion, idx) in suggestions" :key="idx"
                              class="p-4 rounded-lg"
                              :class="suggestion.type === 'good' ? 'bg-green-900/20 border border-green-700' : 
@@ -333,11 +333,24 @@
 
 <script setup>
 import { CalendarDate, DateFormatter, getLocalTimeZone, today, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from '@internationalized/date'
+const { 
+  globalDeviceId,
+  globalDeviceName,
+  globalSleepSummary,
+  globalTargetDevice,
+  globalLoading,
+  globalError,
+  globalCommandStatus,
+  isOn,
+  loadDeviceData,
+  loadSleepSummary,
+  sendCommand
+} = useDevice()
 
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
-const sleepSummary = ref(null);
+// const sleepSummary = ref(null);
 const totalDevices = ref(null);
 const lastUpdate = ref('Never');
 const loading = ref(false);
@@ -365,6 +378,38 @@ let sleepQuality = ref(82)
 let sleepComment = ref("Good Job")
 let duration = ref(82)
 let activity = ref(42)
+
+// Lifecycle
+onMounted(async () => {
+    if (globalDeviceId.value) {
+        await loadDeviceData()
+        await loadSleepSummary()
+        console.log("device id: ", globalDeviceId.value, "sleep summary: ", globalSleepSummary.value)
+        
+        refreshInterval = setInterval(async () => {
+            await loadDeviceData()
+            await loadSleepSummary()
+        }, 30000);
+    }
+    
+    // Load saved bedtime preference
+    const saved = localStorage.getItem('targetBedtime');
+    if (saved) targetBedtime.value = saved;
+});
+
+onUnmounted(() => {
+    if (refreshInterval) clearInterval(refreshInterval);
+});
+
+watch(globalSleepSummary, () => {
+    if (globalSleepSummary.value) {
+        nextTick(() => {
+            drawDonuts();
+            drawScatterPlot();
+            drawFocusTimeline();
+        });
+    }
+});
 
 
 
@@ -473,8 +518,8 @@ const items = [
 
 // Computed properties
 const qualityLabel = computed(() => {
-    if (!sleepSummary.value) return '—';
-    const avg = sleepSummary.value.summary.avg_awakenings_per_night;
+    if (!globalSleepSummary.value) return '—';
+    const avg = globalSleepSummary.value.summary.avg_awakenings_per_night;
     if (avg <= 1) return 'Excellent';
     if (avg <= 2) return 'Good';
     if (avg <= 3) return 'Fair';
@@ -490,8 +535,8 @@ const qualityColor = computed(() => {
 });
 
 const consistencyScore = computed(() => {
-    if (!sleepSummary.value) return 0;
-    const intervals = sleepSummary.value.summary.intervals;
+    if (!globalSleepSummary.value) return 0;
+    const intervals = globalSleepSummary.value.summary.intervals;
     if (intervals.length < 2) return 100;
     
     const startTimes = intervals.map(iv => {
@@ -507,8 +552,8 @@ const consistencyScore = computed(() => {
 });
 
 const consistencySdMin = computed(() => {
-    if (!sleepSummary.value) return 0;
-    const intervals = sleepSummary.value.summary.intervals;
+    if (!globalSleepSummary.value) return 0;
+    const intervals = globalSleepSummary.value.summary.intervals;
     if (!intervals || !Array.isArray(intervals) || intervals.length < 2) {
         return 0;
     }
@@ -557,18 +602,18 @@ const bedOnBadgeClass = computed(() => {
 });
 
 const totalOccupiedFormatted = computed(() => {
-    if (!sleepSummary.value) return '—';
-    const hours = sleepSummary.value.summary.total_sleep_hours;
+    if (!globalSleepSummary.value) return '—';
+    const hours = globalSleepSummary.value.summary.total_sleep_hours;
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
     return `${h}h ${m}m`;
 });
 
 const dailyTimeline = computed(() => {
-    if (!sleepSummary.value) return {};
+    if (!globalSleepSummary.value) return {};
     
     const timeline = {};
-    sleepSummary.value.summary.intervals.forEach(interval => {
+    globalSleepSummary.value.summary.intervals.forEach(interval => {
         const day = interval.start.slice(0, 10);
         if (!timeline[day]) {
             timeline[day] = { intervals: [], totalMin: 0, awakenings: 0 };
@@ -613,9 +658,9 @@ const focusedDayCoverage = computed(() => {
 
 
 const suggestions = computed(() => {
-    if (!sleepSummary.value) return [];
+    if (!globalSleepSummary.value) return [];
     
-    const summary = sleepSummary.value.summary;
+    const summary = globalSleepSummary.value.summary;
     const suggestions = [];
     
     if (summary.avg_sleep_per_night_hours >= 7.5) {
@@ -676,85 +721,7 @@ const suggestions = computed(() => {
     return suggestions;
 });
 
-// Lifecycle
-onMounted(async () => {
-    await loadData();
-    
-    //only update on GET request
-    // refreshInterval = setInterval(async () => {
-    //     await loadData();
-    // }, 600000); //10 mins
-    
-    // Load saved bedtime preference
-    const saved = localStorage.getItem('targetBedtime');
-    if (saved) targetBedtime.value = saved;
-});
 
-onUnmounted(() => {
-    if (refreshInterval) clearInterval(refreshInterval);
-});
-
-watch(sleepSummary, () => {
-    if (sleepSummary.value) {
-        nextTick(() => {
-            drawDonuts();
-            drawScatterPlot();
-            drawFocusTimeline();
-        });
-    }
-});
-
-// Methods
-async function loadData() {
-    loading.value = true;
-    error.value = '';
-    
-    try {
-        const testRes = await fetch(`${apiBase}/debug`);
-        if (!testRes.ok) {
-            error.value = 'Backend not responding. Make sure main.py is running on port 10000.';
-            loading.value = false;
-            return;
-        }
-        
-        const devicesRes = await fetch(`${apiBase}/devices`);
-        if (!devicesRes.ok) throw new Error(`HTTP ${devicesRes.status}`);
-        
-        totalDevices.value = await devicesRes.json();
-        const targetDevice = totalDevices.value.data.find(d => d.id === 987);
-        deviceId.value = (targetDevice?.id).toString() || null;
-        console.log("device:", deviceId.value)
-        
-        // if (devices.length === 0) {
-        //     error.value = 'No devices found. Run: python test_esp32.py';
-        //     loading.value = false;
-        //     return;
-        // }
-
-        totalDevices.value = devicesRes
-        // console.log(`${apiBase}/sleep/${deviceId.value}/summary`)
-
-
-        const sleepRes = await fetch(`${apiBase}/sleep/${deviceId.value}/summary`);
-        // const sleepdata = await sleepRes.json();
-        // console.log(sleepdata)
-        if (!sleepRes.ok) {
-            const errorText = await sleepRes.text();
-            throw new Error(`HTTP ${sleepRes.status}: ${errorText}`);
-        }
-        
-        const sleepdata = await sleepRes.json();
-        console.log("Sleep data from server: ", sleepdata);
-        sleepSummary.value = sleepdata;
-        console.log(sleepSummary.value.summary.intervals)
-        lastUpdate.value = new Date().toLocaleTimeString();
-    } catch (err) {
-        console.error('Error loading data:', err);
-        error.value = err.message;
-    } finally {
-        loading.value = false;
-    }
-}
 
 function saveTargetBedtime() {
     localStorage.setItem('targetBedtime', targetBedtime.value);
@@ -842,13 +809,13 @@ function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
 
 function drawScatterPlot() {
     const container = document.getElementById('consistencyScatter');
-    if (!container || !sleepSummary.value) return;
+    if (!container || !globalSleepSummary.value) return;
     
     container.innerHTML = '';
     
     // Get first interval per day for bedtime consistency
     const byDay = {};
-    sleepSummary.value.summary.intervals.forEach(iv => {
+    globalSleepSummary.value.summary.intervals.forEach(iv => {
         const day = iv.start.slice(0, 10);
         if (!byDay[day]) byDay[day] = [];
         byDay[day].push(iv);
