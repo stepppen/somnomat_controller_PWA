@@ -40,7 +40,7 @@ export const useDevice = () => {
             
             if (deviceData.data && deviceData.data.length > 0) {
                 globalTargetDevice.value = deviceData.data[0];
-                console.log("Loaded device:", globalTargetDevice.value.name)
+                console.log("Loaded device:", globalTargetDevice.value)
             } else {
                 globalError.value = "Device not found";
                 return;
@@ -75,6 +75,7 @@ export const useDevice = () => {
             if (!deviceRes.ok) throw new Error(`HTTP ${deviceRes.status}`);
             
             const deviceSettings = await deviceRes.json();
+            console.log("device settings response: ", deviceSettings)
             
             if (deviceSettings.data && deviceSettings.data.length > 0) {
                 globalDeviceSettings.value = deviceSettings.data[0];

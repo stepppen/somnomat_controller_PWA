@@ -110,8 +110,8 @@ const {
   sendCommand
 } = useDevice()
 
-const valueIntensity = ref(globalDeviceSettings.intensity ?? 0);
-const valueVibration = ref(globalDeviceSettings.vibration ?? 0)
+const valueIntensity = ref(0);
+const valueVibration = ref(0);
 let refreshInterval = null;
 
 // Lifecycle
@@ -121,8 +121,12 @@ onMounted(async () => {
     if (globalDeviceId.value) {
         await loadDeviceData()
         await loadDeviceSettings()
-        console.log("global target device: ", globalTargetDevice)
-        console.log("with motor status: ", globalTargetDevice.motor_status)
+        if (globalDeviceSettings.value) {
+            valueIntensity.value = globalDeviceSettings.value.intensity ?? 0;
+            valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
+            console.log("with motor status: ", globalDeviceSettings.value.motor_status)
+        }
+        console.log("global target device: ", globalTargetDevice.value)
         
         
         refreshInterval = setInterval(async () => {
@@ -150,13 +154,12 @@ watch(globalDeviceId, async (newId) => {
 
 
 function sendVibration() { 
-    console.log("send vibration of: ", valueVibration.value)
-    sendCommand("vibration_", valueVibration.value)
+    sendCommand("vibration_".concat((valueVibration.value).toString()))
 }
 
 function sendIntensity() { 
-    console.log("send intensity of: ", (valueIntensity.value).toString())
-    sendCommand("intensity_", (valueIntensity.value).toString())
+    sendCommand("intensity_".concat((valueIntensity.value).toString()))
+    console.log("intensity_".concat((valueIntensity.value).toString()))
 }
 
 function handleToggle(value){
