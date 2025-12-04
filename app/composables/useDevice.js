@@ -10,6 +10,8 @@ export const useDevice = () => {
     let globalError = useState('globalError', () => '')
     let globalCommandStatus = useState('globalError', () => null)
     const isOn = useState('isOnChecked', () => false)
+    let isSafety = useState('isSafetyOn', () => false)
+    
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
@@ -41,6 +43,12 @@ export const useDevice = () => {
             if (deviceData.data && deviceData.data.length > 0) {
                 globalTargetDevice.value = deviceData.data[0];
                 console.log("Loaded device:", globalTargetDevice.value)
+                console.log("Device with safety:", globalTargetDevice.value.safety)
+                if(deviceData.data.safety === 1) { 
+                    isSafety = true;
+                } else{
+                    isSafety = false;
+                }
             } else {
                 globalError.value = "Device not found";
                 return;
@@ -79,6 +87,11 @@ export const useDevice = () => {
             
             if (deviceSettings.data && deviceSettings.data.length > 0) {
                 globalDeviceSettings.value = deviceSettings.data[0];
+                if(globalDeviceSettings.value.motor_status === 1) { 
+                    isOn.value = false;
+                } else if (globalDeviceSettings.value.motor_status === 2) { 
+                    isOn.value = true;   
+                }
                 console.log("Device settings:", globalDeviceSettings.value)
             } else {
                 globalError.value = "Device not found";
@@ -194,6 +207,7 @@ export const useDevice = () => {
         globalError,
         globalCommandStatus,
         isOn,
+        isSafety,
         
         // Functions
         loadDeviceData,

@@ -30,11 +30,13 @@
         <PrimitivesFilterBadge :isActive="activeFilters.includes('forest')" badgeIcon="material-symbols:forest-outline-rounded" badgeText="Forest" @click="() => filterBy('forest')"/>
     </div>
     <div class="main-container">
-        <div v-if="!isOn" class="text-sm mt-2 bg-gray-200 rounded-2xl p-2 flex items-center justify-center gap-2">
-            <Icon name="material-symbols:info-outline-rounded" size="1em"/>
-            <p class="p-small text-center">
-                Turn on the device to start meditation mode
-            </p>
+        <div class="pt-6">
+            <div v-if="!isOn" class="text-sm bg-gray-200 rounded-2xl p-2 flex items-center justify-center gap-2">
+                <Icon name="material-symbols:info-outline-rounded" size="1em"/>
+                <p class="p-small text-center">
+                    Turn on the device to start meditation mode
+                </p>
+            </div>
         </div>
     </div>
     <div v-if="filteredSounds.length > 0" class="main-container grid grid-cols-2 pt-8 " :class="{'disableGrid': !isOn}">

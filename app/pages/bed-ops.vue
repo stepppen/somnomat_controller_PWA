@@ -13,13 +13,21 @@
                     <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
                 </div>
             </div>
-            
         </div>
+            
+        <div v-if="activateSafety" class="main-container">
+            <div class="text-sm mt-2 bg-gray-200 rounded-2xl p-2 flex items-center justify-center gap-2">
+                <Icon name="material-symbols:info-outline-rounded" size="1em"/>
+                <p class="p-small text-center">
+                    Safety mode is on
+                </p>
+            </div>
+        </div>   
         <div class="flex flex-col gap-4">
             <div class="main-container w-full flex justify-center pt-16">
                 <div class="flex flex-col gap-2 align-items-center justify-center">
                     <div v-if="globalTargetDevice">
-                        <h3 class="text-xl font-bold">{{ globalDeviceName || 'Unnamed Device' }}</h3>
+                        <h3 class="text-xl font-bold">{{ globalTargetDevice.name || 'Unnamed Device' }}</h3>
                     </div>
                     <div class="flex justify-center gap-2">
                         <span v-if="globalTargetDevice" :class="['px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium',
@@ -104,6 +112,7 @@ const {
   globalDeviceName,
   globalTargetDevice,
   globalDeviceSettings,
+  isSafety,
   isOn,
   loadDeviceData,
   loadDeviceSettings,
@@ -113,6 +122,7 @@ const {
 const valueIntensity = ref(0);
 const valueVibration = ref(0);
 let refreshInterval = null;
+let activateSafety = ref(false)
 
 // Lifecycle
 onMounted(async () => {
@@ -124,14 +134,15 @@ onMounted(async () => {
         if (globalDeviceSettings.value) {
             valueIntensity.value = globalDeviceSettings.value.intensity ?? 0;
             valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
-            console.log("with motor status: ", globalDeviceSettings.value.motor_status)
+            console.log("with safety: ", globalTargetDevice.value.safety)
+            console.log("isSafety: ", isSafety.value)
+            activateSafety.value = isSafety.value
         }
         console.log("global target device: ", globalTargetDevice.value)
         
         
         refreshInterval = setInterval(async () => {
             await loadDeviceData()
-            await loadDeviceSettings()
         }, 30000);
     }
     
@@ -153,12 +164,14 @@ watch(globalDeviceId, async (newId) => {
 
 
 
-function sendVibration() { 
+async function sendVibration() { 
     sendCommand("vibration_".concat((valueVibration.value).toString()))
+    globalTargetDevice.value.vibration = valueVibration.value
 }
 
-function sendIntensity() { 
+async function sendIntensity() { 
     sendCommand("intensity_".concat((valueIntensity.value).toString()))
+    globalTargetDevice.value.intensity = valueIntensity.value
     console.log("intensity_".concat((valueIntensity.value).toString()))
 }
 
@@ -166,6 +179,15 @@ function handleToggle(value){
     isOn.value = value
     console.log('Toggle value:', value);
     sendCommand(value ? "on" : "off");
+    if(value) { 
+        globalDeviceSettings.value.motor_status = 2;
+        sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+        console.log("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    } else { 
+        globalDeviceSettings.value.motor_status = 1;
+        sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+        console.log("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    }
 }
 </script>
 
