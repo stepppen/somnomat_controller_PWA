@@ -27,7 +27,7 @@ defineProps<Props>()
 
 </script>
 
-<style>
+<style scoped>
 .wide-button {
     background-color: white;
     padding-top: 0.8rem;

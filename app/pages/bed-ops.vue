@@ -153,12 +153,14 @@ onMounted(async () => {
             valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
             console.log("with safety: ", globalTargetDevice.value.safety)
             console.log("isSafety: ", isSafety.value)
+            //need a computed value
             activateSafety.value = isSafety.value
             motorError.value = isMotorError.value
         }
         console.log("global target device: ", globalTargetDevice.value)
         
         //Have to think this through again:
+        //needs a listen/watch
         // refreshInterval = setInterval(async () => {
         //     await loadDeviceData()
         //     await loadDeviceSettings()

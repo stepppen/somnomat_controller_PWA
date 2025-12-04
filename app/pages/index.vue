@@ -16,7 +16,7 @@
         </div>
         
     </div>
-    <div class="main-container">
+    <div class="main-container ">
           <UTabs @update:modelValue="handleToggle" :items="items" color="warning" :ui="{ 
             indicator: 'rounded-full',
             list: 'bg-white rounded-full'}">
@@ -34,7 +34,13 @@
                         <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
                     </div>
                 </div>
-                <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
+                <div v-if="globalSleepSummary" class="flex flex-col gap-4">
+                    <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
+                    <DataConsistencyChart :intervals="globalSleepSummary.summary.intervals"/>
+                    <DataSummaryCards :summary="globalSleepSummary.summary"/>
+                    <DataRecommendationsSection :summary="globalSleepSummary.summary"/>
+
+                </div>
             </template>
 
             <!-- week -->
@@ -69,238 +75,6 @@
             </template>
         </UTabs>
     </div>
-    <div class="flex flex-col gap-4">
-        <div class="main-container">
-            <!-- Preferences Section -->
-            <primitives-container>
-                <h2 class="text-xl font-bold mb-4">Preferences</h2>
-                <div class="flex gap-3 items-end flex-wrap">
-                    <div>
-                        <label for="bedtimeInput" class="block text-xs text-blackray-400 mb-1">Target Bedtime (UTC)</label>
-                        <input type="time" id="bedtimeInput" v-model="targetBedtime" step="60"
-                                class="bg-white-700 rounded px-3 py-2 text-blackray-100 border border-slate-600">
-                    </div>
-                    <button @click="saveTargetBedtime"
-                            class="bg-white-700 hover:bg-white-600 px-4 py-2 rounded transition">
-                        Save
-                    </button>
-                    <span v-if="bedtimeSaved" class="text-blackreen-400 text-sm">✓ Saved</span>
-                </div>
-                <p class="text-xs text-blackray-400 mt-2">We draw a band ±30 minutes around your target bedtime and flag points outside as outliers.</p>
-            </primitives-container>
-        </div>
-        <div class="main-container">
-                <!-- Summary Cards with Donuts -->
-                <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">Summary</h2>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <!-- Sleep Consistency Donut -->
-                        <div class="flex items-center gap-4 bg-white rounded-lg p-4 border border-slate-700">
-                            <div>
-                                <div class="text-sm font-bold text-black mb-2 flex items-center gap-2">
-                                    Sleep Consistency
-                                    <span class="text-xs text-blackray-500" title="Uses the START of the first ≥5-min occupied interval per day (UTC). Lower SD = more consistent.">ℹ️</span>
-                                </div>
-                                    <svg :id="'consistencyDonut'" width="180" height="180"></svg>
-                            </div>
-                            <div v-if="globalSleepSummary">
-                                <div class="text-2xl font-bold text-blackray-100">
-                                    {{ consistencySdMin }} <span class="text-sm text-blackray-400">min SD</span>
-                                </div>
-                                <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', consistencyBadgeClass]">
-                                    {{ consistencyLabel }}
-                                </div>
-                            </div>
-                            <div v-else>
-                                <div class="text-2xl font-bold text-blackray-100">
-                                     <span class="text-sm text-blackray-400">Can't find device</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bed ON Coverage Donut -->
-                        <div class="flex items-center gap-4 bg-white rounded-lg p-4 border border-slate-700">
-                            <div>
-                                <div class="text-sm font-bold text-black mb-2 flex items-center gap-2">
-                                    Bed ON while Occupied
-                                    <span class="text-xs text-black" title="Percentage of time bed was ON during occupied periods">ℹ️</span>
-                                </div>
-                                <div >
-
-                                </div>
-                                <svg :id="'bedOnDonut'" width="180" height="180"></svg>
-                            </div>
-                            <div v-if="globalSleepSummary">
-                                <div class="text-2xl font-bold text-blackray-100">
-                                    {{ bedOnCoverage }}%
-                                </div>
-                                <div :class="['inline-block px-3 py-1 rounded-full text-xs font-bold mt-2', bedOnBadgeClass]">
-                                    {{ bedOnLabel }}
-                                </div>
-                            </div>
-                            <div v-else>
-                                <div class="text-2xl font-bold text-blackray-100">
-                                     <span class="text-sm text-blackray-400">Can't find device</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </primitives-container>
-            </div>
-            <div class="main-container">
-                <!-- KPI Summary Cards -->
-                <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">Summary (Last 7 Days)</h2>
-                    <div v-if="globalSleepSummary" class="grid md:grid-cols-3 gap-6">
-                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-sm text-blackray-400 mb-2">Total Time Occupied</div>
-                            <div class="text-3xl font-bold text-blue-400">
-                                {{ totalOccupiedFormatted }}
-                            </div>
-                            <div class="text-sm text-blackray-500 mt-1">
-                                Avg {{ globalSleepSummary.summary.avg_sleep_per_night_hours }}h/night
-                            </div>
-                        </div>
-
-                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-sm text-blackray-400 mb-2">Occupied Intervals</div>
-                            <div class="text-3xl font-bold text-purple-400">
-                                {{ globalSleepSummary.summary.total_intervals }}
-                            </div>
-                            <div class="text-sm text-blackray-500 mt-1">
-                                {{ globalSleepSummary.summary.avg_awakenings_per_night.toFixed(1) }} avg awakenings
-                            </div>
-                        </div>
-
-                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-sm text-blackray-400 mb-2">Sleep Quality</div>
-                            <div class="text-3xl font-bold" :class="qualityColor">
-                                {{ qualityLabel }}
-                            </div>
-                            <div class="text-sm text-blackray-500 mt-1">
-                                Based on continuity
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <div class="text-2xl font-bold text-blackray-100">
-                                <span class="text-sm text-blackray-400">Can't find device</span>
-                        </div>
-                    </div>
-                </primitives-container>
-            </div>
-            <div class="main-container">
-                <!-- Suggestions -->
-                <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">Personalized Suggestions</h2>
-                    <div v-if="globalSleepSummary" class="space-y-4">
-                        <div v-for="(suggestion, idx) in suggestions" :key="idx"
-                             class="p-4 rounded-lg"
-                             :class="suggestion.type === 'good' ? 'bg-green-900/20 border border-green-700' : 
-                                     suggestion.type === 'warning' ? 'bg-yellow-900/20 border border-yellow-700' :
-                                     'bg-blue-900/20 border border-blue-700'">
-                            <div class="font-medium mb-2" :class="suggestion.type === 'good' ? 'text-blackreen-400' : 
-                                                                    suggestion.type === 'warning' ? 'text-yellow-400' :
-                                                                    'text-blue-400'">
-                                {{ suggestion.title }}
-                            </div>
-                            <div class="text-sm text-blackray-300">
-                                {{ suggestion.message }}
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <div class="text-2xl font-bold text-blackray-100">
-                                <span class="text-sm text-blackray-400">Can't find device</span>
-                        </div>
-                    </div>
-                </primitives-container>
-            </div>
-            <div class="main-container">
-                <!-- Bedtime Consistency Scatter Plot -->
-                <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">Bedtime Consistency</h2>
-                    <div id="consistencyScatter" class="w-full" style="height: 320px"></div>
-                </primitives-container>
-            </div>
-            <div class="main-container">
-                <!-- Daily Timeline -->
-                <primitives-container>
-                    <h2 class="text-xl font-bold mb-4">Daily Occupancy (UTC)</h2>
-                    <div class="space-y-3">
-                        <!-- X-axis labels -->
-                        <div class="flex items-center gap-4 mb-2">
-                            <div class="w-28"></div>
-                            <div class="flex-1 flex justify-between text-xs text-blackray-500">
-                                <span>18:00</span>
-                                <span>21:00</span>
-                                <span>00:00</span>
-                                <span>03:00</span>
-                                <span>06:00</span>
-                                <span>09:00</span>
-                            </div>
-                            <div class="w-32"></div>
-                        </div>
-                        
-                        <div v-for="(dayData, day) in dailyTimeline" :key="day" 
-                             class="flex items-center gap-4">
-                            <div class="w-28 text-sm font-bold text-blackray-300">
-                                {{ formatDate(day) }}
-                            </div>
-                            <div class="flex-1 relative h-10 bg-white-900 rounded">
-                                <div v-for="(interval, idx) in dayData.intervals" :key="idx"
-                                     class="absolute h-full bg-blue-500 rounded hover:bg-blue-400 transition cursor-pointer"
-                                     :style="getTimelineStyle(interval)"
-                                     :title="`${formatTime(interval.start)} - ${formatTime(interval.end)} (${interval.duration_min.toFixed(0)}min)`">
-                                </div>
-                            </div>
-                            <div class="w-32 text-sm text-blackray-500 text-right">
-                                {{ dayData.totalMin.toFixed(0) }}min
-                                <span v-if="dayData.awakenings > 0" class="text-orange-400 ml-2">
-                                    {{ dayData.awakenings }} ⚠
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </primitives-container>
-            </div>
-            <div class="main-container">
-                <!-- Day Focus Panel -->
-                <primitives-container>
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold">Day Focus</h2>
-                        <div class="flex gap-2">
-                            <button @click="previousDay" 
-                                    class="bg-white-700 hover:bg-white-600 px-3 py-1 rounded transition"
-                                    aria-label="Previous day">‹</button>
-                            <button @click="nextDay" 
-                                    class="bg-white-700 hover:bg-white-600 px-3 py-1 rounded transition"
-                                    aria-label="Next day">›</button>
-                        </div>
-                    </div>
-                    
-                    <div class="text-sm text-blackray-400 mb-4">
-                        Date: <span class="text-blackray-100 font-medium">{{ focusedDay }}</span>
-                    </div>
-
-                    <div class="grid md:grid-cols-3 gap-4 mb-4">
-                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-xs text-blackray-400 mb-1">Time Occupied</div>
-                            <div class="text-2xl font-bold text-blackray-100">{{ focusedDayOccupied }}</div>
-                        </div>
-                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-xs text-blackray-400 mb-1">Awakenings</div>
-                            <div class="text-2xl font-bold text-blackray-100">{{ focusedDayAwakenings }}</div>
-                        </div>
-                        <div class="bg-white-900/50 rounded-lg p-4 border border-slate-700">
-                            <div class="text-xs text-blackray-400 mb-1">Bed ON Coverage</div>
-                            <div class="text-2xl font-bold text-blackray-100">{{ focusedDayCoverage }}%</div>
-                        </div>
-                    </div>
-
-                    <div id="focusTimeline" class="w-full" style="height: 80px"></div>
-                </primitives-container>
-            </div>
             
 
             <!-- Empty State -->
@@ -328,7 +102,6 @@
             <!-- <div class="mt-6 text-center text-sm text-blackray-500">
                 Auto-refresh every 30 seconds • Last update: {{ lastUpdate }}
             </div> -->
-            </div>
 </template>
 
 <script setup>
@@ -686,19 +459,19 @@ const suggestions = computed(() => {
     if (summary.avg_awakenings_per_night <= 1) {
         suggestions.push({
             type: 'good',
-            title: '✅ Excellent sleep continuity',
+            title: 'Excellent sleep continuity',
             message: 'You have minimal awakenings. Your sleep is continuous and restorative.'
         });
     } else if (summary.avg_awakenings_per_night <= 2) {
         suggestions.push({
             type: 'info',
-            title: 'ℹ️ Some nighttime awakenings',
+            title: 'ℹSome nighttime awakenings',
             message: 'Consider limiting fluids before bed and keeping the room cool and dark.'
         });
     } else {
         suggestions.push({
             type: 'warning',
-            title: '⚠️ Frequent awakenings detected',
+            title: 'Frequent awakenings detected',
             message: 'Multiple awakenings may affect sleep quality. Try a consistent bedtime routine.'
         });
     }
@@ -707,13 +480,13 @@ const suggestions = computed(() => {
     if (score >= 80) {
         suggestions.push({
             type: 'good',
-            title: '✅ Consistent sleep schedule',
+            title: 'Consistent sleep schedule',
             message: 'Your bedtime is consistent. This helps regulate your circadian rhythm.'
         });
     } else {
         suggestions.push({
             type: 'info',
-            title: 'ℹ️ Variable sleep schedule',
+            title: 'Variable sleep schedule',
             message: 'Try going to bed at the same time each night to improve sleep quality.'
         });
     }

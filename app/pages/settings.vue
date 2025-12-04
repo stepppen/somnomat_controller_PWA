@@ -42,5 +42,8 @@
                 <PrimitivesFullButton buttonPath="/privacy-policy" navIcon="material-symbols:spa-outline-rounded" buttonText="Privacy Policy"/>
             </primitives-container>
         </div>
+        <div class="main-container">
+            <PrimitivesFullButtonDark buttonText="logout" buttonPath="/"/>
+        </div>
     </div>
 </template>
