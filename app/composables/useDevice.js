@@ -11,6 +11,7 @@ export const useDevice = () => {
     let globalCommandStatus = useState('globalError', () => null)
     const isOn = useState('isOnChecked', () => false)
     let isSafety = useState('isSafetyOn', () => false)
+    let isMotorError = useState('isMotorError', () => false)
     
 
     const config = useRuntimeConfig()
@@ -87,10 +88,14 @@ export const useDevice = () => {
             
             if (deviceSettings.data && deviceSettings.data.length > 0) {
                 globalDeviceSettings.value = deviceSettings.data[0];
-                if(globalDeviceSettings.value.motor_status === 1) { 
+                if(globalDeviceSettings.value.motor_status === 1) {
+                    isMotorError.value = false; 
                     isOn.value = false;
                 } else if (globalDeviceSettings.value.motor_status === 2) { 
+                    isMotorError.value = false;
                     isOn.value = true;   
+                } else if (globalDeviceSettings.value.motor_status === 0) { 
+                    isMotorError.value = true;
                 }
                 console.log("Device settings:", globalDeviceSettings.value)
             } else {
@@ -208,6 +213,7 @@ export const useDevice = () => {
         globalCommandStatus,
         isOn,
         isSafety,
+        isMotorError,
         
         // Functions
         loadDeviceData,

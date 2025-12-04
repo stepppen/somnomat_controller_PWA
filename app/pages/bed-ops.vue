@@ -23,17 +23,32 @@
                 </p>
             </div>
         </div>   
+        <div v-if="motorError" class="main-container">
+            <div class="text-sm mt-2 bg-gray-200 rounded-2xl p-2 flex items-center justify-center gap-2">
+                <Icon name="material-symbols:info-outline-rounded" size="1em"/>
+                <p class="p-small text-center">
+                    Motor Error
+                </p>
+            </div>
+        </div>  
         <div class="flex flex-col gap-4">
             <div class="main-container w-full flex justify-center pt-16">
                 <div class="flex flex-col gap-2 align-items-center justify-center">
                     <div v-if="globalTargetDevice">
                         <h3 class="text-xl font-bold">{{ globalTargetDevice.name || 'Unnamed Device' }}</h3>
                     </div>
+                    <div v-else>
+                        <h3 class="text-xl font-bold">No Device Found</h3>
+                    </div>
                     <div class="flex justify-center gap-2">
-                        <span v-if="globalTargetDevice" :class="['px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium',
-                                    globalTargetDevice.status === 'online' ? 'online' : 'bg-gray-300']">
+                        <span v-if="globalTargetDevice" class="online px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium">
                             <p class="p-small">
-                                {{ globalTargetDevice.status || 'offline' }}
+                                online
+                            </p>
+                        </span>
+                        <span v-else class="px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium bg-gray-300">
+                            <p class="p-small">
+                                offline
                             </p>
                         </span>
                           <USwitch
@@ -113,6 +128,7 @@ const {
   globalTargetDevice,
   globalDeviceSettings,
   isSafety,
+  isMotorError,
   isOn,
   loadDeviceData,
   loadDeviceSettings,
@@ -123,6 +139,7 @@ const valueIntensity = ref(0);
 const valueVibration = ref(0);
 let refreshInterval = null;
 let activateSafety = ref(false)
+let motorError = ref(false)
 
 // Lifecycle
 onMounted(async () => {
@@ -137,13 +154,15 @@ onMounted(async () => {
             console.log("with safety: ", globalTargetDevice.value.safety)
             console.log("isSafety: ", isSafety.value)
             activateSafety.value = isSafety.value
+            motorError.value = isMotorError.value
         }
         console.log("global target device: ", globalTargetDevice.value)
         
-        
-        refreshInterval = setInterval(async () => {
-            await loadDeviceData()
-        }, 30000);
+        //Have to think this through again:
+        // refreshInterval = setInterval(async () => {
+        //     await loadDeviceData()
+        //     await loadDeviceSettings()
+        // }, 30000);
     }
     
     // Load saved bedtime preference
@@ -165,11 +184,13 @@ watch(globalDeviceId, async (newId) => {
 
 
 async function sendVibration() { 
+    if(!isOn.value) return;
     sendCommand("vibration_".concat((valueVibration.value).toString()))
     globalTargetDevice.value.vibration = valueVibration.value
 }
 
 async function sendIntensity() { 
+    if(!isOn.value) return;
     sendCommand("intensity_".concat((valueIntensity.value).toString()))
     globalTargetDevice.value.intensity = valueIntensity.value
     console.log("intensity_".concat((valueIntensity.value).toString()))
@@ -178,7 +199,7 @@ async function sendIntensity() {
 function handleToggle(value){
     isOn.value = value
     console.log('Toggle value:', value);
-    sendCommand(value ? "on" : "off");
+    // sendCommand(value ? "on" : "off");
     if(value) { 
         globalDeviceSettings.value.motor_status = 2;
         sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
