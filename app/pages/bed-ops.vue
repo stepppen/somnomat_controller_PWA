@@ -64,13 +64,29 @@
                 </div>
             </div>
             <div class="main-container w-full flex justify-center pt-16">
-                <div class="flex flex-col gap-1 w-3/4 opacity-20">
-                    <div class="h-5 w-14 rounded-full bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"></div>
-                    <div class="h-8 w-full rounded-t-xl bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"> </div>
-                    <div class="h-4 w-full bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"> </div>
+                <div class="flex flex-col gap-1 w-3/4 opacity-20" :class="{'bedTurnedOnColor': isOn}">
+                    <!-- Pillow and Mattress (animated) -->
+                    <div class="bed-moving-part flex flex-col gap-1"
+                        :class="{
+                            'bed-animating': isOn && valueIntensity > 0,
+                            'bed-intensity-0': valueIntensity === 0,
+                            'bed-intensity-1': valueIntensity === 1,
+                            'bed-intensity-2': valueIntensity === 2,
+                            'bed-intensity-3': valueIntensity === 3,
+                            'bed-intensity-4': valueIntensity === 4,
+                            'bed-intensity-5': valueIntensity === 5,
+                            'bed-intensity-6': valueIntensity === 6,
+                            'bed-intensity-7': valueIntensity === 7,
+                            'bed-intensity-8': valueIntensity === 8,
+                        }">
+                        <div class="h-5 w-14 rounded-full bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                        <div class="h-8 w-full rounded-t-xl bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                    </div>
+
+                    <div class="h-4 w-full bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
                     <div class="flex justify-between px-4">
-                        <div class="h-4 w-4 bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"></div>
-                        <div class="h-4 w-4 bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                        <div class="h-4 w-4 bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                        <div class="h-4 w-4 bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
                     </div>
                 </div>
             </div>
@@ -158,7 +174,7 @@ onMounted(async () => {
             valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
             console.log("with safety: ", globalTargetDevice.value.safety)
             console.log("isSafety: ", isSafety.value)
-            //need a computed value
+            //need a computed value?
             activateSafety.value = isSafety.value
             motorError.value = isMotorError.value
         }
@@ -283,5 +299,39 @@ function handleToggle(value){
 .inactiveColor{
     background-color: #d1d5db;
 }
+
+.bedTurnedOnColor { 
+    opacity: 1;
+    /* background-color: var(--gradient-start); */
+}
+
+/* bed animation */
+.bed-moving-part {
+    transition: animation-duration 0.3s ease-out;
+}
+
+@keyframes bed-slide {
+    0% { transform: translateX(var(--slide-distance-neg)); }
+    50% { transform: translateX(var(--slide-distance)); }
+    100% { transform: translateX(var(--slide-distance-neg)); }
+}
+
+.bed-moving-part {
+    transition: animation-duration 0.3s ease-out;
+}
+
+.bed-animating {
+    animation: bed-slide var(--animation-speed) ease-in-out infinite;
+}
+
+.bed-intensity-0 { --slide-distance: 0px; --slide-distance-neg: 0px; --animation-speed: 2s; }
+.bed-intensity-1 { --slide-distance: 4px; --slide-distance-neg: -4px; --animation-speed: 4s; }
+.bed-intensity-2 { --slide-distance: 8px; --slide-distance-neg: -8px; --animation-speed: 4s; }
+.bed-intensity-3 { --slide-distance: 12px; --slide-distance-neg: -12px; --animation-speed: 4s; }
+.bed-intensity-4 { --slide-distance: 16px; --slide-distance-neg: -16px; --animation-speed: 4s; }
+.bed-intensity-5 { --slide-distance: 20px; --slide-distance-neg: -20px; --animation-speed: 4s; }
+.bed-intensity-6 { --slide-distance: 24px; --slide-distance-neg: -24px; --animation-speed: 4s; }
+.bed-intensity-7 { --slide-distance: 28px; --slide-distance-neg: -28px; --animation-speed: 4s; }
+.bed-intensity-8 { --slide-distance: 32px; --slide-distance-neg: -32px; --animation-speed: 4s; }
 
 </style>

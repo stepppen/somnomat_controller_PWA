@@ -17,7 +17,7 @@
         
     </div>
     <div class="main-container ">
-          <UTabs @update:modelValue="handleToggle" :items="items" color="warning" :ui="{ 
+          <UTabs @update:modelValue="handleToggle" :items="items" color="info" :ui="{ 
             indicator: 'rounded-full',
             list: 'bg-white rounded-full'}">
             

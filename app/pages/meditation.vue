@@ -122,7 +122,7 @@ function playBack(soundId){
         console.log("Audio paused manually State: ", isPlaying.value)
         audio.pause()
         audio.load()
-        sendCommand("on")
+        // sendCommand("on")
     }
     else { 
         audio = new Audio(rightSound)
@@ -133,7 +133,7 @@ function playBack(soundId){
         audio.addEventListener('ended', () => {
             isPlaying.value = !isPlaying.value
             console.log("Audio finished, State: ", isPlaying.value)
-            sendCommand("on")
+            // sendCommand("on")
         })
         audio.play()
     }

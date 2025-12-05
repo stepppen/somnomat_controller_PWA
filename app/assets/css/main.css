@@ -23,6 +23,7 @@
   --ui-primary: var(--gradient-start);
   --ui-secondary: var(--primary-bg-container);
   --ui-warning: #d1d5db;
+  --ui-info: var(--primary-contrast);
   --ui-neutral: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 0%);
   color-scheme: light only;
   
