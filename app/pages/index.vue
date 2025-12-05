@@ -36,8 +36,8 @@
                 </div>
                 <div v-if="globalSleepSummary" class="flex flex-col gap-4">
                     <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
-                    <DataConsistencyChart :intervals="globalSleepSummary.summary.intervals"/>
-                    <DataSummaryCards :summary="globalSleepSummary.summary"/>
+                    <!-- <DataConsistencyChart :intervals="globalSleepSummary.summary.intervals"/> -->
+                    <DataSummaryCards :summary="globalSleepSummary.summary" isDayView="true"/>
                     <DataRecommendationsSection :summary="globalSleepSummary.summary"/>
 
                 </div>
@@ -56,7 +56,13 @@
                         <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
                     </div>
                 </div>
-                <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
+                <div v-if="globalSleepSummary" class="flex flex-col gap-4">
+                    <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
+                    <DataConsistencyChart :intervals="globalSleepSummary.summary.intervals"/>
+                    <DataSummaryCards :summary="globalSleepSummary.summary"/>
+                    <DataRecommendationsSection :summary="globalSleepSummary.summary"/>
+
+                </div>
             </template>
 
             <!-- month -->
@@ -114,6 +120,8 @@ const {
   globalLoading,
   globalError,
   globalCommandStatus,
+  globalPeriod,
+  globalDate,
   isOn,
   loadDeviceData,
   loadSleepSummary,
@@ -147,17 +155,33 @@ let endWeek = ref([(endOfWeek(currentWeek, 'de-DE')).day, (endOfWeek(currentWeek
 let startMonth = ref([(startOfMonth(currentMonth, 'de-DE')).day, (startOfMonth(currentMonth, 'de-DE')).month, (startOfMonth(currentMonth, 'de-DE')).year]);
 let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(currentMonth, 'de-DE')).month, (endOfMonth(currentMonth, 'de-DE')).year]);
 
-let sleepQuality = ref(82)
+let sleepQuality = ref(null)
 let sleepComment = ref("Good Job")
 let duration = ref(82)
 let activity = ref(42)
 
 // Lifecycle
 onMounted(async () => {
+    if (!globalDate.value) {
+        const today = new Date();
+        globalDate.value = today.getFullYear() + "-" + 
+                          (today.getMonth() + 1).toString().padStart(2, '0') + "-" + 
+                          today.getDate().toString().padStart(2, '0');
+    }
     if (globalDeviceId.value) {
         await loadDeviceData()
         await loadSleepSummary()
         console.log("device id: ", globalDeviceId.value, "sleep summary: ", globalSleepSummary.value)
+        if (globalSleepSummary.value) {
+            // sleepQuality = computed(() => {
+            //     const avg = props.summary.avg_awakenings_per_night;
+            //     if (avg <= 1) return 'Excellent';
+            //     if (avg <= 1.5) return 'Good';
+            //     if (avg <= 2.5) return 'Fair';
+            //     return 'Poor';
+            // });
+ 
+        }
         
         refreshInterval = setInterval(async () => {
             await loadDeviceData()
@@ -186,27 +210,49 @@ watch(globalSleepSummary, () => {
 
 
 
-function handleToggle(value){
+async function handleToggle(value){
+    //"motor_status_".concat((globalDeviceSettings.value.motor_status).toString())
+    if(value == 0) { 
+        globalPeriod.value = "day"
+        // newDateArr
+        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        console.log("Global Date Val", globalDate.value)
+        await loadSleepSummary()
+    } else if (value == 1) { 
+        globalPeriod.value = "week"
+        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        await loadSleepSummary()
+    } else { 
+        globalPeriod.value = "month"
+        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        await loadSleepSummary()
+    }
     console.log('Value:', value);
 }
 
 //for one day forward/back
-function dayBack(){ 
+async function dayBack(){ 
     isToday.value = false;
     console.log("is it today in dayBack: ", isToday.value)
     const newDate  = currentDate.subtract({ days: 1 });
     newDateArr.value = [newDate.day, newDate.month, newDate.year ]
     console.log("Current Date: ", newDateArr.value);
+    globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+    console.log("Global Date Val", globalDate.value)
+    await loadSleepSummary()
     currentDate = newDate;
 }
 
-function dayForward(){ 
+async function dayForward(){ 
     console.log("is it today: ", isToday.value)
     if(isToday.value) return;
     else { 
         const newDate  = currentDate.add({ days: 1 });
         newDateArr.value = [newDate.day, newDate.month, newDate.year ]
         console.log("got here, this is isToday: ", isToday.value);
+        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        console.log("Global Date Val", globalDate.value)
+        await loadSleepSummary()
         currentDate = newDate;
         console.log("currentDate:", currentDate.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentDate.day === today(getLocalTimeZone()).day){ 
@@ -219,22 +265,28 @@ function dayForward(){
 
 //for one week forward/back
 
-function weekBack(){ 
+async function weekBack(){ 
     isThisWeek.value = false;
     const newDate = currentWeek.subtract({ weeks: 1 });
     startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
     endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
+    globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+    console.log("Global Date Val", globalDate.value)
+    await loadSleepSummary()
     console.log("newDate is: ", newDate)
     currentWeek = newDate;
 }
 
-function weekForward(){ 
+async function weekForward(){ 
     console.log("is it today: ", isThisWeek.value)
     if(isThisWeek.value) return;
     else { 
         const newDate  = currentWeek.add({ weeks: 1 });
         startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
         endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
+        globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+        console.log("Global Date Val", globalDate.value)
+        await loadSleepSummary()
         currentWeek = newDate;
         console.log("currentWeek:", currentWeek.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentWeek.day === today(getLocalTimeZone()).day && currentWeek.month === today(getLocalTimeZone()).month){ 
@@ -245,22 +297,28 @@ function weekForward(){
 }
 
 //for one month forward/back
-function monthBack(){ 
+async function monthBack(){ 
     isThisMonth.value = false;
     const newDate = currentMonth.subtract({ months: 1 });
     startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
     endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
+    globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+    console.log("Global Date Val", globalDate.value)
+    await loadSleepSummary()
     console.log("newDate is: ", newDate)
     currentMonth = newDate;
 }
 
-function monthForward(){ 
+async function monthForward(){ 
     console.log("is it today: ", isThisMonth.value)
     if(isThisMonth.value) return;
     else { 
         const newDate  = currentMonth.add({ months: 1 });
         startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
         endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
+        globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+        console.log("Global Date Val", globalDate.value)
+        await loadSleepSummary()
         currentMonth = newDate;
         console.log("currentMonth:", currentMonth.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentMonth.month === today(getLocalTimeZone()).month && currentMonth.year === today(getLocalTimeZone()).year){ 

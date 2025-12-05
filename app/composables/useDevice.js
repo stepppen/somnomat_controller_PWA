@@ -9,6 +9,8 @@ export const useDevice = () => {
     let globalLoading = useState('globalLoading', () => false)
     let globalError = useState('globalError', () => '')
     let globalCommandStatus = useState('globalCommandStatus', () => null)
+    let globalPeriod = useState('globalPeriod', () => "day")
+    let globalDate = useState('globalDate', () => null)
     const isOn = useState('isOnChecked', () => false)
     let isSafety = useState('isSafetyOn', () => false)
     let isMotorError = useState('isMotorError', () => false)
@@ -148,8 +150,9 @@ export const useDevice = () => {
                 return;
             }
 
-
-            const sleepRes = await fetch(`${apiBase}/sleep/${globalDeviceId.value}/summary`);
+            
+            const sleepRes = await fetch(`${apiBase}/sleep/${globalDeviceId.value}/summary/?period=${globalPeriod.value}&date=${globalDate.value}`);
+            console.log("Fetched Summary data from path: ", `${apiBase}/sleep/${globalDeviceId.value}/summary/?period=${globalPeriod.value}&date=${globalDate.value}`)
             // const sleepdata = await sleepRes.json();
             // console.log(sleepdata)
             if (!sleepRes.ok) {
@@ -158,7 +161,7 @@ export const useDevice = () => {
             }
             
             const sleepdata = await sleepRes.json();
-            console.log(sleepdata);
+            console.log("Sleep data on new path:", sleepdata);
             globalSleepSummary.value = sleepdata;
             console.log(globalSleepSummary.value.summary.intervals)
             //optional but never used previously in the component
@@ -252,6 +255,8 @@ export const useDevice = () => {
         isMotorError,
         pendingCommands,
         lastCommandTime,
+        globalPeriod,
+        globalDate,
         
         // Functions
         loadDeviceData,

@@ -4,7 +4,10 @@
         <div class="grid grid-cols-2 gap-4 pt-2" >
             <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
                 <div class="px-2 text-left">
-                    <p class="p-small text-gray-500 text-left">
+                    <p v-if="isDayView" class="p-small text-gray-500 text-left">
+                        Time in bed 
+                    </p>
+                    <p v-else class="p-small text-gray-500 text-left">
                         Avg time in bed
                     </p>
                 </div>
@@ -41,7 +44,10 @@
             </div>
             <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
                 <div class="px-2 text-left">
-                    <p class="p-small text-gray-500 text-left">
+                    <p v-if="isDayView" class="p-small text-gray-500 text-left">
+                        Went to bed
+                    </p>
+                    <p v-else class="p-small text-gray-500 text-left">
                         Avg go to bed
                     </p>
                 </div>
@@ -57,7 +63,10 @@
             </div>
             <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
                 <div class="px-2 text-left">
-                    <p class="p-small text-gray-500 text-left">
+                    <p v-if="isDayView" class="p-small text-gray-500 text-left">
+                        Woke up
+                    </p>
+                    <p v-else class="p-small text-gray-500 text-left">
                         Avg wake up
                     </p>
                 </div>
@@ -75,13 +84,16 @@
     </primitives-container>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const props = defineProps({
+    isDayView: String,
     summary: {
         type: Object,
         required: true
     }
 });
+
+let dayFlag = ref(false)
 
 const formatTime = (hours) => {
     const h = Math.floor(hours);
