@@ -1,70 +1,77 @@
 <template>
     <primitives-container>
-            <h3>Summary</h3>
-            <div class="grid grid-cols-2 gap-4 pt-2" >
-                <div class="bg-gray-50 rounded-xl py-2 px-4 flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Avg time in bed</span>
-                        
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
-                            <!-- <span class="text-2xl">{{ card.icon }}</span> -->
-                            <Icon name="material-symbols:timelapse-outline-rounded" class="iconColorBlue" size="1.5em"/>
-                        </div>
-                        <!-- <span class="text-2xl">{{ card.icon }}</span> -->
-                        <h3>
-                            {{ formatTime(props.summary.avg_sleep_per_night_hours) }}
-                        </h3>
-                    </div>
+        <h3>Summary</h3>
+        <div class="grid grid-cols-2 gap-4 pt-2" >
+            <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
+                <div class="px-2 text-left">
+                    <p class="p-small text-gray-500 text-left">
+                        Avg time in bed
+                    </p>
                 </div>
-                <div class="bg-gray-50 rounded-xl py-2 px-4 flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Sleep quality</span>
-                        <Icon name="material-symbols:info-outline" size="1em" class="text-gray-400" />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
-
-                            <Icon name="material-symbols:editor-choice-outline-rounded" class="iconColorBlue" size="1.5em"/>
-                        </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
                         <!-- <span class="text-2xl">{{ card.icon }}</span> -->
-                        <h3>
-                           {{sleepQuality}}
-                        </h3>
+                        <Icon name="material-symbols:timelapse-outline-rounded" class="iconColorBlue" size="1.5em"/>
                     </div>
-                </div>
-                <div class="bg-gray-50 rounded-xl py-2 px-4 flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Avg go to bed</span>
-                        
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
-                            <Icon name="material-symbols:bedtime-outline-rounded" class="iconColorBlue" size="1.5em"/>
-                        </div>
-                        <!-- <span class="text-2xl">{{ card.icon }}</span> -->
-                        <h3>
-                            {{ avgBedtime }}
-                        </h3>
-                    </div>
-                </div>
-                <div class="bg-gray-50 rounded-xl py-2 px-4 flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Avg wake up</span>
-                        
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
-                            <Icon name="material-symbols:wb-sunny-outline-rounded" class="iconColorBlue" size="1.5em"/>
-                        </div>
-                        <!-- <span class="text-2xl">{{ card.icon }}</span> -->
-                        <h3>
-                            {{ avgWakeup }}
-                        </h3>
-                    </div>
+                    <!-- <span class="text-2xl">{{ card.icon }}</span> -->
+                    <h3>
+                        {{ formatTime(props.summary.avg_sleep_per_night_hours) }}
+                    </h3>
                 </div>
             </div>
+            <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <div class="px-2 text-left">
+                        <p class="p-small text-gray-500 text-left">
+                            Sleep quality
+                        </p>
+                    </div>
+                    <Icon name="material-symbols:info-outline" size="1em" class="text-gray-400" />
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
+
+                        <Icon name="material-symbols:editor-choice-outline-rounded" class="iconColorBlue" size="1.5em"/>
+                    </div>
+                    <!-- <span class="text-2xl">{{ card.icon }}</span> -->
+                    <h3>
+                        {{sleepQuality}}
+                    </h3>
+                </div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
+                <div class="px-2 text-left">
+                    <p class="p-small text-gray-500 text-left">
+                        Avg go to bed
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
+                        <Icon name="material-symbols:bedtime-outline-rounded" class="iconColorBlue" size="1.5em"/>
+                    </div>
+                    <!-- <span class="text-2xl">{{ card.icon }}</span> -->
+                    <h3>
+                        {{ avgBedtime }}
+                    </h3>
+                </div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
+                <div class="px-2 text-left">
+                    <p class="p-small text-gray-500 text-left">
+                        Avg wake up
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
+                        <Icon name="material-symbols:wb-sunny-outline-rounded" class="iconColorBlue" size="1.5em"/>
+                    </div>
+                    <!-- <span class="text-2xl">{{ card.icon }}</span> -->
+                    <h3>
+                        {{ avgWakeup }}
+                    </h3>
+                </div>
+            </div>
+        </div>
     </primitives-container>
 </template>
 

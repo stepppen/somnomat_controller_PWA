@@ -29,9 +29,9 @@
             <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <p class="text-gray-700">{{ comment }}</p>
+            <p class="p-small text-gray-700">{{ comment }}</p>
             
-             <Icon name="material-symbols:info-outline-rounded" class="iconColor" size="1.5em"/>
+             <Icon name="material-symbols:info-outline-rounded" class="iconColor" size="1em"/>
         </div>
     </primitives-container>
 </template>

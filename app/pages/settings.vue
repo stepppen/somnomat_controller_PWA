@@ -45,7 +45,7 @@
         <div class="main-container">
             <PrimitivesFullButtonDark buttonText="logout" buttonPath="/"/>
         </div>
-        <div>
+        <div class="main-container px-10 text-center"> 
             <p class="p-small">
                 © 2025 Calmea. All Rights Reserved. Zürich, Switzerland.
             </p>
