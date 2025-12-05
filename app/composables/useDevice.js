@@ -8,22 +8,31 @@ export const useDevice = () => {
     let globalDeviceSettings = useState('globalDeviceSettings', () => null)
     let globalLoading = useState('globalLoading', () => false)
     let globalError = useState('globalError', () => '')
-    let globalCommandStatus = useState('globalError', () => null)
+    let globalCommandStatus = useState('globalCommandStatus', () => null)
     const isOn = useState('isOnChecked', () => false)
     let isSafety = useState('isSafetyOn', () => false)
     let isMotorError = useState('isMotorError', () => false)
     
+    
+    const pendingCommands = useState('pendingCommands', () => new Set())
+    const lastCommandTime = useState('lastCommandTime', () => 0)
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
 
 
     //API Functions
-    const loadDeviceData = async () => {
+    const loadDeviceData = async (force = false) => {
         if (!globalDeviceId.value) {
             console.log("No device ID set");
             return;
         }
+        
+        if (!force && Date.now() - lastCommandTime.value < 3000) {
+            console.log("Skipping reload: recent command sent");
+            return;
+        }
+
         globalLoading.value = true;
         globalError.value = '';
         
@@ -45,10 +54,10 @@ export const useDevice = () => {
                 globalTargetDevice.value = deviceData.data[0];
                 console.log("Loaded device:", globalTargetDevice.value)
                 console.log("Device with safety:", globalTargetDevice.value.safety)
-                if(deviceData.data.safety === 1) { 
-                    isSafety = true;
+                if(deviceData.data[0].safety === 1) { 
+                    isSafety.value = true;
                 } else{
-                    isSafety = false;
+                    isSafety.value = false;
                 }
             } else {
                 globalError.value = "Device not found";
@@ -63,13 +72,20 @@ export const useDevice = () => {
         }
     }
 
-    const loadDeviceSettings = async () => {
+    const loadDeviceSettings = async (force = false) => {
         if (!globalDeviceId.value) {
             console.log("No device ID set");
             return;
         }
+        if (!force && Date.now() - lastCommandTime.value < 3000) {
+            console.log("Skipping settings reload - recent command sent");
+            return;
+        }
+
         globalLoading.value = true;
         globalError.value = '';
+
+        
         
         try {
             const testRes = await fetch(`${apiBase}/debug`);
@@ -87,17 +103,22 @@ export const useDevice = () => {
             console.log("device settings response: ", deviceSettings)
             
             if (deviceSettings.data && deviceSettings.data.length > 0) {
-                globalDeviceSettings.value = deviceSettings.data[0];
-                if(globalDeviceSettings.value.motor_status === 1) {
-                    isMotorError.value = false; 
-                    isOn.value = false;
-                } else if (globalDeviceSettings.value.motor_status === 2) { 
-                    isMotorError.value = false;
-                    isOn.value = true;   
-                } else if (globalDeviceSettings.value.motor_status === 0) { 
-                    isMotorError.value = true;
+                const newSettings = deviceSettings.data[0];
+                
+                //only update if no pending commands
+                if (!pendingCommands.value.has('motor_status')) {
+                    if(newSettings.motor_status === 1) {
+                        isMotorError.value = false; 
+                        isOn.value = false;
+                    } else if (newSettings.motor_status === 2) { 
+                        isMotorError.value = false;
+                        isOn.value = true;   
+                    } else if (newSettings.motor_status === 0) { 
+                        isMotorError.value = true;
+                    }
                 }
-                console.log("Device settings:", globalDeviceSettings.value)
+            globalDeviceSettings.value = newSettings;
+            console.log("Device settings:", globalDeviceSettings.value)
             } else {
                 globalError.value = "Device not found";
                 return;
@@ -158,6 +179,12 @@ export const useDevice = () => {
         }
         try {
             console.log("Sending command to device_id:", globalDeviceId.value)
+            //motor_status_???
+            const commandType = command.includes('_') 
+                ? command.substring(0, command.lastIndexOf('_')) 
+                : command;
+            pendingCommands.value.add(commandType);
+            lastCommandTime.value = Date.now();
             const res = await fetch(`${apiBase}/commands`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -177,9 +204,18 @@ export const useDevice = () => {
             // lastEcho.value = data.echo;
             showCommandStatus(`Command '${command}' sent successfully`, 'success');
             console.log('Command sent:', data);
+
+            //maybe superfluous?
+            setTimeout(() => {
+                pendingCommands.value.delete(commandType);
+            }, 5000);
         } catch (error) {
             console.error('Error sending command:', error);
             showCommandStatus(`Failed to send command: ${error.message}`, 'error');
+            const commandType = command.includes('_') 
+                ? command.substring(0, command.lastIndexOf('_')) 
+                : command;
+            pendingCommands.value.delete(commandType);
         }
     }
 
@@ -214,6 +250,8 @@ export const useDevice = () => {
         isOn,
         isSafety,
         isMotorError,
+        pendingCommands,
+        lastCommandTime,
         
         // Functions
         loadDeviceData,

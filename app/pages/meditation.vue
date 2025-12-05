@@ -30,8 +30,8 @@
         <PrimitivesFilterBadge :isActive="activeFilters.includes('forest')" badgeIcon="material-symbols:forest-outline-rounded" badgeText="Forest" @click="() => filterBy('forest')"/>
     </div>
     <div class="main-container">
-        <div class="pt-6">
-            <div v-if="!isOn" class="text-sm bg-gray-200 rounded-2xl p-2 flex items-center justify-center gap-2">
+        <div v-if="!isOn" class="pt-6">
+            <div  class="text-sm bg-gray-200 rounded-2xl p-2 flex items-center justify-center gap-2">
                 <Icon name="material-symbols:info-outline-rounded" size="1em"/>
                 <p class="p-small text-center">
                     Turn on the device to start meditation mode

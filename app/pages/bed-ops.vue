@@ -46,7 +46,7 @@
                                 online
                             </p>
                         </span>
-                        <span v-else class="px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium bg-gray-300">
+                        <span v-else class="px-2 py-1 rounded-full text-black text-xs font-medium bg-gray-200">
                             <p class="p-small">
                                 offline
                             </p>
@@ -65,12 +65,12 @@
             </div>
             <div class="main-container w-full flex justify-center pt-16">
                 <div class="flex flex-col gap-1 w-3/4 opacity-20">
-                    <div class="h-5 w-14 rounded-full bg-(--gradient-start)"></div>
-                    <div class="h-8 w-full rounded-t-xl bg-(--gradient-start)"> </div>
-                    <div class="h-4 w-full bg-(--gradient-start)"> </div>
+                    <div class="h-5 w-14 rounded-full bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                    <div class="h-8 w-full rounded-t-xl bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"> </div>
+                    <div class="h-4 w-full bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"> </div>
                     <div class="flex justify-between px-4">
-                        <div class="h-4 w-4 bg-(--gradient-start)"></div>
-                        <div class="h-4 w-4 bg-(--gradient-start)"></div>
+                        <div class="h-4 w-4 bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                        <div class="h-4 w-4 bg-(--gradient-start)" :class="{'inactiveColor': !globalTargetDevice}"></div>
                     </div>
                 </div>
             </div>
@@ -90,8 +90,9 @@
                                             </h3>
                                         </div>
                                     </div>
-                                    <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
+                                    <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': globalTargetDevice}"  size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
                                         root: isOn ? '' : 'opacity-25',
+                                        thumb: globalTargetDevice ? '' : 'bg-[#9ca3af]',
                                         thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
                                         track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
                                 </div>
@@ -107,8 +108,9 @@
                                             </h3>
                                         </div>
                                     </div>
-                                    <USlider :disabled="!isOn" class="custom-sider" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
+                                    <USlider :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': !globalTargetDevice}" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
                                         root: isOn ? '' : 'opacity-25',
+                                        thumb: globalTargetDevice ? '' : 'bg-[#9ca3af]',
                                         thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
                                         track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
                                 </div>
@@ -130,6 +132,8 @@ const {
   isSafety,
   isMotorError,
   isOn,
+  pendingCommands,
+  lastCommandTime,
   loadDeviceData,
   loadDeviceSettings,
   sendCommand
@@ -138,6 +142,7 @@ const {
 const valueIntensity = ref(0);
 const valueVibration = ref(0);
 let refreshInterval = null;
+let settingsCheckInterval = null;
 let activateSafety = ref(false)
 let motorError = ref(false)
 
@@ -158,6 +163,23 @@ onMounted(async () => {
             motorError.value = isMotorError.value
         }
         console.log("global target device: ", globalTargetDevice.value)
+
+        //remote control polling 
+        settingsCheckInterval = setInterval(async () => {
+            if (pendingCommands.value.size === 0) {
+                await loadDeviceSettings(true);
+                if (globalDeviceSettings.value) {
+                    if (valueIntensity.value !== globalDeviceSettings.value.intensity) {
+                        console.log("Intensity changed remotely:", globalDeviceSettings.value.intensity);
+                        valueIntensity.value = globalDeviceSettings.value.intensity ?? 0;
+                    }
+                    if (valueVibration.value !== globalDeviceSettings.value.vibration) {
+                        console.log("Vibration changed remotely:", globalDeviceSettings.value.vibration);
+                        valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
+                    }
+                }
+            }
+        }, 5000);
         
         //Have to think this through again:
         //needs a listen/watch
@@ -175,42 +197,73 @@ onMounted(async () => {
 onUnmounted(() => {
     document.body.style.overflow = ''
     if (refreshInterval) clearInterval(refreshInterval);
+    if (settingsCheckInterval) clearInterval(settingsCheckInterval);
 });
 
-watch(globalDeviceId, async (newId) => {
-    if (newId) {
-        await loadDeviceData();
+//watch for errors 
+watch(() => globalTargetDevice.value?.safety, (newSafety) => {
+    if (newSafety !== undefined) {
+        activateSafety.value = newSafety === 1;
     }
 });
+
+watch(() => isMotorError.value, (newError) => {
+    motorError.value = newError;
+});
+// watch(globalTargetDevice, async (targetDeviceData) => {
+//     if (targetDeviceData) {
+//         await loadDeviceData();
+//     }
+// });
+
+// watch(globalDeviceSettings, async (targetDeviceSettings) => {
+//     if (targetDeviceSettings) {
+//         await loadDeviceSettings();
+//     }
+// });
 
 
 
 async function sendVibration() { 
     if(!isOn.value) return;
     sendCommand("vibration_".concat((valueVibration.value).toString()))
-    globalTargetDevice.value.vibration = valueVibration.value
+    console.log("vibration_".concat((valueVibration.value).toString()))
+    if (globalDeviceSettings.value) {
+        globalDeviceSettings.value.vibration = valueVibration.value;
+    }
+    //maybe i need this?:
+    // globalTargetDevice.value.vibration = valueVibration.value
 }
 
 async function sendIntensity() { 
     if(!isOn.value) return;
     sendCommand("intensity_".concat((valueIntensity.value).toString()))
-    globalTargetDevice.value.intensity = valueIntensity.value
+    if (globalDeviceSettings.value) {
+        globalDeviceSettings.value.intensity = valueIntensity.value;
+    }
+    //maybe i need this?:
+    // globalTargetDevice.value.intensity = valueIntensity.value
     console.log("intensity_".concat((valueIntensity.value).toString()))
 }
 
 function handleToggle(value){
     isOn.value = value
     console.log('Toggle value:', value);
-    // sendCommand(value ? "on" : "off");
-    if(value) { 
-        globalDeviceSettings.value.motor_status = 2;
-        sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
-        console.log("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
-    } else { 
-        globalDeviceSettings.value.motor_status = 1;
-        sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
-        console.log("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    const newMotorStatus = value ? 2 : 1;
+    if (globalDeviceSettings.value) {
+        globalDeviceSettings.value.motor_status = newMotorStatus;
     }
+    sendCommand("motor_status_".concat((newMotorStatus).toString()))
+    console.log("motor_status_".concat((newMotorStatus).toString()))
+    // if(value) { 
+    //     globalDeviceSettings.value.motor_status = 2;
+    //     sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    //     console.log("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    // } else { 
+    //     globalDeviceSettings.value.motor_status = 1;
+    //     sendCommand("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    //     console.log("motor_status_".concat((globalDeviceSettings.value.motor_status).toString()))
+    // }
 }
 </script>
 
@@ -221,6 +274,14 @@ function handleToggle(value){
 
 .custom-sider :deep(.slider-track){ 
     background: var(--ui-neutral);
+}
+
+.inactiveSlider :deep(.slider-track){ 
+    background: var(--ui-warning);
+}
+
+.inactiveColor{
+    background-color: #d1d5db;
 }
 
 </style>
