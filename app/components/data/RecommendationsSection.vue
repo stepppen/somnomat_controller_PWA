@@ -1,23 +1,22 @@
-<!-- RecommendationsSection.vue -->
 <template>
-    <div class="bg-white rounded-2xl p-6 border border-gray-200">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Recommendations</h2>
-            <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.2em" class="text-gray-400" />
-        </div>
-        <div class="space-y-4">
-            <div
-                v-for="(rec, idx) in recommendations"
-                :key="idx"
-                :class="['flex gap-4 p-4 rounded-xl border', rec.bgColor, rec.borderColor]"
-            >
-                <div class="flex-shrink-0">
-                    <Icon :name="rec.icon" size="1.2em" :class="rec.iconColor" />
-                </div>
-                <p class="text-sm text-gray-700">{{ rec.text }}</p>
+    <primitives-container>
+            <div class="flex items-center justify-between mb-6">
+                <h3>Recommendations</h3>
+                <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.2em" class="text-gray-400" />
             </div>
-        </div>
-    </div>
+            <div class="space-y-4">
+                <div
+                    v-for="(rec, idx) in recommendations"
+                    :key="idx"
+                    :class="['flex gap-4 p-4 rounded-xl border', rec.bgColor, rec.borderColor]"
+                >
+                    <div class="flex-shrink-0">
+                        <Icon :name="rec.icon" size="1.2em" :class="rec.iconColor" />
+                    </div>
+                    <p class="text-sm text-gray-700">{{ rec.text }}</p>
+                </div>
+            </div>
+    </primitives-container>
 </template>
 
 <script setup>

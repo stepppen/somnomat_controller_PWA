@@ -148,6 +148,12 @@ p {
     font-weight: 300;
 }
 
+.bolder-heading { 
+    font-family: "Montserrat", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
 svg {
     max-width: 100%;
     height: auto;

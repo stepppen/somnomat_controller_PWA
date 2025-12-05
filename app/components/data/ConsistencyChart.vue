@@ -1,10 +1,11 @@
 <template>
     <primitives-container>
-        <div class="bg-white rounded-2xl p-6 border border-gray-200">
+        <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-900">Consistency</h2>
-                <span class="text-sm text-gray-500">
-                    Current streak: {{ currentStreak }} days | record: {{ recordStreak }}
+                
+                <h3>Consistency</h3>
+                <span class="p-small text-gray-500 text-right">
+                    Streak: {{ currentStreak }} days | Record: {{ recordStreak }}
                 </span>
             </div>
     
@@ -45,7 +46,7 @@
                 </div>
     
                 <!-- Legend -->
-                <div class="flex gap-6 mt-6 justify-center">
+                <div class="flex gap-6 pt-4 justify-center">
                     <div class="flex items-center gap-2">
                         <div class="w-4 h-4 bg-indigo-600 rounded" />
                         <span class="text-sm text-gray-600">Sleeping</span>
