@@ -195,7 +195,7 @@ onMounted(async () => {
                     }
                 }
             }
-        }, 5000);
+        }, 1000);
         
         //Have to think this through again:
         //needs a listen/watch
