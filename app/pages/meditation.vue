@@ -126,7 +126,7 @@ function playBack(soundId){
     }
     else { 
         audio = new Audio(rightSound)
-        sendCommand("meditation")
+        sendCommand("meditation_on")
         isPlaying.value = !isPlaying.value
         console.log("State: ", isPlaying.value)
         audio.volume = 0.25
@@ -134,6 +134,7 @@ function playBack(soundId){
             isPlaying.value = !isPlaying.value
             console.log("Audio finished, State: ", isPlaying.value)
             // sendCommand("on")
+            sendCommand("meditation_off")
         })
         audio.play()
     }
