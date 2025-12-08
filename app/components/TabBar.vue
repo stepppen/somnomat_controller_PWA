@@ -53,7 +53,7 @@ watch (
     (newPath) => {
         // Don't update originPath if navigating TO notifications
         if (newPath !== '/notifications') {
-            if (newPath === '/'){
+            if (newPath === '/' || newPath === '/recommendations'){
                 currentPath.value = "home"
                 originPath.value = "home"
             } else if (newPath === '/bed-ops' || newPath === '/meditation'){

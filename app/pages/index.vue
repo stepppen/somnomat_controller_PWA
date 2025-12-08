@@ -169,10 +169,10 @@ let endWeek = ref([(endOfWeek(currentWeek, 'de-DE')).day, (endOfWeek(currentWeek
 let startMonth = ref([(startOfMonth(currentMonth, 'de-DE')).day, (startOfMonth(currentMonth, 'de-DE')).month, (startOfMonth(currentMonth, 'de-DE')).year]);
 let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(currentMonth, 'de-DE')).month, (endOfMonth(currentMonth, 'de-DE')).year]);
 
-let sleepQuality = ref(null)
+let sleepQuality = ref(0)
 let sleepComment = ref("Good Job")
 let duration = ref(0)
-let activity = ref(42)
+let activity = ref(0)
 let totalPlannedSleep = ref(0)
 
 
@@ -188,16 +188,23 @@ onMounted(async () => {
     if (globalDeviceId.value) {
         await loadDeviceData()
         await loadSleepSummary()
+        totalPlannedSleep.value = await getSleepDuration()
+        console.log("total planned sleep minutes: ", totalPlannedSleep.value.totalMinutes)
+
+
         console.log("device id: ", globalDeviceId.value, "sleep summary: ", globalSleepSummary.value)
-        if (globalSleepSummary.value) {
-            duration.value = globalSleepSummary.value.summary.sleep_duration_hours
-            console.log("sleep duration for this day is: ", duration.value)
+        if (globalSleepSummary.value && totalPlannedSleep.value) {
+            calcSleepDurationPercentage("day")
+            calcBedOnPercentage()
+            calcQuality()
+            // duration.value = globalSleepSummary.value.summary.sleep_duration_hours
+            // activity.value = Math.round((globalSleepSummary.value.summary.sleep_duration_hours / globalSleepSummary.value.summary.time_in_bed_hours) * 100 ) 
+            // console.log("sleep duration for this day is: ", duration.value)
         }
         if (bedTime) { 
             console.log("bed time: ", bedTime.value, "with tolerance: ",  bedTimeTolerance.value, "Wake up time: ", wakeUpTime.value, "with tolerance: ",  wakeUpTolerance.value)
         }
-        totalPlannedSleep.value = await getSleepDuration()
-        console.log("total planned sleep minutes: ", totalPlannedSleep.value.totalMinutes)
+
         
         refreshInterval = setInterval(async () => {
             await loadDeviceData()
@@ -257,15 +264,9 @@ async function dayBack(){
     globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
     console.log("Global Date Val", globalDate.value)
     await loadSleepSummary()
-    //calculate total - duration = percentage
-
-    if (parseInt(globalSleepSummary.value.summary.sleep_duration_min) != 0) { 
-        duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
-        console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
-    } else { 
-        duration.value = 0
-        console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
-    }
+    calcSleepDurationPercentage("day")
+    calcBedOnPercentage()
+    calcQuality()
     currentDate = newDate;
 }
 
@@ -280,7 +281,9 @@ async function dayForward(){
         globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
         console.log("Global Date Val", globalDate.value)
         await loadSleepSummary()
-        calcSleepDurationPercentage()
+        calcSleepDurationPercentage("day")
+        calcBedOnPercentage()
+        calcQuality()
         currentDate = newDate;
         console.log("currentDate:", currentDate.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentDate.day === today(getLocalTimeZone()).day){ 
@@ -291,14 +294,40 @@ async function dayForward(){
     }
 }
 
-function calcSleepDurationPercentage() { 
-    if (parseInt(globalSleepSummary.value.summary.sleep_duration_min) != 0) { 
-                duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
-                console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
-            } else { 
-                duration.value = 0
-                console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
-            }
+function calcSleepDurationPercentage(period) { 
+    
+    if (globalSleepSummary.value.summary.sleep_duration_min != 0) { 
+        if (period === "day") { 
+            duration.value = Math.round((globalSleepSummary.value.summary.sleep_duration_min / totalPlannedSleep.value.totalMinutes) * 100)
+            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+        }
+         else if (period === "week") { 
+            duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / (totalPlannedSleep.value.totalMinutes * 7))*100)
+            console.log("period is: ", period, "with duration val: ", duration.value)
+            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+        } 
+        else if (period === "month") { 
+            duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
+            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+        } 
+        
+    }else { 
+            duration.value = 0
+            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+        }
+}
+
+function calcBedOnPercentage() { 
+    if (globalSleepSummary.value.summary.sleep_duration_hours != 0) { 
+        activity.value = Math.round((globalSleepSummary.value.summary.sleep_duration_hours / globalSleepSummary.value.summary.time_in_bed_hours) * 100)
+    } else { 
+        activity.value = 0
+    }  
+}
+
+function calcQuality() { 
+    console.log("activity: ", activity.value, ", duration: ", parseInt(duration.value))
+    sleepQuality.value = Math.round((activity.value + duration.value) / 2)
 }
 
 //for one week forward/back
@@ -311,6 +340,9 @@ async function weekBack(){
     globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
     console.log("Global Date Val", globalDate.value)
     await loadSleepSummary()
+    calcSleepDurationPercentage("week")
+    calcBedOnPercentage()
+    calcQuality()
     console.log("newDate is: ", newDate)
     currentWeek = newDate;
 }
@@ -325,6 +357,9 @@ async function weekForward(){
         globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
         console.log("Global Date Val", globalDate.value)
         await loadSleepSummary()
+        calcSleepDurationPercentage("week")
+        calcBedOnPercentage()
+        calcQuality()
         currentWeek = newDate;
         console.log("currentWeek:", currentWeek.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentWeek.day === today(getLocalTimeZone()).day && currentWeek.month === today(getLocalTimeZone()).month){ 

@@ -2,9 +2,9 @@
     <primitives-container>
             <div class="flex items-center justify-between mb-6">
                 <h3>Recommendations</h3>
-                <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.2em" class="text-gray-400" />
+                <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.2em" class="text-gray-400" @click="navigateTo('/recommendations')"/>
             </div>
-            <div class="space-y-4">
+            <div class="flex flex-col gap-4 pt-2">
                 <div
                     v-for="(rec, idx) in recommendations"
                     :key="idx"
@@ -58,7 +58,7 @@ const recommendations = computed(() => {
     }
     
     // Awakenings check
-    if (props.summary.avg_awakenings_per_night <= 1) {
+    if (props.summary.avg_awakenings <= 1) {
         recs.push({
             icon: 'material-symbols:check-circle-outline',
             text: 'Excellent sleep continuity! You have minimal awakenings. Your sleep is continuous and restorative.',
@@ -66,13 +66,21 @@ const recommendations = computed(() => {
             borderColor: 'border-green-200',
             iconColor: 'text-green-600'
         });
-    } else if (props.summary.avg_awakenings_per_night <= 2) {
+    } else if (props.summary.avg_awakenings <= 2) {
         recs.push({
             icon: 'material-symbols:lightbulb-outline',
             text: 'Some nighttime awakenings detected. Consider limiting fluids before bed and keeping the room cool and dark.',
             bgColor: 'bg-yellow-50',
             borderColor: 'border-yellow-200',
             iconColor: 'text-yellow-600'
+        });
+    } else { 
+            recs.push({
+            icon: 'material-symbols:warning-outline',
+            text: 'A lot of awakenings detected...',
+            bgColor: 'bg-red-50',
+            borderColor: 'border-red-200',
+            iconColor: 'text-red-600'
         });
     }
     

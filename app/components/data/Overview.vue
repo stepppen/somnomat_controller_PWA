@@ -38,6 +38,8 @@
 
 <script setup lang="ts">
 import * as d3 from 'd3'
+let sleepAngle = ref(0)
+let bedAngle = ref(0)
 
 interface Props{ 
     quality?: number,
@@ -59,10 +61,20 @@ const props = withDefaults(defineProps<Props>(), {
 
 const chartSvg = ref<SVGSVGElement | null>(null)
 
-onMounted(() => {
-  if (!chartSvg.value) return
+// const sleepAngle = computed(() => {
+//   const result = 1.03 - (computedSleepDuration.value / 100) * Math.PI
+//   return result
+// })
 
-  const width = 160
+watch(() => [props.sleepDuration, props.bedActivity], (newVals, oldVals) => {
+    if (chartSvg.value && newVals !== oldVals) {
+        d3.select(chartSvg.value).selectAll("*").remove();
+        drawChart();
+    }
+});
+
+function drawChart() { 
+const width = 160
   const height = 160
   const thickness = 16
   const radius = Math.min(width, height) / 2 
@@ -113,31 +125,58 @@ onMounted(() => {
     .style('fill', '#9b87f5')
     .attr('d', bedArc as any)
 
-const sleepAngle = computed(() => { 
-  const result = (1.03 - (props.sleepDuration / 100)) * Math.PI
-  console.log("computed val", result)
-  return result
-})
-
+    //top is at 0 (0.1), bottom is at 3.14 (3.04), 50% is at 1.52
+    //if props.Duration is at 50 -> sleepAngle should be at 1.52
+    //the higher props.Duration, the lower the sleepAngle
+    // sleepDuration is 100 for full sleep
+    // (π - 0.1) - (sleepDuration * ((π - 0.2) / 100)) = 1.52 --> 50 = 1.57
+    // (π - 0.1) - (sleepDuration * ((π - 0.2) / 100)) = 1.52 --> 0 = 3.04
+    //
+    // (Math.PI - 0.1) - 0.1 = X
+    
+    // (Math.PI - 0.2) - (80/100) = 2.24 
+    // (Math.PI - 0.2) - (50/100) = 2.54
+    // (Math.PI - 0.1) - (1/100) => 3.03
+  if (props.sleepDuration !== 0) { 
+    // sleepAngle.value = 1.03 - (props.sleepDuration / 100)
+    // sleepAngle.value = 1.03 - (props.sleepDuration / 100) * (Math.PI - 0.2)
+    sleepAngle.value = (Math.PI - 0.2) - (props.sleepDuration *  ((Math.PI - 0.2) / 100))
+  } else { 
+    sleepAngle.value = Math.PI - 0.1
+  }
   sleepPath.transition()
     .duration(1000)
     .attrTween('d', function(d: any) {
-      const interpolate = d3.interpolate(d.endAngle, sleepAngle)
+      const interpolate = d3.interpolate(d.endAngle, sleepAngle.value)
       return function(t: number) {
         d.endAngle = interpolate(t)
         return sleepArc(d)
       }
     })
-
-  const bedAngle = 2 * Math.PI - (1.03 - (props.bedActivity / 100)) * Math.PI
+  
+  if (props.bedActivity !== 0) { 
+    // 2 * Math.PI - (1.03 - (props.bedActivity / 100)) * Math.PI
+    bedAngle.value = 2 * Math.PI - ((Math.PI - 0.2) - (props.bedActivity *  ((Math.PI - 0.2) / 100)))
+  } else { 
+    bedAngle.value = Math.PI + 0.1
+  }
+  // console.log("sleep angle: ", sleepAngle.value)  
+  // const bedAngle = 2 * Math.PI - (1.03 - (props.bedActivity / 100)) * Math.PI
   bedPath.transition()
     .duration(1000)
     .attrTween('d', function(d: any) {
-      const interpolate = d3.interpolate(d.endAngle, bedAngle)
+      const interpolate = d3.interpolate(d.endAngle, bedAngle.value)
       return function(t: number) {
         d.endAngle = interpolate(t)
         return bedArc(d)
       }
     })
+}
+
+
+onMounted(() => {
+  if (!chartSvg.value) return
+  drawChart()
 })
+
 </script>
