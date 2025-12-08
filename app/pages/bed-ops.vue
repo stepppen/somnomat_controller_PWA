@@ -149,10 +149,11 @@ const {
   isMotorError,
   isOn,
   pendingCommands,
-  lastCommandTime,
   loadDeviceData,
   loadDeviceSettings,
-  sendCommand
+  sendCommand,
+  setPendingCommand,
+  shouldBlockUpdate
 } = useDevice()
 
 const valueIntensity = ref(0);
@@ -182,17 +183,27 @@ onMounted(async () => {
 
         //remote control polling 
         settingsCheckInterval = setInterval(async () => {
-            if (pendingCommands.value.size === 0) {
-                await loadDeviceSettings(true);
-                if (globalDeviceSettings.value) {
-                    if (valueIntensity.value !== globalDeviceSettings.value.intensity) {
-                        console.log("Intensity changed remotely:", globalDeviceSettings.value.intensity);
-                        valueIntensity.value = globalDeviceSettings.value.intensity ?? 0;
+            const settings = await loadDeviceSettings(true);
+            
+            if (settings) {
+                // Check intensity
+                if (!shouldBlockUpdate('intensity', settings.intensity)) {
+                    if (valueIntensity.value !== settings.intensity) {
+                        console.log("Intensity changed remotely:", settings.intensity);
+                        valueIntensity.value = settings.intensity ?? 0;
                     }
-                    if (valueVibration.value !== globalDeviceSettings.value.vibration) {
-                        console.log("Vibration changed remotely:", globalDeviceSettings.value.vibration);
-                        valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
+                } else {
+                    console.log("Blocking intensity update - waiting for ESP confirmation")
+                }
+                
+                // Check vibration
+                if (!shouldBlockUpdate('vibration', settings.vibration)) {
+                    if (valueVibration.value !== settings.vibration) {
+                        console.log("Vibration changed remotely:", settings.vibration);
+                        valueVibration.value = settings.vibration ?? 0;
                     }
+                } else {
+                    console.log("Blocking vibration update - waiting for ESP confirmation")
                 }
             }
         }, 5000);
@@ -242,23 +253,27 @@ watch(() => isMotorError.value, (newError) => {
 
 async function sendVibration() { 
     if(!isOn.value) return;
-    sendCommand("vibration_".concat((valueVibration.value).toString()))
+    const command = "vibration_".concat((valueVibration.value).toString())
+    setPendingCommand("vibration_".concat((valueVibration.value).toString()))
     console.log("vibration_".concat((valueVibration.value).toString()))
     if (globalDeviceSettings.value) {
         globalDeviceSettings.value.vibration = valueVibration.value;
     }
+    await sendCommand(command);
     //maybe i need this?:
     // globalTargetDevice.value.vibration = valueVibration.value
 }
 
 async function sendIntensity() { 
     if(!isOn.value) return;
-    sendCommand("intensity_".concat((valueIntensity.value).toString()))
+    const command = "intensity_".concat(valueIntensity.value.toString());
+    setPendingCommand("intensity_".concat((valueIntensity.value).toString()))
     if (globalDeviceSettings.value) {
         globalDeviceSettings.value.intensity = valueIntensity.value;
     }
     //maybe i need this?:
     // globalTargetDevice.value.intensity = valueIntensity.value
+    await sendCommand(command);
     console.log("intensity_".concat((valueIntensity.value).toString()))
 }
 
@@ -266,10 +281,12 @@ function handleToggle(value){
     isOn.value = value
     console.log('Toggle value:', value);
     const newMotorStatus = value ? 2 : 1;
+    const command = "motor_status_".concat((newMotorStatus).toString())
+    setPendingCommand("motor_status", newMotorStatus);
     if (globalDeviceSettings.value) {
         globalDeviceSettings.value.motor_status = newMotorStatus;
     }
-    sendCommand("motor_status_".concat((newMotorStatus).toString()))
+    sendCommand(command);
     console.log("motor_status_".concat((newMotorStatus).toString()))
     // if(value) { 
     //     globalDeviceSettings.value.motor_status = 2;

@@ -16,11 +16,59 @@ export const useDevice = () => {
     let isMotorError = useState('isMotorError', () => false)
     
     
-    const pendingCommands = useState('pendingCommands', () => new Set())
+    const pendingCommands = useState('pendingCommands', () => ({}))
     const lastCommandTime = useState('lastCommandTime', () => 0)
+
+    const COMMAND_TIMEOUT = 15000 
+    const POLLING_COOLDOWN = 3000
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
+
+    const setPendingCommand = (commandType, expectedValue) => {
+        pendingCommands.value = {
+            ...pendingCommands.value,
+            [commandType]: {
+                expected: expectedValue,
+                sentAt: Date.now()
+            }
+        }
+        lastCommandTime.value = Date.now()
+        
+        setTimeout(() => {
+            clearPendingCommand(commandType)
+        }, COMMAND_TIMEOUT)
+    }
+
+    const clearPendingCommand = (commandType) => {
+        const newPending = { ...pendingCommands.value }
+        delete newPending[commandType]
+        pendingCommands.value = newPending
+    }
+
+    const shouldBlockUpdate = (commandType, incomingValue) => {
+        const pending = pendingCommands.value[commandType]
+        
+        if (!pending) return false
+        
+        const timeSinceCommand = Date.now() - pending.sentAt
+        
+        if (timeSinceCommand > COMMAND_TIMEOUT) {
+            clearPendingCommand(commandType)
+            return false
+        }
+        
+        if (incomingValue === pending.expected) {
+            clearPendingCommand(commandType)
+            return false
+        }
+        
+        if (timeSinceCommand < POLLING_COOLDOWN) {
+            return true
+        }
+        
+        return true
+    }
 
 
     //API Functions
@@ -79,10 +127,10 @@ export const useDevice = () => {
             console.log("No device ID set");
             return;
         }
-        if (!force && Date.now() - lastCommandTime.value < 1000) {
-            console.log("Skipping settings reload - recent command sent");
-            return;
-        }
+        // if (!force && Date.now() - lastCommandTime.value < 1000) {
+        //     console.log("Skipping settings reload - recent command sent");
+        //     return;
+        // }
 
         globalLoading.value = true;
         globalError.value = '';
@@ -108,7 +156,7 @@ export const useDevice = () => {
                 const newSettings = deviceSettings.data[0];
                 
                 //only update if no pending commands
-                if (!pendingCommands.value.has('motor_status')) {
+                if (!shouldBlockUpdate('motor_status', newSettings.motor_status)) {
                     if(newSettings.motor_status === 1) {
                         isMotorError.value = false; 
                         isOn.value = false;
@@ -118,6 +166,8 @@ export const useDevice = () => {
                     } else if (newSettings.motor_status === 0) { 
                         isMotorError.value = true;
                     }
+                }else {
+                    console.log("Blocking motor_status update - pending command")
                 }
             globalDeviceSettings.value = newSettings;
             console.log("Device settings:", globalDeviceSettings.value)
@@ -132,6 +182,7 @@ export const useDevice = () => {
         } finally {
             globalLoading.value = false;
         }
+        return globalDeviceSettings.value
     }
 
     const loadSleepSummary = async () => {
@@ -180,19 +231,15 @@ export const useDevice = () => {
             showCommandStatus("No device selected", "error");
             return;
         }
+        
         try {
             console.log("Sending command to device_id:", globalDeviceId.value)
-            //motor_status_???
-            const commandType = command.includes('_') 
-                ? command.substring(0, command.lastIndexOf('_')) 
-                : command;
-            pendingCommands.value.add(commandType);
-            lastCommandTime.value = Date.now();
+            
             const res = await fetch(`${apiBase}/commands`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    device_id:  (globalDeviceId.value).toString(),
+                    device_id: (globalDeviceId.value).toString(),
                     command: command.toString(),
                     payload: payload
                 })
@@ -203,22 +250,18 @@ export const useDevice = () => {
             }
             
             const data = await res.json();
-            //optional but never used previously in the component (as in loadSummary)
-            // lastEcho.value = data.echo;
             showCommandStatus(`Command '${command}' sent successfully`, 'success');
             console.log('Command sent:', data);
 
-            //maybe superfluous?
-            setTimeout(() => {
-                pendingCommands.value.delete(commandType);
-            }, 5000);
         } catch (error) {
             console.error('Error sending command:', error);
             showCommandStatus(`Failed to send command: ${error.message}`, 'error');
+            
+            // Clear pending on error
             const commandType = command.includes('_') 
                 ? command.substring(0, command.lastIndexOf('_')) 
                 : command;
-            pendingCommands.value.delete(commandType);
+            clearPendingCommand(commandType);
         }
     }
 
@@ -264,6 +307,9 @@ export const useDevice = () => {
         loadDeviceSettings,
         sendCommand,
         showCommandStatus,
+        setPendingCommand,
+        clearPendingCommand,
+        shouldBlockUpdate,
         
         // Helpers
         formatDate,
