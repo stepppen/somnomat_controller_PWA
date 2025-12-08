@@ -53,6 +53,10 @@ const props = withDefaults(defineProps<Props>(), {
     comment: 'This week you slept much better than last week'
 })
 
+
+// const computedSleepDuration = computed(() => {return props.sleepDuration})
+
+
 const chartSvg = ref<SVGSVGElement | null>(null)
 
 onMounted(() => {
@@ -109,7 +113,12 @@ onMounted(() => {
     .style('fill', '#9b87f5')
     .attr('d', bedArc as any)
 
-  let sleepAngle = ((1.03 - (props.sleepDuration / 100)) * Math.PI)
+const sleepAngle = computed(() => { 
+  const result = (1.03 - (props.sleepDuration / 100)) * Math.PI
+  console.log("computed val", result)
+  return result
+})
+
   sleepPath.transition()
     .duration(1000)
     .attrTween('d', function(d: any) {

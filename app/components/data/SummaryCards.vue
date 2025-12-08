@@ -26,10 +26,10 @@
                 <div class="flex items-center justify-between">
                     <div class="px-2 text-left">
                         <p class="p-small text-gray-500 text-left">
-                            Sleep quality
+                            Sleep Continuity
                         </p>
                     </div>
-                    <Icon name="material-symbols:info-outline" size="1em" class="text-gray-400" />
+                    <!-- <Icon name="material-symbols:info-outline" size="1em" class="text-gray-400" /> -->
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="bg-[#EDF0FF] rounded-xl p-2 flex align-items-center justify-center">
@@ -151,11 +151,13 @@ const avgWakeup = computed(() => {
     }
 });
 
+//arbitrary value - ask Manu/Alex
 const sleepQuality = computed(() => {
-    const avg = props.summary.avg_awakenings_per_night;
-    if (avg <= 1) return 'Excellent';
-    if (avg <= 1.5) return 'Good';
-    if (avg <= 2.5) return 'Fair';
+    const val = props.summary.avg_awakenings;
+    console.log("Awakenings this night: ", val)
+    if (val <= 1) return 'Excellent';
+    if (val <= 1.5) return 'Good';
+    if (val <= 2.5) return 'Fair';
     return 'Poor';
 });
 

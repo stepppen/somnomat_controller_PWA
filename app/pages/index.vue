@@ -270,7 +270,6 @@ async function dayBack(){
 }
 
 async function dayForward(){ 
-    
     console.log("sleep duration for this day is: ", duration.value)
     console.log("is it today: ", isToday.value)
     if(isToday.value) return;
@@ -281,13 +280,7 @@ async function dayForward(){
         globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
         console.log("Global Date Val", globalDate.value)
         await loadSleepSummary()
-        if (parseInt(globalSleepSummary.value.summary.sleep_duration_min) != 0) { 
-            duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
-            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
-        } else { 
-            duration.value = 0
-            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
-        }
+        calcSleepDurationPercentage()
         currentDate = newDate;
         console.log("currentDate:", currentDate.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentDate.day === today(getLocalTimeZone()).day){ 
@@ -296,6 +289,16 @@ async function dayForward(){
         }
 
     }
+}
+
+function calcSleepDurationPercentage() { 
+    if (parseInt(globalSleepSummary.value.summary.sleep_duration_min) != 0) { 
+                duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
+                console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+            } else { 
+                duration.value = 0
+                console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+            }
 }
 
 //for one week forward/back
