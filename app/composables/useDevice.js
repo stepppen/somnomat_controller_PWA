@@ -30,7 +30,7 @@ export const useDevice = () => {
             return;
         }
         
-        if (!force && Date.now() - lastCommandTime.value < 3000) {
+        if (!force && Date.now() - lastCommandTime.value < 1000) {
             console.log("Skipping reload: recent command sent");
             return;
         }
@@ -79,7 +79,7 @@ export const useDevice = () => {
             console.log("No device ID set");
             return;
         }
-        if (!force && Date.now() - lastCommandTime.value < 3000) {
+        if (!force && Date.now() - lastCommandTime.value < 1000) {
             console.log("Skipping settings reload - recent command sent");
             return;
         }
