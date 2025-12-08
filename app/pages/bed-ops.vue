@@ -254,7 +254,7 @@ watch(() => isMotorError.value, (newError) => {
 async function sendVibration() { 
     if(!isOn.value) return;
     const command = "vibration_".concat((valueVibration.value).toString())
-    setPendingCommand("vibration_".concat((valueVibration.value).toString()))
+    setPendingCommand("vibration", valueVibration.value)
     console.log("vibration_".concat((valueVibration.value).toString()))
     if (globalDeviceSettings.value) {
         globalDeviceSettings.value.vibration = valueVibration.value;
@@ -267,7 +267,7 @@ async function sendVibration() {
 async function sendIntensity() { 
     if(!isOn.value) return;
     const command = "intensity_".concat(valueIntensity.value.toString());
-    setPendingCommand("intensity_".concat((valueIntensity.value).toString()))
+    setPendingCommand("intensity", valueIntensity.value)
     if (globalDeviceSettings.value) {
         globalDeviceSettings.value.intensity = valueIntensity.value;
     }
