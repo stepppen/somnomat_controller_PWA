@@ -18,7 +18,7 @@
                     </div>
                     <!-- <span class="text-2xl">{{ card.icon }}</span> -->
                     <h3>
-                        {{ formatTime(props.summary.avg_sleep_per_night_hours) }}
+                        {{timeInBed}}
                     </h3>
                 </div>
             </div>
@@ -107,28 +107,48 @@ const formatTimeFromMin = (minutes) => {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
+const timeInBed = computed (() => { 
+    if (props.isDayView){ 
+        var hrs = parseInt(props.summary.time_in_bed_hours);
+        var min = Math.round((Number(props.summary.time_in_bed_hours)-hrs) * 60);
+        var timeInBed = hrs+'h '+min+'m';
+        return timeInBed
+    } else { 
+        const avgTimeInBed = formatTime(props.summary.avg_sleep_per_night_hours)
+        return avgBedtime
+    }
+})
+
 const avgBedtime = computed(() => {
-    if (!props.summary.intervals || props.summary.intervals.length === 0) return '22:43';
-    
-    const bedtimes = props.summary.intervals.map(interval => {
-        const d = new Date(interval.start);
-        return d.getUTCHours() * 60 + d.getUTCMinutes();
-    });
-    
-    const avgMin = bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length;
-    return formatTimeFromMin(avgMin);
+    if (props.isDayView){ 
+        return props.summary.bed_time
+    } else { 
+        if (!props.summary.intervals || props.summary.intervals.length === 0) return '22:43';
+        
+        const bedtimes = props.summary.intervals.map(interval => {
+            const d = new Date(interval.start);
+            return d.getUTCHours() * 60 + d.getUTCMinutes();
+        });
+        
+        const avgMin = bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length;
+        return formatTimeFromMin(avgMin);
+    }
 });
 
 const avgWakeup = computed(() => {
-    if (!props.summary.intervals || props.summary.intervals.length === 0) return '07:14';
-    
-    const wakeups = props.summary.intervals.map(interval => {
-        const d = new Date(interval.end);
-        return d.getUTCHours() * 60 + d.getUTCMinutes();
-    });
-    
-    const avgMin = wakeups.reduce((a, b) => a + b, 0) / wakeups.length;
-    return formatTimeFromMin(avgMin);
+    if (props.isDayView){ 
+        return props.summary.wake_up_time
+    } else{ 
+        if (!props.summary.intervals || props.summary.intervals.length === 0) return '07:14';
+        
+        const wakeups = props.summary.intervals.map(interval => {
+            const d = new Date(interval.end);
+            return d.getUTCHours() * 60 + d.getUTCMinutes();
+        });
+        
+        const avgMin = wakeups.reduce((a, b) => a + b, 0) / wakeups.length;
+        return formatTimeFromMin(avgMin);
+    }
 });
 
 const sleepQuality = computed(() => {

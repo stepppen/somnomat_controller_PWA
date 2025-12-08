@@ -2,8 +2,8 @@
 export const useUserSettings = () => {
   const bedTime = useState<string>('bedTime', () => '00:00')
   const wakeUpTime = useState<string>('wakeUpTime', () => '07:55')
-  const bedTimeTolerance = useState<number>('bedTimeTolerance', () => 30) // in minutes
-  const wakeUpTolerance = useState<number>('wakeUpTolerance', () => 15) // in minutes
+  const bedTimeTolerance = useState<number>('bedTimeTolerance', () => 30) 
+  const wakeUpTolerance = useState<number>('wakeUpTolerance', () => 15) 
 
   const setBedTime = (time: string) => {
     bedTime.value = time
@@ -29,7 +29,6 @@ export const useUserSettings = () => {
     setWakeUpTolerance(wakeUpTolerance.value + delta)
   }
 
-  // Calculate total sleep duration
   const getSleepDuration = () => {
     const [bedHour, bedMin] = bedTime.value.split(':').map(Number)
     const [wakeHour, wakeMin] = wakeUpTime.value.split(':').map(Number)
@@ -37,7 +36,6 @@ export const useUserSettings = () => {
     let bedMinutes = bedHour * 60 + bedMin
     let wakeMinutes = wakeHour * 60 + wakeMin
     
-    // If wake time is earlier than bed time, it's next day
     if (wakeMinutes <= bedMinutes) {
       wakeMinutes += 24 * 60
     }

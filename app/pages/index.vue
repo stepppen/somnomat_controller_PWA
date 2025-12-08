@@ -128,6 +128,20 @@ const {
   sendCommand
 } = useDevice()
 
+const { 
+    bedTime,
+    wakeUpTime,
+    bedTimeTolerance,
+    wakeUpTolerance,
+    setBedTime,
+    setWakeUpTime,
+    setBedTimeTolerance,
+    setWakeUpTolerance,
+    adjustBedTimeTolerance,
+    adjustWakeUpTolerance,
+    getSleepDuration
+} = useUserSettings()
+
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase;
 
@@ -157,8 +171,11 @@ let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(current
 
 let sleepQuality = ref(null)
 let sleepComment = ref("Good Job")
-let duration = ref(82)
+let duration = ref(0)
 let activity = ref(42)
+let totalPlannedSleep = ref(0)
+
+
 
 // Lifecycle
 onMounted(async () => {
@@ -173,15 +190,14 @@ onMounted(async () => {
         await loadSleepSummary()
         console.log("device id: ", globalDeviceId.value, "sleep summary: ", globalSleepSummary.value)
         if (globalSleepSummary.value) {
-            // sleepQuality = computed(() => {
-            //     const avg = props.summary.avg_awakenings_per_night;
-            //     if (avg <= 1) return 'Excellent';
-            //     if (avg <= 1.5) return 'Good';
-            //     if (avg <= 2.5) return 'Fair';
-            //     return 'Poor';
-            // });
- 
+            duration.value = globalSleepSummary.value.summary.sleep_duration_hours
+            console.log("sleep duration for this day is: ", duration.value)
         }
+        if (bedTime) { 
+            console.log("bed time: ", bedTime.value, "with tolerance: ",  bedTimeTolerance.value, "Wake up time: ", wakeUpTime.value, "with tolerance: ",  wakeUpTolerance.value)
+        }
+        totalPlannedSleep.value = await getSleepDuration()
+        console.log("total planned sleep minutes: ", totalPlannedSleep.value.totalMinutes)
         
         refreshInterval = setInterval(async () => {
             await loadDeviceData()
@@ -232,6 +248,7 @@ async function handleToggle(value){
 
 //for one day forward/back
 async function dayBack(){ 
+    console.log("sleep duration for this day is: ", duration.value)
     isToday.value = false;
     console.log("is it today in dayBack: ", isToday.value)
     const newDate  = currentDate.subtract({ days: 1 });
@@ -240,10 +257,21 @@ async function dayBack(){
     globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
     console.log("Global Date Val", globalDate.value)
     await loadSleepSummary()
+    //calculate total - duration = percentage
+
+    if (parseInt(globalSleepSummary.value.summary.sleep_duration_min) != 0) { 
+        duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
+        console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+    } else { 
+        duration.value = 0
+        console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+    }
     currentDate = newDate;
 }
 
 async function dayForward(){ 
+    
+    console.log("sleep duration for this day is: ", duration.value)
     console.log("is it today: ", isToday.value)
     if(isToday.value) return;
     else { 
@@ -253,6 +281,13 @@ async function dayForward(){
         globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
         console.log("Global Date Val", globalDate.value)
         await loadSleepSummary()
+        if (parseInt(globalSleepSummary.value.summary.sleep_duration_min) != 0) { 
+            duration.value = Math.round(((parseInt(globalSleepSummary.value.summary.sleep_duration_min)) / totalPlannedSleep.value.totalMinutes)*100)
+            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+        } else { 
+            duration.value = 0
+            console.log("duration percentage: ", duration.value, "slept for: ", globalSleepSummary.value.summary.sleep_duration_min, "min, out of", totalPlannedSleep.value.totalMinutes )
+        }
         currentDate = newDate;
         console.log("currentDate:", currentDate.day, "today thingy: ", today(getLocalTimeZone()).day)
         if (currentDate.day === today(getLocalTimeZone()).day){ 
