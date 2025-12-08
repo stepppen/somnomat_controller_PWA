@@ -58,7 +58,7 @@ const recommendations = computed(() => {
     }
     
     // Awakenings check
-    if (props.summary.avg_awakenings <= 1) {
+    if (props.summary.avg_awakenings <= 1 && props.summary.avg_sleep_per_night_hours >= 0.5) {
         recs.push({
             icon: 'material-symbols:check-circle-outline',
             text: 'Excellent sleep continuity! You have minimal awakenings. Your sleep is continuous and restorative.',
@@ -66,7 +66,7 @@ const recommendations = computed(() => {
             borderColor: 'border-green-200',
             iconColor: 'text-green-600'
         });
-    } else if (props.summary.avg_awakenings <= 2) {
+    } else if (props.summary.avg_awakenings <= 2 && props.summary.avg_sleep_per_night_hours >= 0.5) {
         recs.push({
             icon: 'material-symbols:lightbulb-outline',
             text: 'Some nighttime awakenings detected. Consider limiting fluids before bed and keeping the room cool and dark.',
@@ -74,7 +74,7 @@ const recommendations = computed(() => {
             borderColor: 'border-yellow-200',
             iconColor: 'text-yellow-600'
         });
-    } else { 
+    } else if (props.summary.avg_awakenings > 2){ 
             recs.push({
             icon: 'material-symbols:warning-outline',
             text: 'A lot of awakenings detected...',

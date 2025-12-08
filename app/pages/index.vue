@@ -219,6 +219,13 @@ onMounted(async () => {
 
 onUnmounted(() => {
     if (refreshInterval) clearInterval(refreshInterval);
+    duration.value = 0
+    activity.value = 0
+    sleepQuality.value = 0
+    totalPlannedSleep.value = 0
+    sleepComment.value = ""
+
+
 });
 
 watch(globalSleepSummary, () => {
@@ -240,15 +247,30 @@ async function handleToggle(value){
         // newDateArr
         globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
         console.log("Global Date Val", globalDate.value)
-        await loadSleepSummary()
+        const response = await loadSleepSummary()
+        if (response) {
+            calcSleepDurationPercentage(globalPeriod.value)
+            calcBedOnPercentage()
+            calcQuality()
+        }
     } else if (value == 1) { 
         globalPeriod.value = "week"
         globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
-        await loadSleepSummary()
+        const response = await loadSleepSummary()
+        if (response) {
+            calcSleepDurationPercentage(globalPeriod.value)
+            calcBedOnPercentage()
+            calcQuality()
+        }
     } else { 
         globalPeriod.value = "month"
         globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
-        await loadSleepSummary()
+        const response = await loadSleepSummary()
+        if (response) {
+            calcSleepDurationPercentage(globalPeriod.value)
+            calcBedOnPercentage()
+            calcQuality()
+        }
     }
     console.log('Value:', value);
 }
