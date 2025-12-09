@@ -35,19 +35,22 @@
             <div class="main-container w-full flex justify-center pt-16">
                 <div class="flex flex-col gap-2 align-items-center justify-center">
                     <div v-if="globalTargetDevice">
-                        <h3 class="text-xl font-bold">{{ globalTargetDevice.name || 'Unnamed Device' }}</h3>
+                        <h3 class="text-xl font-bold text-center">{{ globalTargetDevice.name || 'Unnamed Device' }}</h3>
                     </div>
                     <div v-else>
-                        <h3 class="text-xl font-bold">No Device Found</h3>
+                        <h3 class="text-xl font-bold text-center">No Device Found</h3>
                     </div>
                     <div class="flex justify-center gap-2">
+                        <span class="online rounded-full px-2 text-(--gradient-start) text-xs font-medium flex flex-col align-center justify-center" :class="{'inactiveTag': !isOccupied}">
+                            <Icon name="material-symbols:airline-seat-flat-outline" size="1.5em"/>
+                        </span>
                         <span v-if="isOnline" class="online px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium">
-                            <p class="p-small">
+                            <p class="p-small p-reg">
                                 online
                             </p>
                         </span>
-                        <span v-else class="px-2 py-1 rounded-full text-black text-xs font-medium bg-gray-200">
-                            <p class="p-small">
+                        <span v-else class="px-2 py-1 rounded-full text-gray-700 text-xs font-medium bg-gray-200">
+                            <p class="p-small p-reg">
                                 offline
                             </p>
                         </span>
@@ -82,14 +85,14 @@
                             'bed-intensity-7': valueIntensity === 7,
                             'bed-intensity-8': valueIntensity === 8,
                         }">
-                        <div class="h-5 w-14 rounded-full bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
-                        <div class="h-8 w-full rounded-t-xl bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                        <div class="h-5 w-14 rounded-full bg-(--primary-contrast)" :class="{'inactiveColor': !isOnline}"></div>
+                        <div class="h-8 w-full rounded-t-xl bg-(--primary-contrast)" :class="{'inactiveColor': !isOnline}"></div>
                     </div>
 
-                    <div class="h-4 w-full bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                    <div class="h-4 w-full bg-(--primary-contrast)" :class="{'inactiveColor': !isOnline}"></div>
                     <div class="flex justify-between px-4">
-                        <div class="h-4 w-4 bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
-                        <div class="h-4 w-4 bg-(--primary-contrast)" :class="{'inactiveColor': !globalTargetDevice}"></div>
+                        <div class="h-4 w-4 bg-(--primary-contrast)" :class="{'inactiveColor': !isOnline}"></div>
+                        <div class="h-4 w-4 bg-(--primary-contrast)" :class="{'inactiveColor': !isOnline}"></div>
                     </div>
                 </div>
             </div>
@@ -105,14 +108,15 @@
                                                 {{ valueIntensity }}
                                             </h3>
                                             <h3 class="opacity-40">
-                                                 / 8
+                                                 / 5
                                             </h3>
                                         </div>
                                     </div>
-                                    <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': globalTargetDevice}"  size="xl" v-model="valueIntensity" :step="1" :min="0" :max="8" :ui="{ 
+                                    <USlider color="primary" @mouseup="sendIntensity()" @touchend="sendIntensity()" :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': globalTargetDevice}"  size="xl" v-model="valueIntensity" :step="1" :min="0" :max="5" :ui="{ 
                                         root: isOn ? '' : 'opacity-25',
-                                        thumb: globalTargetDevice ? '' : 'bg-[#9ca3af]',
-                                        thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                        // thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                        thumb: isOnline ? 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0' : 'rounded-full ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0 bg-[#9ca3af]',
+
                                         track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
                                 </div>
                                 <div class="flex flex-col gap-2">
@@ -123,14 +127,14 @@
                                                 {{ valueVibration }}
                                             </h3>
                                             <h3 class="opacity-40">
-                                                 / 8
+                                                 / 5
                                             </h3>
                                         </div>
                                     </div>
-                                    <USlider :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': !globalTargetDevice}" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="8" :ui="{ 
+                                    <USlider :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': !globalTargetDevice}" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="5" :ui="{ 
                                         root: isOn ? '' : 'opacity-25',
-                                        thumb: globalTargetDevice ? '' : 'bg-[#9ca3af]',
-                                        thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                        // thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
+                                        thumb: isOnline ? 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0' : 'rounded-full ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0 bg-[#9ca3af]',
                                         track: 'relative bg-accented overflow-hidden rounded-full grow h-4'}"/>
                                 </div>
                             </div>
@@ -151,6 +155,7 @@ const {
   isSafety,
   isMotorError,
   isOn,
+  isOccupied,
   isOnline,
   pendingCommands,
   loadDeviceData,
@@ -323,7 +328,13 @@ function handleToggle(value){
 }
 
 .inactiveColor{
-    background-color: #d1d5db;
+    background-color: #a0a1a4;
+}
+
+.inactiveTag {
+    background-color: oklch(92.8% 0.006 264.531);
+    color: rgb(114, 114, 114);
+    /* opacity: 0.3; */
 }
 
 .bedTurnedOnColor { 

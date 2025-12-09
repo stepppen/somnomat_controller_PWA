@@ -13,6 +13,7 @@ export const useDevice = () => {
     let globalDate = useState('globalDate', () => null)
     const isOn = useState('isOnChecked', () => false)
     const isOnline = useState('isDeviceOnline', () => false)
+    const isOccupied = useState('isBedOccupied', () => false)
     let isSafety = useState('isSafetyOn', () => false)
     let isMotorError = useState('isMotorError', () => false)
     
@@ -215,35 +216,55 @@ export const useDevice = () => {
             const lastOccupied = await occupiedRes.json();
             console.log("last occupied response: ", lastOccupied.data[0])
             
-            const lastSeenUTC = new Date(lastOccupied.data[0].created_at);
-            const lastSeenCET = lastSeenUTC.toLocaleString('en-GB', { 
-                timeZone: 'Europe/Zurich'
-            })
+            // const lastSeenUTC = new Date(lastOccupied.data[0].created_at);
+            // const lastSeenCET = lastSeenUTC.toLocaleString('en-GB', { 
+            //     timeZone: 'Europe/Zurich'
+            // })
 
-            console.log("CET time:", lastSeenCET);
+            // console.log("CET time:", lastSeenCET);
             
             if (lastOccupied.data && lastOccupied.data.length > 0) {
-                const lastSeenCET = new Date(lastOccupied.data[0].created_at);
-                console.log("Raw occupied values: ", lastSeenCET)
+                const lastSeenDate = new Date(lastOccupied.data[0].created_at);
+                const lastOccupiedBool = lastOccupied.data[0].occupied;
+                console.log("Raw occupied values: ", lastSeenDate)
                 const currentTime = Date.now();
-                const timeDifference = currentTime - lastSeenCET.getTime();
+                const timeDifference = currentTime - lastSeenDate.getTime();
 
-                if (timeDifference <= ONLINE_TIMEOUT_MILLIS) {
-                    isOnline.value = true;
+                if (lastOccupiedBool === true) { 
+                    isOccupied.value = true;
                 } else { 
-                    isOnline.value = false;
+                    isOccupied.value = false;
                 }
+
+                if (timeDifference <= ONLINE_TIMEOUT_MILLIS) { 
+                    isOnline.value = true
+                } else { 
+                    isOnline.value = false
+                }
+                // isOnline.value = timeDifference <= ONLINE_TIMEOUT_MILLIS;
+                const lastSeenCET = lastSeenDate.toLocaleString('en-GB', { 
+                    timeZone: 'Europe/Zurich',
+                    dateStyle: 'short',
+                    timeStyle: 'medium'
+                });
                 
-                console.log(`Last seen: ${timeDifference}ms ago`);
+                console.log(`Device ${isOnline.value ? 'ONLINE' : 'OFFLINE'}`);
+                console.log(`Last seen: ${Math.floor(timeDifference / 1000)}s ago (${lastSeenCET} CET)`);
+                console.log(`Raw timestamp: ${lastOccupied.data[0].created_at}`);
+                console.log(`Time difference: ${timeDifference}ms, Threshold: ${ONLINE_TIMEOUT_MILLIS}ms`);
+            } else { 
+                console.log("No occupancy data found");
+                // isOnline.value = false;
             }
 
         } catch (err) {
             console.error('Error loading data:', err);
             globalError.value = err.message;
+            isOnline.value = false;
+            isOccupied.value = false;
         } finally {
             globalLoading.value = false;
         }
-        return globalDeviceSettings.value
     }
 
     const loadSleepSummary = async () => {
@@ -356,6 +377,7 @@ export const useDevice = () => {
         globalCommandStatus,
         isOn,
         isOnline,
+        isOccupied,
         isSafety,
         isMotorError,
         pendingCommands,
