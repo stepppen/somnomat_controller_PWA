@@ -5,7 +5,7 @@
             </div>
             <div class="flex gap-4">
                 <div class="nav-button"
-                @click="navigateTo('/')">
+                @click="navigateTo('/device-management')">
                     <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
                 </div>
                 <div class="nav-button"
@@ -148,6 +148,7 @@ const {
   isSafety,
   isMotorError,
   isOn,
+  isOnline,
   pendingCommands,
   loadDeviceData,
   loadDeviceSettings,

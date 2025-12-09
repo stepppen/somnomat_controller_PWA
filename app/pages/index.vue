@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <div v-if="globalSleepSummary" class="flex flex-col gap-4">
-                    <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
+                    <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" :totalPlanned="Math.round(totalPlannedSleep.totalMinutes)" :timeInBed="Math.round(globalSleepSummary.summary.time_in_bed_min)" :totalSleepMin="Math.round(globalSleepSummary.summary.sleep_duration_min)"/>
                     <!-- <DataConsistencyChart :intervals="globalSleepSummary.summary.intervals"/> -->
                     <DataSummaryCards :summary="globalSleepSummary.summary" isDayView="true"/>
                     <DataRecommendationsSection :summary="globalSleepSummary.summary"/>

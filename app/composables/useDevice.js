@@ -12,6 +12,7 @@ export const useDevice = () => {
     let globalPeriod = useState('globalPeriod', () => "day")
     let globalDate = useState('globalDate', () => null)
     const isOn = useState('isOnChecked', () => false)
+    const isOnline = useState('isDeviceOnline', () => false)
     let isSafety = useState('isSafetyOn', () => false)
     let isMotorError = useState('isMotorError', () => false)
     
@@ -103,6 +104,12 @@ export const useDevice = () => {
             if (deviceData.data && deviceData.data.length > 0) {
                 globalTargetDevice.value = deviceData.data[0];
                 console.log("Loaded device:", globalTargetDevice.value)
+
+                //Need to finish this isOnline flag
+                if (deviceData.data[0].last_seen > LAST_SEEN_VAL) { 
+                    isOnline.value = false 
+                }
+                else { isOnline.value = true }
                 console.log("Device with safety:", globalTargetDevice.value.safety)
                 if(deviceData.data[0].safety === 1) { 
                     isSafety.value = true;
@@ -294,6 +301,7 @@ export const useDevice = () => {
         globalError,
         globalCommandStatus,
         isOn,
+        isOnline,
         isSafety,
         isMotorError,
         pendingCommands,

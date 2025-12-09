@@ -8,18 +8,47 @@
             
             <div class="relative z-10 flex flex-col items-center justify-center">
                 <p class="p-small text-gray-400">Quality</p>
-                <h1>{{ quality }}
+                <h1 class="h-bold">{{ quality }}
                   <span class="text-xs text-gray-400">/100</span></h1>
             </div>
           </div>
 
           <div class="flex flex-col gap-6">
               <div class="flex flex-col">
-                  <h1 class="text-[#000080]">{{ sleepDuration }}%</h1>
-                  <p class="p-small text-gray-400">Sleep Duration</p>
+                <div class="flex justify-between">
+                  <h1 class="text-[#000080] h-bold">{{ sleepDuration }}%</h1>
+                  <UPopover :ui="{content: 'rounded-2xl ring-0'}">
+                    <UButton label="Open" color="secondary" variant="subtle"> 
+                      <Icon name="material-symbols:info-outline-rounded" class="iconColor opacity-50" size="1em"/>
+                    </UButton>
+
+                    <template #content>
+                      <div class=" max-w-full p-2 flex rounded-2xl">
+                        <p v-if="totalSleepMin" class="p-small">Slept for {{ totalSleepMin }} min out of {{ totalPlanned }} min planned.</p>
+                        <p v-else class="p-small">Total sleep time over planned sleeping time</p>
+                      </div>
+                    </template>
+                  </UPopover>
+                </div>
+                  <p class="p-small text-gray-400">Sleep Duration </p>
               </div>
               <div class="flex flex-col">
-                  <h1 class="text-[#9b87f5]">{{ bedActivity }}%</h1>
+                <div class="flex justify-between">
+                  <h1 v-if="totalSleepMin && timeInBed"  class="text-[#9b87f5] h-bold">{{ Math.round((totalSleepMin/timeInBed) * 100) }}%</h1>
+                  <h1 v-else  class="text-[#9b87f5] h-bold">0%</h1>
+                  <UPopover :ui="{content: 'rounded-2xl ring-0'}">
+                    <UButton label="Open" color="secondary" variant="subtle"> 
+                      <Icon name="material-symbols:info-outline-rounded" class="iconColor opacity-50" size="1em"/>
+                    </UButton>
+
+                    <template #content>
+                      <div class=" max-w-full p-2 flex rounded-2xl">
+                        <p v-if="totalSleepMin" class="p-small">Slept for {{ totalSleepMin }} min out of {{ timeInBed }} min in bed.</p>
+                        <p v-else class="p-small">Sleep duration over total time in bed</p>
+                      </div>
+                    </template>
+                  </UPopover>
+                </div>
                   <p class="p-small text-gray-400">Bed Activity</p>
               </div>
           </div>
@@ -46,6 +75,9 @@ interface Props{
     sleepDuration?: number,
     bedActivity?: number,
     comment?: string,
+    totalPlanned?: number,
+    totalSleepMin?: number,
+    timeInBed?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -156,7 +188,7 @@ const width = 160
   
   if (props.bedActivity !== 0) { 
     // 2 * Math.PI - (1.03 - (props.bedActivity / 100)) * Math.PI
-    bedAngle.value = 2 * Math.PI - ((Math.PI - 0.2) - (props.bedActivity *  ((Math.PI - 0.2) / 100)))
+    bedAngle.value = 2 * Math.PI - ((Math.PI - 0.1) - (props.bedActivity *  ((Math.PI - 0.2) / 100)))
   } else { 
     bedAngle.value = Math.PI + 0.1
   }
