@@ -131,7 +131,7 @@
                                             </h3>
                                         </div>
                                     </div>
-                                    <USlider :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': !globalTargetDevice}" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="5" :ui="{ 
+                                    <USlider :disabled="!isOn" class="custom-sider" :class="{'inactiveSlider': !isOnline}" @mouseup="sendVibration()" @touchend="sendVibration()" size="xl" v-model="valueVibration" :step="1" :min="0" :max="5" :ui="{ 
                                         root: isOn ? '' : 'opacity-25',
                                         // thumb: 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0',
                                         thumb: isOnline ? 'rounded-full bg-primary ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0' : 'rounded-full ring-0 border-4 px-2 py-3 border-white focus-visible:py-4 focus-visible:outline-0 focus-visible:outline-offset-0 bg-[#9ca3af]',

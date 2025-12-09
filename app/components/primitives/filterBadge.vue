@@ -3,7 +3,9 @@
         <div class="bg-gray-200 rounded-full flex items-center justify-center p-2" :class="{'selectedIconContainer': isActive}">
             <Icon :name="badgeIcon" class="iconColor" :class="{'selectedIcon': isActive}"/>
         </div>
-        {{ badgeText }}
+        <p class="p-small px-1">
+            {{ badgeText }}
+        </p>
     </UBadge>
 </template>
 <script setup lang="ts">

@@ -42,7 +42,7 @@
     <div v-if="filteredSounds.length > 0" class="main-container grid grid-cols-2 pt-8 " :class="{'disableGrid': !isOn}">
         <primitives-container v-for="sound in filteredSounds" :key="sound.id" class="w-full h-full flex flex-col gradient-bg">
             <div>
-                <p class="text-white">{{sound.name}}</p>
+                <h3 class="text-white">{{sound.name}}</h3>
             </div>
             <div class=" w-full flex justify-between">
                 <div class="">
@@ -76,7 +76,7 @@ const activeFilters = ref([])
 let audio = ref(null)
 
 const sounds = ref([
-  { id: 1, type: "rain", name: 'Rain 01', file: '/audio/example.wav' }
+  { id: 1, type: "relax", name: 'Stress Relief', file: '/audio/relax.mp3' }
 ])
 
 const filteredSounds = computed(() => {
