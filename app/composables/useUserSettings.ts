@@ -1,5 +1,6 @@
 // composables/useUserSettings.ts
 export const useUserSettings = () => {
+  let globalDeviceId = useState('globalDeviceId', () => "987")
   const bedTime = useState<string>('bedTime', () => '00:00')
   const wakeUpTime = useState<string>('wakeUpTime', () => '07:55')
   const bedTimeTolerance = useState<number>('bedTimeTolerance', () => 30) 
@@ -47,6 +48,26 @@ export const useUserSettings = () => {
     return { hours, minutes, totalMinutes }
   }
 
+  const sendSettings = async () => {
+    try {
+      const config = useRuntimeConfig()
+      const response = await $fetch(`${config.public.apiBase}/user-settings/${globalDeviceId}`, {
+        method: 'POST',
+        body: {
+          bed_time: bedTime.value,
+          wake_up_time: wakeUpTime.value,
+          bed_time_tolerance: bedTimeTolerance.value,
+          wake_up_tolerance: wakeUpTolerance.value
+        }
+      })
+      
+      return { success: true, data: response }
+    } catch (error) {
+      console.error('Failed to send settings:', error)
+      return { success: false, error }
+    }
+  }
+
   return {
     bedTime,
     wakeUpTime,
@@ -58,6 +79,7 @@ export const useUserSettings = () => {
     setWakeUpTolerance,
     adjustBedTimeTolerance,
     adjustWakeUpTolerance,
-    getSleepDuration
+    getSleepDuration,
+    sendSettings
   }
 }

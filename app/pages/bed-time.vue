@@ -356,13 +356,20 @@ const adjustWakeUpTolerance = (delta: number) => {
 }
 
 // --- Save ---
-const saveSettings = () => {
+const saveSettings = async () => {
     setBedTime(localBedTime.value)
     setWakeUpTime(localWakeTime.value)
     adjustBedToleranceGlobal(localBedTolerance.value - bedTimeTolerance.value)
     adjustWakeToleranceGlobal(localWakeTolerance.value - wakeUpTolerance.value)
     
-    // Assuming native button click handled via event or prop logic
+    const { sendSettings } = useUserSettings()
+    const result = await sendSettings()
+    
+    if (result.success) {
+        console.log('Settings saved successfully:', result.data)
+    } else {
+        console.error('Failed to save settings:', result.error)
+    }
 }
 
 onUnmounted(() => {
