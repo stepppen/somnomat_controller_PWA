@@ -49,9 +49,10 @@ export const useUserSettings = () => {
   }
 
   const sendSettings = async () => {
+    console.log("bed_time: ", bedTime.value, "wake_up_time: ", wakeUpTime.value,"bed_time_tolerance: ", bedTimeTolerance.value,"wake_up_tolerance: ", wakeUpTolerance.value)
     try {
       const config = useRuntimeConfig()
-      const response = await $fetch(`${config.public.apiBase}/user-settings/${globalDeviceId}`, {
+      const response = await $fetch(`${config.public.apiBase}/user-settings/${globalDeviceId.value}`, {
         method: 'POST',
         body: {
           bed_time: bedTime.value,

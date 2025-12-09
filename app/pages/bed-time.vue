@@ -161,6 +161,12 @@ const {
     adjustWakeUpTolerance: adjustWakeToleranceGlobal,
 } = useUserSettings()
 
+const { 
+  globalDeviceSettings,
+  globalDeviceId,
+  loadDeviceSettings,
+} = useDevice()
+
 // --- State ---
 const localBedTime = ref(bedTime.value)
 const localWakeTime = ref(wakeUpTime.value)
@@ -178,6 +184,19 @@ const wakePeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localWakeTime.value))
 
 const isDragging = ref(false)
 const dragType = ref<'bed' | 'wake' | null>(null)
+
+onMounted(async () => {
+    if (globalDeviceId.value) { 
+        await loadDeviceSettings()
+        //console.log("globalDeviceSettings.value:", globalDeviceSettings.value[0].bed_time)
+        if (globalDeviceSettings.value) {
+            localBedTime.value = globalDeviceSettings.value.bed_time ?? "0";
+            localWakeTime.value = globalDeviceSettings.value.wake_up_time ?? "0";
+            localBedTolerance.value = globalDeviceSettings.bed_time_tolerance ?? 0;
+            localWakeTolerance.value = globalDeviceSettings.value.wake_up_tolerance ?? 0;
+        }
+    }
+});
 
 // --- Helpers ---
 

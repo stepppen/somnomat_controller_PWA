@@ -92,8 +92,38 @@
 
 <script setup>
 import { computed } from 'vue';
+const { 
+  globalDeviceId,
+  globalDeviceSettings,
+  loadDeviceSettings,
+} = useDevice()
 
-const { bedTime, wakeUpTime, bedTimeTolerance, wakeUpTolerance } = useUserSettings();
+const { 
+    bedTime,
+    wakeUpTime,
+    bedTimeTolerance,
+    wakeUpTolerance,
+} = useUserSettings()
+
+const localBedTime = ref(bedTime)
+const localWakeTime = ref(wakeUpTime)
+const localBedTolerance = ref(bedTimeTolerance)
+const localWakeTolerance = ref(wakeUpTolerance)
+
+
+onMounted(async () => {
+    if (globalDeviceId.value) { 
+        await loadDeviceSettings()
+        //console.log("globalDeviceSettings.value:", globalDeviceSettings.value[0].bed_time)
+        if (globalDeviceSettings.value) {
+            localBedTime.value = globalDeviceSettings.value.bed_time ?? "0";
+            localWakeTime.value = globalDeviceSettings.value.wake_up_time ?? "0";
+            localBedTolerance.value = globalDeviceSettings.value.bed_time_tolerance ?? 0;
+            localWakeTolerance.value = globalDeviceSettings.value.wake_up_tolerance ?? 0;
+            console.log("localBedTime:", localBedTime.value, "localWakeTime.value:", localWakeTime.value, "localBedTolerance:", localBedTolerance.value, "localWakeTolerance:", localWakeTolerance.value, )
+        }
+    }
+});
 
 const props = defineProps({
     intervals: {
@@ -110,18 +140,15 @@ const timeToDecimal = (timeStr) => {
     return h + (m / 60);
 };
 
-// --- CHART SCALING (Reactive to bedTime/wakeUpTime) ---
-
-// Start the chart 2 hours before bedtime
 const chartStartHour = computed(() => {
-    const bed = timeToDecimal(bedTime.value);
-    return (bed - 2 + 24) % 24; 
+    const bed = timeToDecimal(localBedTime.value);
+    return Math.max(0, bed - 2); 
 });
 
 // Calculate total window duration
 const chartDuration = computed(() => {
     const start = chartStartHour.value;
-    let end = timeToDecimal(wakeUpTime.value) + 2; // End 2 hours after wake up
+    let end = timeToDecimal(localWakeTime.value) + 2; // End 2 hours after wake up
     
     // Handle midnight crossing
     if (end < start) end += 24;
@@ -163,24 +190,24 @@ const axisLabels = computed(() => {
 // --- TOLERANCE ZONES ---
 
 const bedToleranceStart = computed(() => {
-    const bed = timeToDecimal(bedTime.value);
-    const startH = bed - (bedTimeTolerance.value / 60);
+    const bed = timeToDecimal(localBedTime.value);
+    const startH = bed - (localBedTolerance.value / 60);
     return Math.max(0, getPercentPosition(startH));
 });
 
 const bedToleranceWidth = computed(() => {
-    const widthHours = (bedTimeTolerance.value * 2) / 60;
+    const widthHours = (localBedTolerance.value * 2) / 60;
     return (widthHours / chartDuration.value) * 100;
 });
 
 const wakeToleranceStart = computed(() => {
-    const wake = timeToDecimal(wakeUpTime.value);
-    const startH = wake - (wakeUpTolerance.value / 60);
+    const wake = timeToDecimal(localWakeTime.value);
+    const startH = wake - (localWakeTolerance.value / 60);
     return Math.max(0, getPercentPosition(startH));
 });
 
 const wakeToleranceWidth = computed(() => {
-    const widthHours = (wakeUpTolerance.value * 2) / 60;
+    const widthHours = (localWakeTolerance.value * 2) / 60;
     return (widthHours / chartDuration.value) * 100;
 });
 
