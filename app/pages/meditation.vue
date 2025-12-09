@@ -18,7 +18,7 @@
     <div class="main-container w-full flex justify-center py-8">
         <div class="flex flex-col gap-2 align-items-center justify-center">
             <div>
-                <h3 class="text-xl font-bold">Sounds</h3>
+                <h3 class="text-xl font-bold">Meditation Programs</h3>
             </div>
         </div>
     </div>
@@ -76,7 +76,7 @@ const activeFilters = ref([])
 let audio = ref(null)
 
 const sounds = ref([
-  { id: 1, type: "relax", name: 'Stress Relief', file: '/audio/relax.mp3' }
+  { id: 1, type: "relax", name: '2-minute Meditation', file: '/audio/relax.mp3' }
 ])
 
 const filteredSounds = computed(() => {

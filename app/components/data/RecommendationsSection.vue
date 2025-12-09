@@ -8,12 +8,12 @@
                 <div
                     v-for="(rec, idx) in recommendations"
                     :key="idx"
-                    :class="['flex gap-4 p-4 rounded-xl border', rec.bgColor, rec.borderColor]"
+                    :class="['flex gap-4 p-2 rounded-xl border', rec.bgColor, rec.borderColor]"
                 >
                     <div class="flex-shrink-0">
                         <Icon :name="rec.icon" size="1.2em" :class="rec.iconColor" />
                     </div>
-                    <p class="text-sm text-gray-700">{{ rec.text }}</p>
+                    <p class="p-small text-gray-700">{{ rec.text }}</p>
                 </div>
             </div>
     </primitives-container>
