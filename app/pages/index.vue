@@ -374,6 +374,7 @@ async function weekForward(){
     if(isThisWeek.value) return;
     else { 
         const newDate  = currentWeek.add({ weeks: 1 });
+        console.log("is this CET format?: ", currentWeek)
         startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
         endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
         globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')

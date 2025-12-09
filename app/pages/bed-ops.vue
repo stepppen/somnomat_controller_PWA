@@ -41,7 +41,7 @@
                         <h3 class="text-xl font-bold">No Device Found</h3>
                     </div>
                     <div class="flex justify-center gap-2">
-                        <span v-if="globalTargetDevice" class="online px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium">
+                        <span v-if="isOnline" class="online px-2 py-1 rounded-full text-(--gradient-start) text-xs font-medium">
                             <p class="p-small">
                                 online
                             </p>
@@ -51,15 +51,18 @@
                                 offline
                             </p>
                         </span>
-                          <USwitch
-                            v-model="isOn"
-                            unchecked-icon="material-symbols:mode-off-on"
-                            checked-icon="material-symbols:mode-off-on"
-                            size="xl"
-                            color="primary"
-                            @update:modelValue="handleToggle"
-                            default-value
-                        />
+                        <div :class="{'disabled': !isOnline}">
+                            <USwitch
+                              v-model="isOn"
+                              :disabled="!isOnline"
+                              unchecked-icon="material-symbols:mode-off-on"
+                              checked-icon="material-symbols:mode-off-on"
+                              size="xl"
+                              color="primary"
+                              @update:modelValue="handleToggle"
+                              default-value
+                          />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,6 +155,7 @@ const {
   pendingCommands,
   loadDeviceData,
   loadDeviceSettings,
+  loadLastOccupied,
   sendCommand,
   setPendingCommand,
   shouldBlockUpdate
@@ -171,6 +175,7 @@ onMounted(async () => {
     if (globalDeviceId.value) {
         await loadDeviceData()
         await loadDeviceSettings()
+        await loadLastOccupied()
         if (globalDeviceSettings.value) {
             valueIntensity.value = globalDeviceSettings.value.intensity ?? 0;
             valueVibration.value = globalDeviceSettings.value.vibration ?? 0;
@@ -216,6 +221,9 @@ onMounted(async () => {
         //     await loadDeviceSettings()
         // }, 30000);
     }
+    refreshInterval = setInterval(async () => {
+        await loadLastOccupied()
+    }, 5000);
     
     // Load saved bedtime preference
     // const saved = localStorage.getItem('targetBedtime');
@@ -321,6 +329,10 @@ function handleToggle(value){
 .bedTurnedOnColor { 
     opacity: 1;
     /* background-color: var(--gradient-start); */
+}
+
+.disabled {
+    opacity: 0.8;
 }
 
 /* bed animation */

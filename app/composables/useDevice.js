@@ -22,6 +22,7 @@ export const useDevice = () => {
 
     const COMMAND_TIMEOUT = 15000 
     const POLLING_COOLDOWN = 3000
+    const ONLINE_TIMEOUT_MILLIS = 120000
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase
@@ -103,13 +104,12 @@ export const useDevice = () => {
             
             if (deviceData.data && deviceData.data.length > 0) {
                 globalTargetDevice.value = deviceData.data[0];
-                console.log("Loaded device:", globalTargetDevice.value)
 
                 //Need to finish this isOnline flag
-                if (deviceData.data[0].last_seen > LAST_SEEN_VAL) { 
-                    isOnline.value = false 
-                }
-                else { isOnline.value = true }
+                // if (deviceData.data[0].last_seen > LAST_SEEN_VAL) { 
+                //     isOnline.value = false 
+                // }
+                // else { isOnline.value = true }
                 console.log("Device with safety:", globalTargetDevice.value.safety)
                 if(deviceData.data[0].safety === 1) { 
                     isSafety.value = true;
@@ -181,6 +181,60 @@ export const useDevice = () => {
             } else {
                 globalError.value = "Device not found";
                 return;
+            }
+
+        } catch (err) {
+            console.error('Error loading data:', err);
+            globalError.value = err.message;
+        } finally {
+            globalLoading.value = false;
+        }
+        return globalDeviceSettings.value
+    }
+
+    //FINISH THIS FOR ONLINE 
+    const loadLastOccupied = async () => { 
+        if (!globalDeviceId.value) {
+            console.log("No device ID set");
+            return;
+        }
+        globalLoading.value = true;
+        globalError.value = '';
+        try {
+            const testRes = await fetch(`${apiBase}/debug`);
+            if (!testRes.ok) {
+                globalError.value = 'Backend not responding. Make sure main.py is running on port 10000.';
+                globalLoading.value = false;
+                return;
+            }
+            
+            //fetch device settings with global state id
+            const occupiedRes = await fetch(`${apiBase}/devices/${globalDeviceId.value}/last_occupied`);
+            if (!occupiedRes.ok) throw new Error(`HTTP ${occupiedRes.status}`);
+            
+            const lastOccupied = await occupiedRes.json();
+            console.log("last occupied response: ", lastOccupied.data[0])
+            
+            const lastSeenUTC = new Date(lastOccupied.data[0].created_at);
+            const lastSeenCET = lastSeenUTC.toLocaleString('en-GB', { 
+                timeZone: 'Europe/Zurich'
+            })
+
+            console.log("CET time:", lastSeenCET);
+            
+            if (lastOccupied.data && lastOccupied.data.length > 0) {
+                const lastSeenCET = new Date(lastOccupied.data[0].created_at);
+                console.log("Raw occupied values: ", lastSeenCET)
+                const currentTime = Date.now();
+                const timeDifference = currentTime - lastSeenCET.getTime();
+
+                if (timeDifference <= ONLINE_TIMEOUT_MILLIS) {
+                    isOnline.value = true;
+                } else { 
+                    isOnline.value = false;
+                }
+                
+                console.log(`Last seen: ${timeDifference}ms ago`);
             }
 
         } catch (err) {
@@ -313,6 +367,7 @@ export const useDevice = () => {
         loadDeviceData,
         loadSleepSummary,
         loadDeviceSettings,
+        loadLastOccupied,
         sendCommand,
         showCommandStatus,
         setPendingCommand,
