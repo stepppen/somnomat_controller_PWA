@@ -110,17 +110,15 @@ const localWakeTime = ref(wakeUpTime)
 const localBedTolerance = ref(bedTimeTolerance)
 const localWakeTolerance = ref(wakeUpTolerance)
 
-
 onMounted(async () => {
     if (globalDeviceId.value) { 
         await loadDeviceSettings()
-        //console.log("globalDeviceSettings.value:", globalDeviceSettings.value[0].bed_time)
         if (globalDeviceSettings.value) {
             localBedTime.value = globalDeviceSettings.value.bed_time ?? "0";
             localWakeTime.value = globalDeviceSettings.value.wake_up_time ?? "0";
             localBedTolerance.value = globalDeviceSettings.value.bed_time_tolerance ?? 0;
             localWakeTolerance.value = globalDeviceSettings.value.wake_up_tolerance ?? 0;
-            console.log("localBedTime:", localBedTime.value, "localWakeTime.value:", localWakeTime.value, "localBedTolerance:", localBedTolerance.value, "localWakeTolerance:", localWakeTolerance.value, )
+            console.log("localBedTime:", localBedTime.value, "localWakeTime.value:", localWakeTime.value, "localBedTolerance:", localBedTolerance.value, "localWakeTolerance:", localWakeTolerance.value)
         }
     }
 });
@@ -132,57 +130,52 @@ const props = defineProps({
     }
 });
 
-// --- CORE HELPERS ---
+// --- FIXED 12:00 NOON BOUNDARY ---
+// Timeline shows 12:00 prev day to 12:00 today (24 hour window)
+const CHART_START_HOUR = 12; // Noon yesterday
+const CHART_DURATION = 24;   // 24 hours total
 
-const timeToDecimal = (timeStr) => {
+// Convert time string to hours since chart start (12:00 prev day)
+const timeToChartHours = (timeStr) => {
     if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
-    return h + (m / 60);
-};
-
-const chartStartHour = computed(() => {
-    const bed = timeToDecimal(localBedTime.value);
-    return Math.max(0, bed - 2); 
-});
-
-// Calculate total window duration
-const chartDuration = computed(() => {
-    const start = chartStartHour.value;
-    let end = timeToDecimal(localWakeTime.value) + 2; // End 2 hours after wake up
+    const hourDecimal = h + (m / 60);
     
-    // Handle midnight crossing
-    if (end < start) end += 24;
-    
-    // Ensure minimum window
-    return Math.max(8, end - start);
-});
-
-const getPercentPosition = (hourDecimal) => {
-    const start = chartStartHour.value;
-    let target = hourDecimal;
-    
-    // Normalize target relative to start
-    if (start > 12 && target < 12) {
-        target += 24;
-    } else if (target < start) {
-        target += 24;
+    // If time is >= 12:00, it's on the first day (yesterday afternoon/evening)
+    // If time is < 12:00, it's on the second day (today morning)
+    if (hourDecimal >= 12) {
+        return hourDecimal - 12; // Hours from noon yesterday
+    } else {
+        return hourDecimal + 12; // Hours from noon yesterday (next day morning)
     }
-
-    return ((target - start) / chartDuration.value) * 100;
 };
 
-// Axis Labels (Regenerates when settings change)
+// Convert ISO timestamp to hours since chart start
+const isoToChartHours = (isoStr) => {
+    if (!isoStr) return 0;
+    const d = new Date(isoStr);
+    const hour = d.getHours();
+    const minute = d.getMinutes();
+    const hourDecimal = hour + (minute / 60);
+    
+    // Same logic as timeToChartHours
+    if (hourDecimal >= 12) {
+        return hourDecimal - 12;
+    } else {
+        return hourDecimal + 12;
+    }
+};
+
+const getPercentPosition = (chartHours) => {
+    return (chartHours / CHART_DURATION) * 100;
+};
+
+// Axis Labels - Show every 3 hours from 12:00
 const axisLabels = computed(() => {
     const labels = [];
-    const start = Math.floor(chartStartHour.value);
-    const duration = Math.ceil(chartDuration.value);
-    
-    // Show label every ~3 hours
-    const step = Math.ceil(duration / 5); 
-
-    for (let i = 0; i <= duration; i += step) {
-        let h = (start + i) % 24;
-        labels.push(String(h).padStart(2, '0'));
+    for (let i = 0; i <= 24; i += 3) {
+        const hour = (12 + i) % 24;
+        labels.push(String(hour).padStart(2, '0'));
     }
     return labels;
 });
@@ -190,30 +183,31 @@ const axisLabels = computed(() => {
 // --- TOLERANCE ZONES ---
 
 const bedToleranceStart = computed(() => {
-    const bed = timeToDecimal(localBedTime.value);
-    const startH = bed - (localBedTolerance.value / 60);
-    return Math.max(0, getPercentPosition(startH));
+    const bedChartHours = timeToChartHours(localBedTime.value);
+    const toleranceHours = localBedTolerance.value / 60;
+    const startHours = bedChartHours - toleranceHours;
+    return Math.max(0, getPercentPosition(startHours));
 });
 
 const bedToleranceWidth = computed(() => {
     const widthHours = (localBedTolerance.value * 2) / 60;
-    return (widthHours / chartDuration.value) * 100;
+    return (widthHours / CHART_DURATION) * 100;
 });
 
 const wakeToleranceStart = computed(() => {
-    const wake = timeToDecimal(localWakeTime.value);
-    const startH = wake - (localWakeTolerance.value / 60);
-    return Math.max(0, getPercentPosition(startH));
+    const wakeChartHours = timeToChartHours(localWakeTime.value);
+    const toleranceHours = localWakeTolerance.value / 60;
+    const startHours = wakeChartHours - toleranceHours;
+    return Math.max(0, getPercentPosition(startHours));
 });
 
 const wakeToleranceWidth = computed(() => {
     const widthHours = (localWakeTolerance.value * 2) / 60;
-    return (widthHours / chartDuration.value) * 100;
+    return (widthHours / CHART_DURATION) * 100;
 });
 
 // --- BAR POSITIONING & DATA ---
 
-// Calculate total bed time (earliest start to latest end)
 const hasTotalBedTime = computed(() => props.intervals.length > 0);
 
 const totalBedTimeStart = computed(() => {
@@ -232,9 +226,8 @@ const totalBedTimeEnd = computed(() => {
 
 const getBarPosition = (isoStart) => {
     if (!isoStart) return 0;
-    const d = new Date(isoStart);
-    const h = d.getHours() + d.getMinutes() / 60;
-    return Math.max(0, getPercentPosition(h));
+    const chartHours = isoToChartHours(isoStart);
+    return Math.max(0, Math.min(100, getPercentPosition(chartHours)));
 };
 
 const getBarWidth = (isoStart, isoEnd) => {
@@ -243,7 +236,8 @@ const getBarWidth = (isoStart, isoEnd) => {
     const endD = new Date(isoEnd);
     const diffMs = endD.getTime() - startD.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
-    return (diffHours / chartDuration.value) * 100;
+    const widthPercent = (diffHours / CHART_DURATION) * 100;
+    return Math.max(0, Math.min(100, widthPercent));
 };
 
 const getIntervalColor = (interval) => {
