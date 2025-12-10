@@ -9,6 +9,7 @@
             </div>
         </div>
     </div>
+    <!-- mock data cont -->
         <div class="main-container py-2">
             <div class="text-sm mt-2 bg-red-200 rounded-2xl p-2 flex items-center justify-center gap-2">
                 <Icon name="material-symbols:info-outline-rounded" size="1em"/>
