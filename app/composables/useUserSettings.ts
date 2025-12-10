@@ -68,12 +68,39 @@ export const useUserSettings = () => {
       return { success: false, error }
     }
   }
+  const getSleepDayBoundary = () => {
+  const [bedHour, bedMin] = bedTime.value.split(':').map(Number)
+  const [wakeHour, wakeMin] = wakeUpTime.value.split(':').map(Number)
+  
+  let bedMinutes = bedHour * 60 + bedMin
+  let wakeMinutes = wakeHour * 60 + wakeMin
+  
+  // If wake time is earlier than bedtime, it's next day
+  if (wakeMinutes <= bedMinutes) {
+    wakeMinutes += 24 * 60
+  }
+  
+  // Calculate midpoint (this is our day boundary)
+  const midpointMinutes = Math.floor((bedMinutes + wakeMinutes) / 2)
+  
+  // Convert back to time format
+  const boundaryHour = Math.floor(midpointMinutes / 60) % 24
+  const boundaryMin = midpointMinutes % 60
+  
+  return {
+    hour: boundaryHour,
+    minute: boundaryMin,
+    totalMinutes: midpointMinutes % (24 * 60),
+    formatted: `${String(boundaryHour).padStart(2, '0')}:${String(boundaryMin).padStart(2, '0')}`
+  }
+}
 
   return {
     bedTime,
     wakeUpTime,
     bedTimeTolerance,
     wakeUpTolerance,
+    getSleepDayBoundary,
     setBedTime,
     setWakeUpTime,
     setBedTimeTolerance,

@@ -268,43 +268,40 @@ export const useDevice = () => {
     }
 
     const loadSleepSummary = async () => {
-        if (!globalDeviceId.value) {
-            console.log("No device ID set");
-            return;
-        }
-        globalLoading.value = true;
-        globalError.value = '';
+    if (!globalDeviceId.value) {
+        console.error('No device ID available')
+        return
+    }
+    
+    globalLoading.value = true
+    globalError.value = null
+    
+    try {
+        const { getSleepDayBoundary } = useUserSettings()
+        const sleepBoundary = getSleepDayBoundary()
         
-        try {
-            const testRes = await fetch(`${apiBase}/debug`);
-            if (!testRes.ok) {
-                globalError.value = 'Backend not responding. Make sure main.py is running on port 10000.';
-                globalLoading.value = false;
-                return;
-            }
-
-            
-            const sleepRes = await fetch(`${apiBase}/sleep/${globalDeviceId.value}/summary/?period=${globalPeriod.value}&date=${globalDate.value}`);
-            console.log("Fetched Summary data from path: ", `${apiBase}/sleep/${globalDeviceId.value}/summary/?period=${globalPeriod.value}&date=${globalDate.value}`)
-            // const sleepdata = await sleepRes.json();
-            // console.log(sleepdata)
-            if (!sleepRes.ok) {
-                const errorText = await sleepRes.text();
-                throw new Error(`HTTP ${sleepRes.status}: ${errorText}`);
-            }
-            
-            const sleepdata = await sleepRes.json();
-            console.log("Sleep data on new path:", sleepdata);
-            globalSleepSummary.value = sleepdata;
-            console.log(globalSleepSummary.value.summary.intervals)
-            //optional but never used previously in the component
-            // lastUpdate.value = new Date().toLocaleTimeString();
-        } catch (err) {
-            console.error('Error loading data:', err);
-            globalError.value = err.message;
-        } finally {
-            globalLoading.value = false;
+        const config = useRuntimeConfig()
+        const apiBase = config.public.apiBase
+        
+        const response = await $fetch(`${apiBase}/sleep/${globalDeviceId.value}/summary`, {
+        params: {
+            period: globalPeriod.value,
+            date: globalDate.value,
+            sleep_boundary_hour: sleepBoundary.hour
         }
+        })
+        
+        globalSleepSummary.value = response
+        console.log('Sleep summary loaded:', response)
+        return response
+        
+    } catch (error) {
+        console.error('Failed to load sleep summary:', error)
+        globalError.value = error
+        throw error
+    } finally {
+        globalLoading.value = false
+    }
     }
 
     const sendCommand = async (command, payload = {}) => {
