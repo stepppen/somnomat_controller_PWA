@@ -116,7 +116,8 @@ const {
     setWakeUpTolerance,
     adjustBedTimeTolerance,
     adjustWakeUpTolerance,
-    getSleepDuration
+    getSleepDuration,
+    getSleepDayBoundary
 } = useUserSettings()
 
 const config = useRuntimeConfig();
@@ -205,6 +206,14 @@ const totalSleepMinutes = computed(() => {
     return globalSleepSummary.value?.summary?.sleep_duration_min ? Math.round(globalSleepSummary.value.summary.sleep_duration_min) : 0;
 });
 
+// Helper to format date for API (uses END of sleep period)
+function formatDateForAPI(day, month, year) {
+    // For day view, we send the END date of the sleep period
+    // e.g., if viewing "Dec 10", we want sleep from Dec 9 03:00 to Dec 10 03:00
+    // So we send Dec 10 as the date
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 // Lifecycle
 onMounted(async () => {
     if (!globalDate.value) {
@@ -243,24 +252,24 @@ onUnmounted(() => {
 async function handleToggle(value){
     if(value == 0) { 
         globalPeriod.value = "day"
-        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        globalDate.value = formatDateForAPI(newDateArr.value[0], newDateArr.value[1], newDateArr.value[2])
     } else if (value == 1) { 
         globalPeriod.value = "week"
-        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        globalDate.value = formatDateForAPI(newDateArr.value[0], newDateArr.value[1], newDateArr.value[2])
     } else { 
         globalPeriod.value = "month"
-        globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0')
+        globalDate.value = formatDateForAPI(newDateArr.value[0], newDateArr.value[1], newDateArr.value[2])
     }
     console.log('Period changed to:', globalPeriod.value, 'Date:', globalDate.value);
     await loadSleepSummary()
 }
 
-// Day navigation
+// Day navigation - FIXED to send correct date
 async function dayBack(){ 
     isToday.value = false;
     const newDate = currentDate.subtract({ days: 1 });
     newDateArr.value = [newDate.day, newDate.month, newDate.year];
-    globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0');
+    globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year);
     currentDate = newDate;
     await loadSleepSummary();
 }
@@ -270,15 +279,14 @@ async function dayForward(){
     
     const newDate = currentDate.add({ days: 1 });
     newDateArr.value = [newDate.day, newDate.month, newDate.year];
-    globalDate.value = (newDateArr.value[2]).toString() + "-" + ((newDateArr.value[1]).toString()).padStart(2, '0') + "-" + ((newDateArr.value[0]).toString()).padStart(2, '0');
+    globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year);
     currentDate = newDate;
     await loadSleepSummary();
     
     const todayDate = today(getLocalTimeZone());
-    console.log("currentDate.day === todayDate.day", currentDate.day)
     if (currentDate.day === todayDate.day && 
         currentDate.month === todayDate.month && 
-        currentDate.year === todayDate.year || !currentDate.day) { 
+        currentDate.year === todayDate.year) { 
         isToday.value = true;
     }
 }
@@ -289,7 +297,7 @@ async function weekBack(){
     const newDate = currentWeek.subtract({ weeks: 1 });
     startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
     endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
-    globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+    globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year)
     currentWeek = newDate;
     await loadSleepSummary();
 }
@@ -300,11 +308,10 @@ async function weekForward(){
     const newDate = currentWeek.add({ weeks: 1 });
     startWeek.value = [(startOfWeek(newDate, 'de-DE')).day, (startOfWeek(newDate, 'de-DE')).month, (startOfWeek(newDate, 'de-DE')).year]
     endWeek.value = [(endOfWeek(newDate, 'de-DE')).day, (endOfWeek(newDate, 'de-DE')).month, (endOfWeek(newDate, 'de-DE')).year]
-    globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+    globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year)
     currentWeek = newDate;
     await loadSleepSummary();
     
-    // Check if we're back to this week
     const todayDate = today(getLocalTimeZone());
     if (currentWeek.day === todayDate.day && currentWeek.month === todayDate.month){ 
         isThisWeek.value = true;
@@ -317,7 +324,7 @@ async function monthBack(){
     const newDate = currentMonth.subtract({ months: 1 });
     startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
     endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
-    globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+    globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year)
     currentMonth = newDate;
     await loadSleepSummary();
 }
@@ -328,11 +335,10 @@ async function monthForward(){
     const newDate = currentMonth.add({ months: 1 });
     startMonth.value = [(startOfMonth(newDate, 'de-DE')).day, (startOfMonth(newDate, 'de-DE')).month, (startOfMonth(newDate, 'de-DE')).year]
     endMonth.value = [(endOfMonth(newDate, 'de-DE')).day, (endOfMonth(newDate, 'de-DE')).month, (endOfMonth(newDate, 'de-DE')).year]
-    globalDate.value = (newDate.year).toString() + "-" + ((newDate.month).toString()).padStart(2, '0') + "-" + ((newDate.day).toString()).padStart(2, '0')
+    globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year)
     currentMonth = newDate;
     await loadSleepSummary();
     
-    // Check if we're back to this month
     const todayDate = today(getLocalTimeZone());
     if (currentMonth.month === todayDate.month && currentMonth.year === todayDate.year){ 
         isThisMonth.value = true;

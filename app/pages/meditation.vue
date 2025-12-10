@@ -122,6 +122,7 @@ function playBack(soundId){
         console.log("Audio paused manually State: ", isPlaying.value)
         audio.pause()
         audio.load()
+        sendCommand("meditation_off")
         // sendCommand("on")
     }
     else { 
