@@ -4,8 +4,7 @@
             <h2 class="text-left">Insights</h2>
         </div>
         <div class="flex gap-4">
-            <div class="nav-button"
-            @click="navigateTo('/notifications')">
+            <div class="nav-button opacity-50">
                 <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
             </div>
         </div>
@@ -275,11 +274,11 @@ async function dayForward(){
     currentDate = newDate;
     await loadSleepSummary();
     
-    // Check if we're back to today
     const todayDate = today(getLocalTimeZone());
+    console.log("currentDate.day === todayDate.day", currentDate.day)
     if (currentDate.day === todayDate.day && 
         currentDate.month === todayDate.month && 
-        currentDate.year === todayDate.year) { 
+        currentDate.year === todayDate.year || !currentDate.day) { 
         isToday.value = true;
     }
 }

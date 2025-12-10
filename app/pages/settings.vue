@@ -4,8 +4,7 @@
             <h2 class="text-left">Settings</h2>
         </div>
         <div class="flex gap-4">
-            <div class="nav-button"
-            @click="navigateTo('/')">
+            <div class="nav-button opacity-50">
                 <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
             </div>
         </div>
@@ -42,9 +41,9 @@
                 <PrimitivesFullButton buttonPath="/privacy-policy" navIcon="material-symbols:spa-outline-rounded" buttonText="Privacy Policy" :disabled="isDisabled"/>
             </primitives-container>
         </div>
-        <div class="main-container">
+        <!-- <div class="main-container">
             <PrimitivesFullButtonDark buttonText="logout" buttonPath="/"/>
-        </div>
+        </div> -->
         <div class="main-container px-10 text-center"> 
             <p class="p-small">
                 © 2025 Calmea. All Rights Reserved. Zürich, Switzerland.

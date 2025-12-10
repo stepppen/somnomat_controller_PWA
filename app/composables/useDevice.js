@@ -305,8 +305,7 @@ export const useDevice = () => {
     }
     const loadUserSettings = async () => {
         try {
-            const config = useRuntimeConfig()
-            const response = await $fetch(`${config.public.apiBase}/user-settings/${globalDeviceId.value}`)
+            const response = await $fetch(`${apiBase}/user-settings/${globalDeviceId.value}`)
             
             if (response?.data?.[0]) {
             const settings = response.data[0]

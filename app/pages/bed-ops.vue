@@ -8,8 +8,7 @@
                 @click="navigateTo('/device-management')">
                     <Icon name="material-symbols:settings-outline-rounded" size="1.5em"/>
                 </div>
-                <div class="nav-button"
-                @click="navigateTo('/notifications')">
+                <div class="nav-button opacity-50">
                     <Icon name="material-symbols:notifications-outline-rounded" size="1.5em"/>
                 </div>
             </div>
