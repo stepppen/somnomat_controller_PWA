@@ -2,7 +2,7 @@
     <primitives-container>
             <div class="flex items-center justify-between mb-6">
                 <h3>Recommendations</h3>
-                <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.2em" class="text-gray-400" @click="navigateTo('/recommendations')"/>
+                <!-- <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.2em" class="text-gray-400" @click="navigateTo('/recommendations')"/> -->
             </div>
             <div class="flex flex-col gap-4 pt-2">
                 <div
@@ -28,7 +28,7 @@ const props = defineProps({
 });
 
 const recommendations = computed(() => {
-    const recs = [];
+    let recs = [];
     
     // Sleep duration check
     if (props.summary.avg_sleep_per_night_hours >= 7.5) {
@@ -47,7 +47,7 @@ const recommendations = computed(() => {
             borderColor: 'border-yellow-200',
             iconColor: 'text-yellow-600'
         });
-    } else {
+    } else if (props.summary.avg_sleep_per_night_hours >= 0.5){
         recs.push({
             icon: 'material-symbols:warning-outline',
             text: 'Insufficient sleep detected. You need more sleep. Aim for at least 7 hours per night for optimal health.',
@@ -55,6 +55,8 @@ const recommendations = computed(() => {
             borderColor: 'border-red-200',
             iconColor: 'text-red-600'
         });
+    }else {
+        recs = []
     }
     
     // Awakenings check

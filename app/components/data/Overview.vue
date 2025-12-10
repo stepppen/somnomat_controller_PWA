@@ -60,7 +60,7 @@
             </svg>
             <p class="p-small text-gray-700">{{ comment }}</p>
             
-             <Icon name="material-symbols:info-outline-rounded" class="iconColor" size="1em"/>
+             <!-- <Icon name="material-symbols:info-outline-rounded" class="iconColor" size="1em"/> -->
         </div>
     </primitives-container>
 </template>

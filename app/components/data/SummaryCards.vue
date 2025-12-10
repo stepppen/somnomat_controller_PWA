@@ -305,6 +305,7 @@ const avgWakeup = computed(() => {
 
 const sleepQuality = computed(() => {
     const val = props.summary.avg_awakenings;
+    if (val == 0) return '--';
     if (val <= 1) return 'Excellent';
     if (val <= 1.5) return 'Good';
     if (val <= 2.5) return 'Fair';

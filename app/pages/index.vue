@@ -155,7 +155,7 @@ let endWeek = ref([(endOfWeek(currentWeek, 'de-DE')).day, (endOfWeek(currentWeek
 let startMonth = ref([(startOfMonth(currentMonth, 'de-DE')).day, (startOfMonth(currentMonth, 'de-DE')).month, (startOfMonth(currentMonth, 'de-DE')).year]);
 let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(currentMonth, 'de-DE')).month, (endOfMonth(currentMonth, 'de-DE')).year]);
 
-const sleepComment = ref("Good Job");
+const sleepComment = ref("You sleep has improved over last night");
 const totalPlannedSleep = ref(null);
 
 // Computed properties for sleep metrics with automatic reactivity
