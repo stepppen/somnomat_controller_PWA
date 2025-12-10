@@ -102,6 +102,7 @@ const {
   isOn,
   loadDeviceData,
   loadSleepSummary,
+  loadUserSettings,
   sendCommand
 } = useDevice()
 
@@ -215,6 +216,7 @@ onMounted(async () => {
     }
     if (globalDeviceId.value) {
         await loadDeviceData()
+        await loadUserSettings()
         await loadSleepSummary()
         totalPlannedSleep.value = await getSleepDuration()
         console.log("total planned sleep minutes: ", totalPlannedSleep.value?.totalMinutes)

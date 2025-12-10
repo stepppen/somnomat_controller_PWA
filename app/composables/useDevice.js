@@ -303,6 +303,26 @@ export const useDevice = () => {
         globalLoading.value = false
     }
     }
+    const loadUserSettings = async () => {
+        try {
+            const config = useRuntimeConfig()
+            const response = await $fetch(`${config.public.apiBase}/user-settings/${globalDeviceId.value}`)
+            
+            if (response?.data?.[0]) {
+            const settings = response.data[0]
+            const { setBedTime, setWakeUpTime, setBedTimeTolerance, setWakeUpTolerance } = useUserSettings()
+            
+            setBedTime(settings.bed_time)
+            setWakeUpTime(settings.wake_up_time)
+            setBedTimeTolerance(settings.bed_time_tolerance)
+            setWakeUpTolerance(settings.wake_up_tolerance)
+            
+            console.log('User settings loaded:', settings)
+            }
+        } catch (error) {
+            console.error('Failed to load user settings:', error)
+        }
+        }
 
     const sendCommand = async (command, payload = {}) => {
         if (!globalDeviceId.value) {
@@ -392,6 +412,7 @@ export const useDevice = () => {
         setPendingCommand,
         clearPendingCommand,
         shouldBlockUpdate,
+        loadUserSettings,
         
         // Helpers
         formatDate,

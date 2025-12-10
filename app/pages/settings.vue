@@ -15,8 +15,8 @@
         <div class="main-container">
             <!-- Device Selector -->
             <primitives-container>
-                <h3>Jan Frischknecht</h3>
-                <PrimitivesFullButton buttonPath="/personal-settings" navIcon="" buttonText="email"/>
+                <h3>Username</h3>
+                <PrimitivesFullButton buttonPath="/personal-settings" navIcon="" buttonText="email" :disabled="isDisabled"/>
             </primitives-container>
         </div>
         <div class="main-container">
@@ -24,7 +24,7 @@
             <primitives-container>
                 <h3>App Settings</h3>
                 <PrimitivesFullButton buttonPath="/bed-time" navIcon="material-symbols:alarm-outline-rounded" buttonText="Adjust Bed Time"/>
-                <PrimitivesFullButton buttonPath="/about-app" navIcon="material-symbols:info-outline-rounded" buttonText="About App"/>
+                <PrimitivesFullButton buttonPath="/about-app" navIcon="material-symbols:info-outline-rounded" buttonText="About App" :disabled="isDisabled"/>
             </primitives-container>
         </div>
         <div class="main-container">
@@ -32,14 +32,14 @@
             <primitives-container>
                 <h3>Device Settings</h3>
                 <PrimitivesFullButton buttonPath="/device-management" navIcon="material-symbols:bigtop-updates-rounded" buttonText="Device Management"/>
-                <PrimitivesFullButton buttonPath="/debug-info" navIcon="material-symbols:privacy-tip-outline-rounded" buttonText="Debug Info"/>
+                <PrimitivesFullButton buttonPath="/debug-info" navIcon="material-symbols:privacy-tip-outline-rounded" buttonText="Debug Info" :disabled="isDisabled"/>
             </primitives-container>
         </div>
         <div class="main-container">
             <!-- Device Selector -->
             <primitives-container>
                 <h3>Help & Info</h3>
-                <PrimitivesFullButton buttonPath="/privacy-policy" navIcon="material-symbols:spa-outline-rounded" buttonText="Privacy Policy"/>
+                <PrimitivesFullButton buttonPath="/privacy-policy" navIcon="material-symbols:spa-outline-rounded" buttonText="Privacy Policy" :disabled="isDisabled"/>
             </primitives-container>
         </div>
         <div class="main-container">
@@ -52,3 +52,7 @@
         </div>
     </div>
 </template>
+<script setup>
+    const isDisabled = ref(true)
+
+</script>
