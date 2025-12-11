@@ -9,7 +9,6 @@
             </div>
         </div>
     </div>
-    <!-- mock data cont -->
         <div class="main-container py-2">
             <div class="text-sm mt-2 bg-red-200 rounded-2xl p-2 flex items-center justify-center gap-2">
                 <Icon name="material-symbols:info-outline-rounded" size="1em"/>
@@ -77,10 +76,14 @@
                     </div>
                 </div>
                 <div v-if="globalSleepSummary" class="flex flex-col gap-4">
-                    <DataOverview :quality="sleepQuality" :sleepDuration="duration" :comment="sleepComment" :bedActivity="activity" />
+                    <DataOverview 
+                    :quality="sleepQuality" 
+                    :sleepDuration="duration" 
+                    :comment="sleepComment" 
+                    :bedActivity="activity" 
+                    />
                     <DataConsistencyWeek 
                             :intervals="globalSleepSummary.summary.intervals"
-                            :current-date="globalDate" 
                         />
                     <DataSummaryCards :summary="globalSleepSummary.summary"/>
                     <DataRecommendationsSection :summary="globalSleepSummary.summary"/>
@@ -180,7 +183,7 @@ const sleepMetrics = computed(() => {
     let duration = 0;
     let activity = 0;
     
-    //duration calculation for overview
+    //duration calculation for overview component (duration)
     if (sleepMin > 0 && plannedMin > 0) {
         if (globalPeriod.value === "day") {
             duration = Math.round((sleepMin / plannedMin) * 100);
@@ -199,13 +202,11 @@ const sleepMetrics = computed(() => {
     
     return { duration, activity, quality };
 });
-
-// Computed values for template
 const duration = computed(() => sleepMetrics.value.duration);
 const activity = computed(() => sleepMetrics.value.activity);
 const sleepQuality = computed(() => sleepMetrics.value.quality);
 
-// Safe computed properties for DataOverview props
+//safe computed properties for overview props
 const totalPlannedMinutes = computed(() => {
     return totalPlannedSleep.value?.totalMinutes ? Math.round(totalPlannedSleep.value.totalMinutes) : 0;
 });
@@ -222,7 +223,7 @@ function formatDateForAPI(day, month, year) {
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// Lifecycle
+//full lifecycle
 onMounted(async () => {
     if (!globalDate.value) {
         const today = new Date();
@@ -242,13 +243,13 @@ onMounted(async () => {
             console.log("bed time: ", bedTime.value, "with tolerance: ",  bedTimeTolerance.value, "Wake up time: ", wakeUpTime.value, "with tolerance: ",  wakeUpTolerance.value)
         }
         
-        refreshInterval = setInterval(async () => {
-            await loadDeviceData()
-            await loadSleepSummary()
-        }, 30000);
+        // refreshInterval = setInterval(async () => {
+        //     await loadDeviceData()
+        //     await loadSleepSummary()
+        // }, 30000);
     }
     
-    // Load saved bedtime preference
+    //load bed settings
     const saved = localStorage.getItem('targetBedtime');
     if (saved) targetBedtime.value = saved;
 });
@@ -272,6 +273,7 @@ async function handleToggle(value){
     await loadSleepSummary()
 }
 
+//day nav
 async function dayBack(){ 
     isToday.value = false;
     const newDate = currentDate.subtract({ days: 1 });
@@ -282,7 +284,7 @@ async function dayBack(){
     await loadSleepSummary();
 }
 
-//day nav
+
 async function dayForward(){ 
     if(isToday.value) return;
     
@@ -368,31 +370,10 @@ const items = [
     slot: 'monthData'
   }
 ]
-
-//helpers
-// function formatDate(isoDate) {
-//     const d = new Date(isoDate);
-//     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-// }
-
-// function formatTime(isoTimestamp) {
-//     const d = new Date(isoTimestamp);
-//     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-// }
-
-// function formatDateTime(isoTimestamp) {
-//     const d = new Date(isoTimestamp);
-//     return d.toLocaleString('en-US', { 
-//         month: 'short', 
-//         day: 'numeric', 
-//         hour: '2-digit', 
-//         minute: '2-digit' 
-//     });
-// }
 </script>
 
 <style scoped>
 .disabledButton { 
-    opacity: 0.5;
+    opacity: 0.3;
 }
 </style>

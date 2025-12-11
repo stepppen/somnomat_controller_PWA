@@ -80,7 +80,7 @@ watch (
 .tab-toggle{
     display: flex;
     position: relative;
-    background-color: rgba(255, 255, 255, 0.8);
+    /* background-color: rgba(255, 255, 255, 0.2); */
     border-radius: 4rem;
     padding: 4px;
     height: 3.2rem;
@@ -88,7 +88,7 @@ watch (
     user-select: none;
     max-width: 500px; 
     width: 100%;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(5px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
