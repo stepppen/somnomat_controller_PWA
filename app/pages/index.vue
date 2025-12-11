@@ -34,7 +34,22 @@
                         <Icon name="material-symbols:arrow-forward-ios-rounded" size="1.3em"  />
                     </div>
                 </div>
-                <div v-if="globalSleepSummary" class="flex flex-col gap-4">
+                <div v-if="globalSummaryLoading" class="flex flex-col gap-4">
+                    <DataOverview 
+                        :quality="sleepQuality" 
+                        :sleepDuration="duration" 
+                        :comment="sleepComment" 
+                        :bedActivity="activity" 
+                        :totalPlanned="totalPlannedMinutes" 
+                        :timeInBed="timeInBedMinutes" 
+                        :totalSleepMin="totalSleepMinutes"
+                        :isLoading="isSkeleton"
+                    />
+                    <DataConsistencyDay :intervals="globalSleepSummary.summary.intervals" :isLoading="isSkeleton"/>
+                    <DataSummaryCards :summary="globalSleepSummary.summary" isDayView="true" :isLoading="isSkeleton"/>
+                    <DataRecommendationsSection :summary="globalSleepSummary.summary" :isLoading="isSkeleton"/>
+                </div>
+                <div v-else-if="globalSleepSummary" class="flex flex-col gap-4">
                     <DataOverview 
                         :quality="sleepQuality" 
                         :sleepDuration="duration" 
@@ -103,6 +118,7 @@ const {
   globalSleepSummary,
   globalTargetDevice,
   globalLoading,
+  globalSummaryLoading,
   globalError,
   globalCommandStatus,
   globalPeriod,
@@ -129,21 +145,12 @@ const {
     getSleepDayBoundary
 } = useUserSettings()
 
-const config = useRuntimeConfig();
-const apiBase = config.public.apiBase;
-
-// Refs
-const totalDevices = ref(null);
-const lastUpdate = ref('Never');
-const loading = ref(false);
-const error = ref('');
-const deviceId = ref('');
-const targetBedtime = ref('22:00');
-const bedtimeSaved = ref(false);
-const focusedDayIndex = ref(0);
+//refs
 let isToday = ref(true)
 let isThisWeek = ref(true)
 let isThisMonth = ref(true)
+const isSkeleton = ref(true)
+
 let refreshInterval = null;
 
 let currentDate = today(getLocalTimeZone());
@@ -158,7 +165,7 @@ let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(current
 const sleepComment = ref("You sleep has improved over last night");
 const totalPlannedSleep = ref(null);
 
-// Computed properties for sleep metrics with automatic reactivity
+//comp props
 const sleepMetrics = computed(() => {
     if (!globalSleepSummary.value?.summary || !totalPlannedSleep.value?.totalMinutes) {
         return { duration: 0, activity: 0, quality: 0 };
@@ -173,7 +180,7 @@ const sleepMetrics = computed(() => {
     let duration = 0;
     let activity = 0;
     
-    // Calculate duration percentage
+    //duration calculation for overview
     if (sleepMin > 0 && plannedMin > 0) {
         if (globalPeriod.value === "day") {
             duration = Math.round((sleepMin / plannedMin) * 100);
@@ -185,13 +192,9 @@ const sleepMetrics = computed(() => {
         }
         duration = Math.min(duration, 100);
     }
-    
-    // Calculate activity percentage
     if (sleepHours > 0 && bedHours > 0) {
         activity = Math.min(Math.round((sleepHours / bedHours) * 100), 100);
     }
-    
-    // Calculate quality
     const quality = Math.round((activity + duration) / 2);
     
     return { duration, activity, quality };
@@ -215,11 +218,7 @@ const totalSleepMinutes = computed(() => {
     return globalSleepSummary.value?.summary?.sleep_duration_min ? Math.round(globalSleepSummary.value.summary.sleep_duration_min) : 0;
 });
 
-// Helper to format date for API (uses END of sleep period)
 function formatDateForAPI(day, month, year) {
-    // For day view, we send the END date of the sleep period
-    // e.g., if viewing "Dec 10", we want sleep from Dec 9 03:00 to Dec 10 03:00
-    // So we send Dec 10 as the date
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
@@ -273,16 +272,17 @@ async function handleToggle(value){
     await loadSleepSummary()
 }
 
-// Day navigation - FIXED to send correct date
 async function dayBack(){ 
     isToday.value = false;
     const newDate = currentDate.subtract({ days: 1 });
     newDateArr.value = [newDate.day, newDate.month, newDate.year];
     globalDate.value = formatDateForAPI(newDate.day, newDate.month, newDate.year);
     currentDate = newDate;
+    // globalSleepSummary.value = null
     await loadSleepSummary();
 }
 
+//day nav
 async function dayForward(){ 
     if(isToday.value) return;
     
@@ -300,7 +300,7 @@ async function dayForward(){
     }
 }
 
-// Week navigation
+//week navigation
 async function weekBack(){ 
     isThisWeek.value = false;
     const newDate = currentWeek.subtract({ weeks: 1 });
@@ -327,7 +327,7 @@ async function weekForward(){
     }
 }
 
-// Month navigation
+//month navigation
 async function monthBack(){ 
     isThisMonth.value = false;
     const newDate = currentMonth.subtract({ months: 1 });
@@ -369,26 +369,26 @@ const items = [
   }
 ]
 
-// Helper functions
-function formatDate(isoDate) {
-    const d = new Date(isoDate);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+//helpers
+// function formatDate(isoDate) {
+//     const d = new Date(isoDate);
+//     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+// }
 
-function formatTime(isoTimestamp) {
-    const d = new Date(isoTimestamp);
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
+// function formatTime(isoTimestamp) {
+//     const d = new Date(isoTimestamp);
+//     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+// }
 
-function formatDateTime(isoTimestamp) {
-    const d = new Date(isoTimestamp);
-    return d.toLocaleString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-}
+// function formatDateTime(isoTimestamp) {
+//     const d = new Date(isoTimestamp);
+//     return d.toLocaleString('en-US', { 
+//         month: 'short', 
+//         day: 'numeric', 
+//         hour: '2-digit', 
+//         minute: '2-digit' 
+//     });
+// }
 </script>
 
 <style scoped>

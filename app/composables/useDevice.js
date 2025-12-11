@@ -16,6 +16,8 @@ export const useDevice = () => {
     const isOccupied = useState('isBedOccupied', () => false)
     let isSafety = useState('isSafetyOn', () => false)
     let isMotorError = useState('isMotorError', () => false)
+    const globalSummaryLoading = ref(false);
+    // let globalSummaryLoading = useState('globalLoading', () => false)
     
     
     const pendingCommands = useState('pendingCommands', () => ({}))
@@ -153,7 +155,6 @@ export const useDevice = () => {
                 return;
             }
             
-            //fetch device settings with global state id
             const deviceRes = await fetch(`${apiBase}/devices/${globalDeviceId.value}/settings`);
             if (!deviceRes.ok) throw new Error(`HTTP ${deviceRes.status}`);
             
@@ -163,7 +164,7 @@ export const useDevice = () => {
             if (deviceSettings.data && deviceSettings.data.length > 0) {
                 const newSettings = deviceSettings.data[0];
                 
-                //only update if no pending commands
+                
                 if (!shouldBlockUpdate('motor_status', newSettings.motor_status)) {
                     if(newSettings.motor_status === 1) {
                         isMotorError.value = false; 
@@ -175,7 +176,7 @@ export const useDevice = () => {
                         isMotorError.value = true;
                     }
                 }else {
-                    console.log("Blocking motor_status update - pending command")
+                    console.log("Blocking motor_status update -> pending command")
                 }
             globalDeviceSettings.value = newSettings;
             console.log("Device settings:", globalDeviceSettings.value)
@@ -273,7 +274,7 @@ export const useDevice = () => {
         return
     }
     
-    globalLoading.value = true
+    globalSummaryLoading.value = true
     globalError.value = null
     
     try {
@@ -292,6 +293,10 @@ export const useDevice = () => {
         })
         
         globalSleepSummary.value = response
+        // if (globalSleepSummary.value) { 
+        //     globalSummaryLoading.value = false
+        //     console.log("summary loader in use device: ", globalSummaryLoading.value)
+        // }
         console.log('Sleep summary loaded:', response)
         return response
         
@@ -300,7 +305,7 @@ export const useDevice = () => {
         globalError.value = error
         throw error
     } finally {
-        globalLoading.value = false
+        globalSummaryLoading.value = false
     }
     }
     const loadUserSettings = async () => {
@@ -389,6 +394,7 @@ export const useDevice = () => {
         globalSleepSummary,
         globalDeviceSettings,
         globalLoading,
+        globalSummaryLoading,
         globalError,
         globalCommandStatus,
         isOn,

@@ -4,11 +4,14 @@
         
         <div class="w-full flex items-center gap-8">
           <div class="relative w-48 h-48 flex items-center justify-center">
-            <svg ref="chartSvg" :width="160" :height="160" class="absolute"></svg>
+            <!-- <div v-if="isLoading" class="h-32 w-32 rounded-full bg-gray-100"></div> -->
+             <svg  v-if="isLoading" ref="chartSvgLoading" :width="160" :height="160" class="absolute"></svg>
+            <svg  v-else ref="chartSvg" :width="160" :height="160" class="absolute"></svg>
             
             <div class="relative z-10 flex flex-col items-center justify-center">
                 <p class="p-small text-gray-400">Quality</p>
-                <h1 class="h-bold">{{ quality }}
+                <div v-if="isLoading" class="bg-gray-100 rounded-full h-8 w-12"></div>
+                <h1 v-else class="h-bold">{{ quality }}
                   <span class="text-xs text-gray-400">/100</span></h1>
             </div>
           </div>
@@ -16,7 +19,8 @@
           <div class="flex flex-col gap-6">
               <div class="flex flex-col">
                 <div class="flex justify-between">
-                  <h1 class="text-[#000080] h-bold">{{ sleepDuration }}%</h1>
+                  <div v-if="isLoading" class="bg-gray-100 rounded-full h-8 w-12"></div>
+                  <h1 v-else class="text-[#000080] h-bold">{{ sleepDuration }}%</h1>
                   <UPopover :ui="{content: 'rounded-2xl ring-0'}">
                     <UButton label="Open" color="secondary" variant="subtle"> 
                       <Icon name="material-symbols:info-outline-rounded" class="iconColor opacity-50" size="1em"/>
@@ -34,7 +38,8 @@
               </div>
               <div class="flex flex-col">
                 <div class="flex justify-between">
-                  <h1 v-if="totalSleepMin && timeInBed"  class="text-[#9b87f5] h-bold">{{ Math.round((totalSleepMin/timeInBed) * 100) }}%</h1>
+                  <div v-if="isLoading" class="bg-gray-100 rounded-full h-8 w-12"></div>
+                  <h1 v-else-if="totalSleepMin && timeInBed"  class="text-[#9b87f5] h-bold">{{ Math.round((totalSleepMin/timeInBed) * 100) }}%</h1>
                   <h1 v-else  class="text-[#9b87f5] h-bold">0%</h1>
                   <UPopover :ui="{content: 'rounded-2xl ring-0'}">
                     <UButton label="Open" color="secondary" variant="subtle"> 
@@ -53,14 +58,12 @@
               </div>
           </div>
         </div>
-        <!-- <PrimitivesFullButton buttonPath="/" navIcon="material-symbols:info-outline-rounded" buttonText="This week you"/> -->
-        <div class="mt-6 flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
+        <div v-if="isLoading" class="mt-6 flex items-center gap-3 bg-gray-50 p-4 h-14 rounded-lg"></div>
+        <div v-else class="mt-6 flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
             <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <p class="p-small text-gray-700">{{ comment }}</p>
-            
-             <!-- <Icon name="material-symbols:info-outline-rounded" class="iconColor" size="1em"/> -->
         </div>
     </primitives-container>
 </template>
@@ -70,6 +73,23 @@ import * as d3 from 'd3'
 let sleepAngle = ref(0)
 let bedAngle = ref(0)
 
+const { 
+  globalDeviceId,
+  globalDeviceName,
+  globalSleepSummary,
+  globalTargetDevice,
+  globalLoading,
+  globalError,
+  globalCommandStatus,
+  globalPeriod,
+  globalDate,
+  isOn,
+  loadDeviceData,
+  loadSleepSummary,
+  loadUserSettings,
+  sendCommand
+} = useDevice()
+
 interface Props{ 
     quality?: number,
     sleepDuration?: number,
@@ -77,7 +97,8 @@ interface Props{
     comment?: string,
     totalPlanned?: number,
     totalSleepMin?: number,
-    timeInBed?: number
+    timeInBed?: number,
+    isLoading?: boolean,
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -92,6 +113,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 
 const chartSvg = ref<SVGSVGElement | null>(null)
+const chartSvgLoading = ref<SVGSVGElement | null>(null)
 
 // const sleepAngle = computed(() => {
 //   const result = 1.03 - (computedSleepDuration.value / 100) * Math.PI
@@ -104,6 +126,34 @@ watch(() => [props.sleepDuration, props.bedActivity], (newVals, oldVals) => {
         drawChart();
     }
 });
+function drawChartSkeleton() { 
+  const width = 160
+  const height = 160
+  const thickness = 16
+  const radius = Math.min(width, height) / 2 
+
+  const svg = d3.select(chartSvgLoading.value)
+    .append('g')
+    .attr('transform', `translate(${width / 2}, ${height / 2})`)
+
+  const backgroundArc = d3.arc()
+    .innerRadius(radius - thickness)
+    .outerRadius(radius)
+    .cornerRadius(12)
+
+  //sleep duration grey
+  svg.append('path')
+    .datum({ startAngle: 0.1, endAngle: (Math.PI - 0.1) })
+    .style('fill', '#e5e7eb')
+    .attr('d', backgroundArc as any)
+
+  //bed activity grey
+  svg.append('path')
+    .datum({ startAngle: Math.PI + 0.1, endAngle: (2 * Math.PI)-0.1 })
+    .style('fill', '#e5e7eb')
+    .attr('d', backgroundArc as any)
+
+}
 
 function drawChart() { 
 const width = 160
@@ -207,6 +257,7 @@ const width = 160
 
 
 onMounted(() => {
+  drawChartSkeleton()
   if (!chartSvg.value) return
   drawChart()
 })

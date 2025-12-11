@@ -56,17 +56,17 @@
                     <div
                         v-for="(interval, i) in props.intervals"
                         :key="i"
-                        class="absolute h-full rounded-md transition-all duration-500 border-2 border-white shadow-sm flex items-center justify-center group z-20"
+                        class="absolute h-full rounded-md transition-all duration-500 border-2 border-white shadow-sm flex items-center justify-center group z-2"
                         :class="getIntervalColor(interval)"
                         :style="{
                             left: `${getBarPosition(interval.start)}%`,
                             width: `${getBarWidth(interval.start, interval.end)}%`
                         }"
                     >
-                        <span v-if="getBarWidth(interval.start, interval.end) > 15" 
+                        <!-- <span v-if="getBarWidth(interval.start, interval.end) > 15" 
                               class="text-[10px] text-white font-medium whitespace-nowrap overflow-hidden px-1">
                             {{ formatTimeShort(interval.start) }}
-                        </span>
+                        </span> -->
                     </div>
                 </div>
     
@@ -130,12 +130,8 @@ const props = defineProps({
     }
 });
 
-// --- FIXED 12:00 NOON BOUNDARY ---
-// Timeline shows 12:00 prev day to 12:00 today (24 hour window)
-const CHART_START_HOUR = 12; // Noon yesterday
-const CHART_DURATION = 24;   // 24 hours total
+const CHART_DURATION = 24;
 
-// Convert time string to hours since chart start (12:00 prev day)
 const timeToChartHours = (timeStr) => {
     if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
@@ -143,10 +139,12 @@ const timeToChartHours = (timeStr) => {
     
     // If time is >= 12:00, it's on the first day (yesterday afternoon/evening)
     // If time is < 12:00, it's on the second day (today morning)
+    // if go to bed at 23:45 -> 23.75 -> 11.75
+    //if go to bed at 09:30 -> 9.5 -> 21.5
     if (hourDecimal >= 12) {
-        return hourDecimal - 12; // Hours from noon yesterday
+        return hourDecimal - 12;
     } else {
-        return hourDecimal + 12; // Hours from noon yesterday (next day morning)
+        return hourDecimal + 12; 
     }
 };
 
@@ -180,8 +178,6 @@ const axisLabels = computed(() => {
     return labels;
 });
 
-// --- TOLERANCE ZONES ---
-
 const bedToleranceStart = computed(() => {
     const bedChartHours = timeToChartHours(localBedTime.value);
     const toleranceHours = localBedTolerance.value / 60;
@@ -206,7 +202,6 @@ const wakeToleranceWidth = computed(() => {
     return (widthHours / CHART_DURATION) * 100;
 });
 
-// --- BAR POSITIONING & DATA ---
 
 const hasTotalBedTime = computed(() => props.intervals.length > 0);
 
@@ -241,8 +236,7 @@ const getBarWidth = (isoStart, isoEnd) => {
 };
 
 const getIntervalColor = (interval) => {
-    // Duration > 45 min = Sleep (indigo), else = Interval (gray)
-    return (interval.duration_min > 45) ? 'bg-indigo-500' : 'bg-gray-400';
+    return (interval.duration_min > 45) ? 'bg-indigo-500' : 'bg-gray-300';
 };
 
 const formatTimeShort = (iso) => {
