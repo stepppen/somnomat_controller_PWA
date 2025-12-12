@@ -7,8 +7,8 @@
     
             <div class="relative w-full select-none">
                 <!-- Hour labels -->
-                <div class="flex justify-between mb-2 pl-4 pr-4">
-                    <span v-for="label in axisLabels" :key="label" class="text-xs text-gray-400 w-8 text-center">
+                <div class="flex justify-between mb-2">
+                    <span v-for="label in axisLabels" :key="label" class="text-xs text-gray-400 w-2 text-center">
                         {{ label }}
                     </span>
                 </div>
@@ -22,14 +22,14 @@
                     
                     <!-- Tolerance zones -->
                     <div
-                        class="absolute h-full bg-indigo-50/50 border-l border-r border-indigo-100 transition-all duration-500 ease-in-out"
+                        class="absolute h-full bg-[#e0e2fc] border-l border-r border-indigo-300 transition-all duration-500 ease-in-out"
                         :style="{
                             left: `${bedToleranceStart}%`,
                             width: `${bedToleranceWidth}%`
                         }"
                     />
                     <div
-                        class="absolute h-full bg-indigo-50/50 border-l border-r border-indigo-100 transition-all duration-500 ease-in-out"
+                        class="absolute h-full bg-[#e0e2fc] border-l border-r border-indigo-300 transition-all duration-500 ease-in-out"
                         :style="{
                             left: `${wakeToleranceStart}%`,
                             width: `${wakeToleranceWidth}%`
@@ -44,44 +44,46 @@
                     />
                     
                     <!-- Total bed time bar (light background) -->
-                    <div v-if="hasTotalBedTime"
-                         class="absolute h-[60%] top-[20%] rounded-sm bg-gray-100 border border-gray-200 transition-all duration-500"
-                         :style="{
-                            left: `${getBarPosition(totalBedTimeStart)}%`,
-                            width: `${getBarWidth(totalBedTimeStart, totalBedTimeEnd)}%`
-                         }">
-                    </div>
-
-                    <!-- All interval bars -->
-                    <div
-                        v-for="(interval, i) in props.intervals"
-                        :key="i"
-                        class="absolute h-full rounded-md transition-all duration-500 border-2 border-white shadow-sm flex items-center justify-center group z-2"
-                        :class="getIntervalColor(interval)"
-                        :style="{
-                            left: `${getBarPosition(interval.start)}%`,
-                            width: `${getBarWidth(interval.start, interval.end)}%`
-                        }"
-                    >
-                        <!-- <span v-if="getBarWidth(interval.start, interval.end) > 15" 
-                              class="text-[10px] text-white font-medium whitespace-nowrap overflow-hidden px-1">
-                            {{ formatTimeShort(interval.start) }}
-                        </span> -->
-                    </div>
+                     <div class="flex flex-col gap-1">
+                         <div v-if="hasTotalBedTime"
+                              class="absolute h-1/4 top-6 rounded-sm bg-gray-400 transition-all duration-500 bed-bar"
+                              :style="{
+                                 left: `${getBarPosition(totalBedTimeStart)}%`,
+                                 width: `${getBarWidth(totalBedTimeStart, totalBedTimeEnd)}%`
+                              }">
+                         </div>
+     
+                         <!-- All interval bars -->
+                         <div
+                             v-for="(interval, i) in props.intervals"
+                             :key="i"
+                             class=" absolute top-4 h-2/4 transition-all duration-500 flex items-center justify-center group z-2 sleep-bar"
+                             :class="getIntervalColor(interval)"
+                             :style="{
+                                 left: `${getBarPosition(interval.start)}%`,
+                                 width: `${getBarWidth(interval.start, interval.end)}%`
+                             }"
+                         >
+                             <!-- <span v-if="getBarWidth(interval.start, interval.end) > 15" 
+                                   class="text-[10px] text-white font-medium whitespace-nowrap overflow-hidden px-1">
+                                 {{ formatTimeShort(interval.start) }}
+                             </span> -->
+                         </div>
+                     </div>
                 </div>
     
                 <!-- Legend -->
                 <div class="flex gap-6 pt-6 justify-center flex-wrap">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-indigo-500 rounded" />
+                    <div class="flex items-center gap-2 ">
+                        <div class="w-3 h-3 sleep-time-legend" />
                         <span class="text-xs text-gray-500">Sleep</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-gray-400 rounded" />
-                        <span class="text-xs text-gray-500">Interval</span>
+                        <div class="w-3 h-3 tolerance-legend" />
+                        <span class="text-xs text-gray-500">Tolerance</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-gray-100 border border-gray-200 rounded" />
+                        <div class="w-3 h-3 bed-time-legend" />
                         <span class="text-xs text-gray-500">Total Bed Time</span>
                     </div>
                 </div>
@@ -165,13 +167,13 @@ const isoToChartHours = (isoStr) => {
 };
 
 const getPercentPosition = (chartHours) => {
-    return (chartHours / CHART_DURATION) * 100;
+    return (chartHours / CHART_DURATION) * 100 -4;
 };
 
-// Axis Labels - Show every 3 hours from 12:00
+//x-axis hours
 const axisLabels = computed(() => {
     const labels = [];
-    for (let i = 0; i <= 24; i += 3) {
+    for (let i = 0; i <= 24; i += 2) {
         const hour = (12 + i) % 24;
         labels.push(String(hour).padStart(2, '0'));
     }
@@ -182,7 +184,7 @@ const bedToleranceStart = computed(() => {
     const bedChartHours = timeToChartHours(localBedTime.value);
     const toleranceHours = localBedTolerance.value / 60;
     const startHours = bedChartHours - toleranceHours;
-    return Math.max(0, getPercentPosition(startHours));
+    return Math.max(0, getPercentPosition(startHours) + 5);
 });
 
 const bedToleranceWidth = computed(() => {
@@ -194,7 +196,7 @@ const wakeToleranceStart = computed(() => {
     const wakeChartHours = timeToChartHours(localWakeTime.value);
     const toleranceHours = localWakeTolerance.value / 60;
     const startHours = wakeChartHours - toleranceHours;
-    return Math.max(0, getPercentPosition(startHours));
+    return Math.max(0, getPercentPosition(startHours) + 5);
 });
 
 const wakeToleranceWidth = computed(() => {
@@ -207,9 +209,19 @@ const hasTotalBedTime = computed(() => props.intervals.length > 0);
 
 const totalBedTimeStart = computed(() => {
     if (!props.intervals.length) return null;
-    return props.intervals.reduce((earliest, interval) => {
-        return new Date(interval.start) < new Date(earliest) ? interval.start : earliest;
-    }, props.intervals[0].start);
+    // console.log("earliest: ", props.intervals.reduce((earliest, interval)))
+    
+    // const earliestInterval = props.intervals.reduce((earliest, interval) => {
+    //     new Date(interval.start) < new Date(earliest) ? interval.start : earliest;
+    // }, props.intervals[0].start);
+    // console.log("earliest Interval: ", earliestInterval)
+
+    //reduce method => reducer(accumulator, currentValue, index)
+    //reduces into a single val
+    // const getEarliest = (earliest, interval) => {
+    return props.intervals.reduce((earliestAcc, currentInterval) => {
+        return new Date(currentInterval.start) < new Date(earliestAcc) ? currentInterval.start : earliestAcc;
+    }, props.intervals[0].start); //accumulator initialiser -> earliestAcc
 });
 
 const totalBedTimeEnd = computed(() => {
@@ -236,7 +248,7 @@ const getBarWidth = (isoStart, isoEnd) => {
 };
 
 const getIntervalColor = (interval) => {
-    return (interval.duration_min > 45) ? 'bg-indigo-500' : 'bg-gray-300';
+    return (interval.duration_min > 45) ? 'bg-[#0600AB]' : 'bg-gray-300';
 };
 
 const formatTimeShort = (iso) => {
@@ -244,3 +256,40 @@ const formatTimeShort = (iso) => {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 </script>
+
+<style scoped>
+
+.sleep-bar {
+    /* background-color: var(--gradient-start);  */
+    /* background: #acacbb; */
+    opacity: 1;
+    border-radius: 0.2rem;
+}
+.bed-bar {
+    background-color: #c9c0ed; 
+    opacity: 1;
+    border-radius: 0.2rem;
+}
+
+.bed-time-legend {
+    background-color: #c9c0ed; 
+    opacity: 1;
+    border-radius: 0.2rem;
+    border: 1px solid var(--gradient-end) ;
+}
+
+.sleep-time-legend {
+    background-color: var(--gradient-start); 
+    opacity: 1;
+    border-radius: 0.2rem;
+    border: 1px solid var(--gradient-start) ;
+}
+
+.tolerance-legend {
+    background-color: #e0e2fc; 
+    opacity: 1;
+    border-radius: 0.2rem;
+    border: 1px solid oklch(78.5% 0.115 274.713) ;
+}
+
+</style>

@@ -1,7 +1,7 @@
 export const useDevice = () => {
     //default ID is set to 987 (bed esp); not best practise but 
     //removes the need to constantly enter ID by hand
-    let globalDeviceId = useState('globalDeviceId', () => "1")
+    let globalDeviceId = useState('globalDeviceId', () => "987")
     let globalDeviceName = useState('globalDeviceName', () => "")
     let globalTargetDevice = useState('globalTargetDevice', () => null)
     let globalSleepSummary = useState('globalSleepSummary', () => null)

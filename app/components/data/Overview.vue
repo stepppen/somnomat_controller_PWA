@@ -222,7 +222,7 @@ const width = 160
   if (props.sleepDuration !== 0) { 
     // sleepAngle.value = 1.03 - (props.sleepDuration / 100)
     // sleepAngle.value = 1.03 - (props.sleepDuration / 100) * (Math.PI - 0.2)
-    sleepAngle.value = (Math.PI - 0.2) - (props.sleepDuration *  ((Math.PI - 0.2) / 100))
+    sleepAngle.value = (Math.PI - 0.1) - (props.sleepDuration *  ((Math.PI - 0.2) / 100))
   } else { 
     sleepAngle.value = Math.PI - 0.1
   }

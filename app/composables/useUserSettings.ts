@@ -1,6 +1,6 @@
 // composables/useUserSettings.ts
 export const useUserSettings = () => {
-  let globalDeviceId = useState('globalDeviceId', () => "1")
+  let globalDeviceId = useState('globalDeviceId', () => "987")
   const bedTime = useState<string>('bedTime', () => '00:00')
   const wakeUpTime = useState<string>('wakeUpTime', () => '07:55')
   const bedTimeTolerance = useState<number>('bedTimeTolerance', () => 30) 
