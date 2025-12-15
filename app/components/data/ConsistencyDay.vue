@@ -123,6 +123,10 @@ onMounted(async () => {
             console.log("localBedTime:", localBedTime.value, "localWakeTime.value:", localWakeTime.value, "localBedTolerance:", localBedTolerance.value, "localWakeTolerance:", localWakeTolerance.value)
         }
     }
+    if(props.intervals) { 
+        console.log("props int: ", intervalGrouping.value)
+
+    }
 });
 
 const props = defineProps({
@@ -207,6 +211,30 @@ const wakeToleranceWidth = computed(() => {
 
 const hasTotalBedTime = computed(() => props.intervals.length > 0);
 
+
+
+const intervalGrouping = computed (() => { 
+    if (!props.intervals.length) return null;
+    let intervalAcc = []
+    for (let i = 0; i < props.intervals.length - 1; i++) { 
+        if(new Date(props.intervals[i].duration_min) > 5) { 
+            if(new Date(props.intervals[i + 1].start) - new Date(props.intervals[i].end) < 300000) { 
+                if(intervalAcc.includes(props.intervals[i])) { 
+                    intervalAcc.push(props.intervals[i + 1])
+                } else { 
+                    intervalAcc.push(props.intervals[i])
+                    intervalAcc.push(props.intervals[i + 1])
+                    console.log("intervalAcc", intervalAcc)
+                }
+            }
+        }
+    }
+    return intervalAcc
+
+})
+
+
+
 const totalBedTimeStart = computed(() => {
     if (!props.intervals.length) return null;
     // console.log("earliest: ", props.intervals.reduce((earliest, interval)))
@@ -223,6 +251,9 @@ const totalBedTimeStart = computed(() => {
         return new Date(currentInterval.start) < new Date(earliestAcc) ? currentInterval.start : earliestAcc;
     }, props.intervals[0].start); //accumulator initialiser -> earliestAcc
 });
+
+
+
 
 const totalBedTimeEnd = computed(() => {
     if (!props.intervals.length) return null;
