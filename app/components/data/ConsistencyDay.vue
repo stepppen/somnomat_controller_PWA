@@ -109,6 +109,8 @@ const {
     wakeUpTolerance,
 } = useUserSettings()
 
+const { intervalGrouping } = useCalculations()
+
 const localBedTime = ref(bedTime)
 const localWakeTime = ref(wakeUpTime)
 const localBedTolerance = ref(bedTimeTolerance)
@@ -125,7 +127,7 @@ onMounted(async () => {
             console.log("localBedTime:", localBedTime.value, "localWakeTime.value:", localWakeTime.value, "localBedTolerance:", localBedTolerance.value, "localWakeTolerance:", localWakeTolerance.value)
         }
     }
-    if(props.intervals) { 
+    if(intervalGrouping) { 
         console.log("props int: ", intervalGrouping.value)
 
     }
@@ -244,35 +246,35 @@ const hasTotalBedTime = computed(() => props.intervals.length > 0);
 
 // })
 
-const intervalGrouping = computed(() => { 
-    if (!props.intervals.length) return [];
-    const groups = [];
-    let currentGroup = [props.intervals[0]];
-    for (let i = 1; i < props.intervals.length; i++) {
-        const previousInterval = props.intervals[i - 1];
-        const currentInterval = props.intervals[i];
-        const gap = new Date(currentInterval.start) - new Date(previousInterval.end);
-        const fiveMinutesInMs = 5 * 60 * 1000; // 300000
+// const intervalGrouping = computed(() => { 
+//     if (!props.intervals.length) return [];
+//     const groups = [];
+//     let currentGroup = [props.intervals[0]];
+//     for (let i = 1; i < props.intervals.length; i++) {
+//         const previousInterval = props.intervals[i - 1];
+//         const currentInterval = props.intervals[i];
+//         const gap = new Date(currentInterval.start) - new Date(previousInterval.end);
+//         const fiveMinutesInMs = 5 * 60 * 1000; // 300000
         
-        if (gap < fiveMinutesInMs) {
-            currentGroup.push(currentInterval);
-        } else {
-            groups.push(currentGroup);
-            currentGroup = [currentInterval];
-        }
-    }
+//         if (gap < fiveMinutesInMs) {
+//             currentGroup.push(currentInterval);
+//         } else {
+//             groups.push(currentGroup);
+//             currentGroup = [currentInterval];
+//         }
+//     }
     
-    groups.push(currentGroup);
+//     groups.push(currentGroup);
     
-    // Filter out groups where total duration is less than 5 minutes
-    const validGroups = groups.filter(group => {
-        const totalDuration = group.reduce((sum, interval) => sum + interval.duration_min, 0);
-        console.log("totalDuration:", totalDuration)
-        return totalDuration >= 20;
-    });
-    console.log("valid: ", validGroups)
-    return validGroups;
-});
+//     // Filter out groups where total duration is less than 5 minutes
+//     const validGroups = groups.filter(group => {
+//         const totalDuration = group.reduce((sum, interval) => sum + interval.duration_min, 0);
+//         console.log("totalDuration:", totalDuration)
+//         return totalDuration >= 20;
+//     });
+//     console.log("valid: ", validGroups)
+//     return validGroups;
+// });
 
 
 
@@ -342,13 +344,21 @@ const getIntervalColor = (interval) => {
     if (!intervalGrouping.value || !Array.isArray(intervalGrouping.value) || intervalGrouping.value.length === 0) {
         return 'bg-gray-200';
     }
-    for (const element of intervalGrouping.value) {
-        if (element.includes(interval)){ 
+    for (const group of intervalGrouping.value) {
+        if (!Array.isArray(group)) continue;
+        
+        // Compare by properties instead of object reference
+        const found = group.some(item => 
+            item.start === interval.start && 
+            item.end === interval.end
+        );
+        
+        if (found) {
             return 'bg-[#0600AB]';
-
         }
     }
-    return 'bg-gray-200'
+    
+    return 'bg-gray-200';
 };
 
 const formatTimeShort = (iso) => {

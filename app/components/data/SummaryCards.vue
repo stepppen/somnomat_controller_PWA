@@ -81,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+const { intervalGrouping } = useCalculations()
 const props = defineProps({
     isDayView: String,
     summary: {

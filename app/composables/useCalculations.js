@@ -1,32 +1,21 @@
-export const useDevice = () => {
-    //default ID is set to 987 (bed esp); not best practise but 
-    //removes the need to constantly enter ID by hand
-    let globalDeviceId = useState('globalDeviceId', () => "987")
-    let globalDeviceName = useState('globalDeviceName', () => "")
-    let globalTargetDevice = useState('globalTargetDevice', () => null)
-    let globalSleepSummary = useState('globalSleepSummary', () => null)
-    let globalDeviceSettings = useState('globalDeviceSettings', () => null)
-    let globalLoading = useState('globalLoading', () => false)
-    let globalError = useState('globalError', () => '')
-    let globalCommandStatus = useState('globalCommandStatus', () => null)
-    let globalPeriod = useState('globalPeriod', () => "day")
-    let globalDate = useState('globalDate', () => null)
-    const isOn = useState('isOnChecked', () => false)
-    const isOnline = useState('isDeviceOnline', () => false)
-    const isOccupied = useState('isBedOccupied', () => false)
-    let isSafety = useState('isSafetyOn', () => false)
-    let isMotorError = useState('isMotorError', () => false)
-    const globalSummaryLoading = ref(false);
-    // let globalSummaryLoading = useState('globalLoading', () => false)
-    
-    
+export const useCalculations = () => {
+    const { globalSleepSummary } = useDevice()
     const intervalGrouping = computed(() => { 
-        if (!props.intervals.length) return [];
+        let rawIntervals = [];
+        // if (!globalSleepSummary.value || 
+        //     !globalSleepSummary.value.intervals || 
+        //     !globalSleepSummary.value.intervals.length) {
+        //     return [];
+        // }
+        rawIntervals = globalSleepSummary.value?.summary?.intervals || [];
         const groups = [];
-        let currentGroup = [props.intervals[0]];
-        for (let i = 1; i < props.intervals.length; i++) {
-            const previousInterval = props.intervals[i - 1];
-            const currentInterval = props.intervals[i];
+        if (!rawIntervals.length) return [];
+
+
+        let currentGroup = [rawIntervals[0]];
+        for (let i = 1; i < rawIntervals.length; i++) {
+            const previousInterval = rawIntervals[i - 1];
+            const currentInterval = rawIntervals[i];
             const gap = new Date(currentInterval.start) - new Date(previousInterval.end);
             const fiveMinutesInMs = 5 * 60 * 1000; // 300000
             
@@ -46,7 +35,7 @@ export const useDevice = () => {
             console.log("totalDuration:", totalDuration)
             return totalDuration >= 20;
         });
-        console.log("valid: ", validGroups)
+        console.log("SLEEPSUMMARY: ", globalSleepSummary.value.summary)
         return validGroups;
     });
 
