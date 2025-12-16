@@ -16,7 +16,7 @@
                         <Icon name="material-symbols:timelapse-outline-rounded" class="iconColorBlue" size="1.5em"/>
                     </div>
                     <h3>
-                        {{timeInBed}}
+                        {{sleepDuration}}
                     </h3>
                 </div>
             </div>
@@ -153,16 +153,16 @@ const isoToCET = (isoString: string) => {
     }
 };
 
-const timeInBed = computed(() => { 
+const sleepDuration = computed(() => { 
     if (props.isDayView) { 
-        const totalMinutes = props.summary.time_in_bed_min || 0;
+        const totalMinutes = props.summary.sleep_duration_min || 0;
         const hrs = Math.floor(totalMinutes / 60);
         const min = Math.round(totalMinutes % 60);
         return `${hrs}h ${min}m`;
     } else { 
         // For week/month, calculate average
         const nightsCount = props.summary.nights_count || 1;
-        const avgHours = (props.summary.time_in_bed_hours || 0) / nightsCount;
+        const avgHours = (props.summary.sleep_duration_hours || 0) / nightsCount;
         return formatTime(avgHours);
     }
 });

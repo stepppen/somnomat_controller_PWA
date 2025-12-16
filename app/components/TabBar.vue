@@ -80,7 +80,7 @@ watch (
 .tab-toggle{
     display: flex;
     position: relative;
-    /* background-color: rgba(255, 255, 255, 0.2); */
+    background-color: rgba(255, 255, 255, 0.5);
     border-radius: 4rem;
     padding: 4px;
     height: 3.2rem;
