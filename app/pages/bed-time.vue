@@ -90,8 +90,7 @@
                         </div>
                         <p class="p-small text-gray-400">Bed time</p>
                         
-                        <h1 class="text-2xl font-bold" v-if="localBedTime != 0">{{ localBedTime }}</h1>
-                        <h1 class="text-2xl font-bold" v-else>22:00</h1>
+                        <h1 class="text-2xl font-bold">{{ localBedTime }}</h1>
                         
                         <TimePeriodToggle 
                             :model-value="bedPeriod"
@@ -116,8 +115,7 @@
                         </div>
                         <p class="p-small text-gray-400">Wake up</p>
                         
-                        <h1 class="text-2xl font-bold" v-if="localWakeTime != 0">{{ localWakeTime }}</h1>
-                        <h1 class="text-2xl font-bold" v-else>06:00</h1>
+                        <h1 class="text-2xl font-bold">{{ localWakeTime }}</h1>
                         
                         <TimePeriodToggle 
                             :model-value="wakePeriod"
@@ -170,10 +168,10 @@ const {
 } = useDevice()
 
 // --- State ---
-const localBedTime = ref(bedTime.value)
-const localWakeTime = ref(wakeUpTime.value)
-const localBedTolerance = ref(bedTimeTolerance.value)
-const localWakeTolerance = ref(wakeUpTolerance.value)
+const localBedTime = ref(bedTime.value && bedTime.value !== "0" ? bedTime.value : "22:00")
+const localWakeTime = ref(wakeUpTime.value && wakeUpTime.value !== "0" ? wakeUpTime.value : "06:00")
+const localBedTolerance = ref(bedTimeTolerance.value || 0)
+const localWakeTolerance = ref(wakeUpTolerance.value || 0)
 
 let bedHour: number | undefined = 22;
 let bedMin: number | undefined = 0;
@@ -192,8 +190,8 @@ const getPeriodFromTime = (time: string): 'AM' | 'PM' => {
   return hours >= 12 ? 'PM' : 'AM'
 }
 
-const bedPeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localBedTime.value === 0 ? "22:00" : localBedTime.value))
-const wakePeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localWakeTime.value === 0 ? "06:00" : localWakeTime.value))
+const bedPeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localBedTime.value))
+const wakePeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localWakeTime.value))
 
 const isDragging = ref(false)
 const dragType = ref<'bed' | 'wake' | null>(null)
@@ -203,9 +201,16 @@ onMounted(async () => {
         await loadDeviceSettings()
         //console.log("globalDeviceSettings.value:", globalDeviceSettings.value[0].bed_time)
         if (globalDeviceSettings.value) {
-            localBedTime.value = globalDeviceSettings.value.bed_time ?? "0";
-            localWakeTime.value = globalDeviceSettings.value.wake_up_time ?? "0";
-            localBedTolerance.value = globalDeviceSettings.bed_time_tolerance ?? 0;
+            if (globalDeviceSettings.value.bed_time && globalDeviceSettings.value.bed_time !== "0") {
+                localBedTime.value = globalDeviceSettings.value.bed_time;
+                bedPeriod.value = getPeriodFromTime(localBedTime.value);
+            }
+            if (globalDeviceSettings.value.wake_up_time && globalDeviceSettings.value.wake_up_time !== "0") {
+                localWakeTime.value = globalDeviceSettings.value.wake_up_time;
+                wakePeriod.value = getPeriodFromTime(localWakeTime.value);
+            }
+            
+            localBedTolerance.value = globalDeviceSettings.value.bed_time_tolerance ?? 0;
             localWakeTolerance.value = globalDeviceSettings.value.wake_up_tolerance ?? 0;
         }
     }
@@ -264,11 +269,7 @@ const toggleWakePeriod = (newVal: 'AM' | 'PM') => {
 
 // --- Visual Position Calculators ---
 const getBedHandlePosition = () => {
-    if (localBedTime.value != 0){
-        bedAngle = timeToAngle(localBedTime.value)
-    } else { 
-        bedAngle = timeToAngle("22:00")
-    }
+    bedAngle = timeToAngle(localBedTime.value)
     const radius = 120
     return {
         left: `${144 + radius * Math.cos(bedAngle) - 8}px`,
@@ -277,11 +278,7 @@ const getBedHandlePosition = () => {
 }
 
 const getWakeHandlePosition = () => {
-    if (localWakeTime.value != 0){
-        wakeAngle = timeToAngle(localWakeTime.value)
-    } else { 
-        wakeAngle = timeToAngle("06:00")
-    }
+    wakeAngle = timeToAngle(localWakeTime.value)
     const radius = 120
     return {
         left: `${144 + radius * Math.cos(wakeAngle) - 8}px`,
@@ -290,13 +287,8 @@ const getWakeHandlePosition = () => {
 }
 
 const getArcPath = () => {
-    if (localBedTime.value != 0 && localWakeTime.value != 0) { 
-        startAngle = timeToAngle(localBedTime.value)
-        endAngle = timeToAngle(localWakeTime.value)
-    } else { 
-        startAngle = timeToAngle("22:00")
-        endAngle = timeToAngle("06:00")
-    }
+    startAngle = timeToAngle(localBedTime.value)
+    endAngle = timeToAngle(localWakeTime.value)
     const radius = 110
     
     let angle = endAngle - startAngle
