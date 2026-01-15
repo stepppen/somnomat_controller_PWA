@@ -60,10 +60,13 @@
         </div>
         <div v-if="isLoading" class="mt-6 flex items-center gap-3 bg-gray-50 p-4 h-14 rounded-lg"></div>
         <div v-else class="mt-6 flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
-            <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <!-- <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <p class="p-small text-gray-700">{{ comment }}</p>
+            </svg> -->
+            <div class="p-2 rounded-lg flex inset-0 justify-center" :class="comment.bgIcon">
+              <Icon :name="comment.icon" :class="comment.iconColor size="1em"/>
+            </div>
+            <p class="p-small text-gray-700">{{ comment.text }}</p>
         </div>
     </primitives-container>
 </template>
@@ -94,7 +97,7 @@ interface Props{
     quality?: number,
     sleepDuration?: number,
     bedActivity?: number,
-    comment?: string,
+    comment?: object,
     totalPlanned?: number,
     totalSleepMin?: number,
     timeInBed?: number,
@@ -105,7 +108,13 @@ const props = withDefaults(defineProps<Props>(), {
     quality: 87,
     sleepDuration: 50,
     bedActivity: 90,
-    comment: 'This week you slept much better than last week'
+    comment: { 
+      icon: "material-symbols:exclamation-rounded",
+      bgIcon: "bg-indigo-50",
+      iconColor: "bg-blue-500",
+      text: "No data loaded"
+    }
+    
 })
 
 
@@ -263,3 +272,13 @@ onMounted(() => {
 })
 
 </script>
+
+<style scoped>
+
+.feedbackIconColor {
+  color: blue;
+  padding: 0.5rem 0.5rem;
+}
+
+
+</style>

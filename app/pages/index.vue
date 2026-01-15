@@ -52,7 +52,7 @@
                     <DataOverview 
                         :quality="sleepQuality" 
                         :sleepDuration="duration" 
-                        :comment="sleepComment" 
+                        :comment="sleepCommentDay" 
                         :bedActivity="activity" 
                         :totalPlanned="totalPlannedMinutes" 
                         :timeInBed="timeInBedMinutes" 
@@ -168,6 +168,40 @@ let endMonth = ref([(endOfMonth(currentMonth, 'de-DE')).day, (endOfMonth(current
 const sleepComment = ref("You sleep has improved over last night");
 const totalPlannedSleep = ref(null);
 
+const sleepCommentDay = computed(() => { 
+    if(sleepMetrics.value.quality > 80){ 
+        return {
+            icon: "material-symbols:sentiment-satisfied-outline-rounded",
+            bgIcon: "bg-blue-50",
+            iconColor: "bg-blue-500",
+            text: "Great sleep! Continue in the same way."
+        }
+    }
+    else if(sleepMetrics.value.quality > 60){ 
+        return {
+            icon: "material-symbols:sentiment-content-outline-rounded",
+            bgIcon: "bg-green-50",
+            iconColor: "bg-blue-500",
+            text: "Good sleep quality. Be more consistent with achieving your sleep goal."
+        }
+    }
+    else if(sleepMetrics.value.quality > 40){ 
+        return {
+            icon: "material-symbols:sentiment-neutral-outline-rounded",
+            bgIcon: "bg-indigo-50",
+            iconColor: "bg-blue-500",
+            text: "There are a lot of needed improvements."
+        }
+    } else { 
+        return {
+            icon: "material-symbols:sentiment-dissatisfied-outline-rounded",
+            bgIcon: "bg-red-50",
+            iconColor: "bg-blue-500",
+            text: "There are a lot of needed improvements."
+        }
+    }
+})
+
 //comp props
 const sleepMetrics = computed(() => {
     if (!globalSleepSummary.value?.summary || !totalPlannedSleep.value?.totalMinutes) {
@@ -238,6 +272,7 @@ onMounted(async () => {
         totalPlannedSleep.value = await getSleepDuration()
         console.log("total planned sleep minutes: ", totalPlannedSleep.value?.totalMinutes)
         console.log("device id: ", globalDeviceId.value, "sleep summary: ", globalSleepSummary.value)
+        console.log("SLEEPQUALITY: ",  sleepMetrics.value.quality)
         
         if (bedTime.value) { 
             console.log("bed time: ", bedTime.value, "with tolerance: ",  bedTimeTolerance.value, "Wake up time: ", wakeUpTime.value, "with tolerance: ",  wakeUpTolerance.value)
