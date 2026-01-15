@@ -39,9 +39,14 @@ export const useCalculations = () => {
         return validGroups;
     });
 
+    const longestInterval = computed(() => {
+
+    })
+
     return {
         //Intervals
-        intervalGrouping
+        intervalGrouping,
+        longestInterval
     }
 
 }

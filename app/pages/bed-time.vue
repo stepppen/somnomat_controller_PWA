@@ -90,7 +90,8 @@
                         </div>
                         <p class="p-small text-gray-400">Bed time</p>
                         
-                        <h1 class="text-2xl font-bold">{{ localBedTime }}</h1>
+                        <h1 class="text-2xl font-bold" v-if="localBedTime != 0">{{ localBedTime }}</h1>
+                        <h1 class="text-2xl font-bold" v-else>22:00</h1>
                         
                         <TimePeriodToggle 
                             :model-value="bedPeriod"
@@ -115,7 +116,8 @@
                         </div>
                         <p class="p-small text-gray-400">Wake up</p>
                         
-                        <h1 class="text-2xl font-bold">{{ localWakeTime }}</h1>
+                        <h1 class="text-2xl font-bold" v-if="localWakeTime != 0">{{ localWakeTime }}</h1>
+                        <h1 class="text-2xl font-bold" v-else>06:00</h1>
                         
                         <TimePeriodToggle 
                             :model-value="wakePeriod"
@@ -173,14 +175,25 @@ const localWakeTime = ref(wakeUpTime.value)
 const localBedTolerance = ref(bedTimeTolerance.value)
 const localWakeTolerance = ref(wakeUpTolerance.value)
 
+let bedHour: number | undefined = 22;
+let bedMin: number | undefined = 0;
+
+let wakeHour: number | undefined = 6;
+let wakeMin: number | undefined = 0;
+
+let startAngle: any = {}
+let endAngle: any = {}
+let wakeAngle: any = {}
+let bedAngle: any = {}
+
 // Determine initial AM/PM based on the string (e.g., "14:00" is PM)
 const getPeriodFromTime = (time: string): 'AM' | 'PM' => {
   const hours = parseInt(time.split(':')[0])
   return hours >= 12 ? 'PM' : 'AM'
 }
 
-const bedPeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localBedTime.value))
-const wakePeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localWakeTime.value))
+const bedPeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localBedTime.value === 0 ? "22:00" : localBedTime.value))
+const wakePeriod = ref<'AM' | 'PM'>(getPeriodFromTime(localWakeTime.value === 0 ? "06:00" : localWakeTime.value))
 
 const isDragging = ref(false)
 const dragType = ref<'bed' | 'wake' | null>(null)
@@ -202,6 +215,7 @@ onMounted(async () => {
 
 // Convert time string to angle
 const timeToAngle = (time: string): number => {
+    if (!time) return 0
     const [hours, minutes] = time.split(':').map(Number)
     return ((hours % 12) * 30 + minutes * 0.5 - 90) * Math.PI / 180
 }
@@ -250,26 +264,39 @@ const toggleWakePeriod = (newVal: 'AM' | 'PM') => {
 
 // --- Visual Position Calculators ---
 const getBedHandlePosition = () => {
-    const angle = timeToAngle(localBedTime.value)
+    if (localBedTime.value != 0){
+        bedAngle = timeToAngle(localBedTime.value)
+    } else { 
+        bedAngle = timeToAngle("22:00")
+    }
     const radius = 120
     return {
-        left: `${144 + radius * Math.cos(angle) - 8}px`,
-        top: `${144 + radius * Math.sin(angle) - 8}px`,
+        left: `${144 + radius * Math.cos(bedAngle) - 8}px`,
+        top: `${144 + radius * Math.sin(bedAngle) - 8}px`,
     }
 }
 
 const getWakeHandlePosition = () => {
-    const angle = timeToAngle(localWakeTime.value)
+    if (localWakeTime.value != 0){
+        wakeAngle = timeToAngle(localWakeTime.value)
+    } else { 
+        wakeAngle = timeToAngle("06:00")
+    }
     const radius = 120
     return {
-        left: `${144 + radius * Math.cos(angle) - 8}px`,
-        top: `${144 + radius * Math.sin(angle) - 8}px`,
+        left: `${144 + radius * Math.cos(wakeAngle) - 8}px`,
+        top: `${144 + radius * Math.sin(wakeAngle) - 8}px`,
     }
 }
 
 const getArcPath = () => {
-    const startAngle = timeToAngle(localBedTime.value)
-    const endAngle = timeToAngle(localWakeTime.value)
+    if (localBedTime.value != 0 && localWakeTime.value != 0) { 
+        startAngle = timeToAngle(localBedTime.value)
+        endAngle = timeToAngle(localWakeTime.value)
+    } else { 
+        startAngle = timeToAngle("22:00")
+        endAngle = timeToAngle("06:00")
+    }
     const radius = 110
     
     let angle = endAngle - startAngle
@@ -287,12 +314,14 @@ const getArcPath = () => {
 
 // --- Computed Logic ---
 const sleepDurationText = computed(() => {
-    const [bedHour, bedMin] = localBedTime.value.split(':').map(Number)
-    const [wakeHour, wakeMin] = localWakeTime.value.split(':').map(Number)
-    
+    console.log("localBedTime.value: ", localBedTime.value, "localWakeTime.value: ", localWakeTime.value)
+    if (localBedTime.value != "0" && localWakeTime.value != "0") { 
+        [bedHour, bedMin] = localBedTime.value.split(':').map(Number);
+        [wakeHour, wakeMin] = localWakeTime.value.split(':').map(Number)
+    }
+        
     let bedMinutes = bedHour * 60 + bedMin
     let wakeMinutes = wakeHour * 60 + wakeMin
-    
     // If wake time is earlier than bed time (e.g. 23:00 -> 07:00), add 24h
     if (wakeMinutes <= bedMinutes) {
         wakeMinutes += 24 * 60
@@ -301,6 +330,7 @@ const sleepDurationText = computed(() => {
     const totalMinutes = wakeMinutes - bedMinutes
     const hours = Math.floor(totalMinutes / 60)
     const minutes = totalMinutes % 60
+    console.log("metrics: ", minutes, hours, totalMinutes, wakeMinutes, bedMinutes)
     
     return `${hours}h ${minutes}m`
 })

@@ -5,10 +5,10 @@
             <div class="bg-gray-50 rounded-xl p-2 flex flex-col gap-2">
                 <div class="px-2 text-left">
                     <p v-if="isDayView" class="p-small text-gray-500 text-left">
-                        Time in bed 
+                        Sleep duration 
                     </p>
                     <p v-else class="p-small text-gray-500 text-left">
-                        Avg time in bed
+                        Avg sleep duration
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
