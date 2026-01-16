@@ -4,6 +4,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+  imports: {
+    autoImport: true
+  },
   
   css: ['./app/assets/css/main.css'],
 

@@ -8,8 +8,22 @@ export const useCalculations = () => {
         //     return [];
         // }
         rawIntervals = globalSleepSummary.value?.summary?.intervals || [];
-        const groups = [];
         if (!rawIntervals.length) return [];
+
+        // const shiftedIntervals = rawIntervals.map(interval => {
+        //     const startDate = new Date(interval.start);
+        //     const endDate = new Date(interval.end);
+            
+        //     startDate.setHours(startDate.getHours() + 1);
+        //     endDate.setHours(endDate.getHours() + 1);
+            
+        //     return {
+        //         ...interval,
+        //         start: startDate.toISOString(),
+        //         end: endDate.toISOString()
+        //     };
+        // });
+        const groups = [];
 
 
         let currentGroup = [rawIntervals[0]];
@@ -17,7 +31,7 @@ export const useCalculations = () => {
             const previousInterval = rawIntervals[i - 1];
             const currentInterval = rawIntervals[i];
             const gap = new Date(currentInterval.start) - new Date(previousInterval.end);
-            const fiveMinutesInMs = 5 * 60 * 1000; // 300000
+            const fiveMinutesInMs = 5 * 60 * 1000; 
             
             if (gap < fiveMinutesInMs) {
                 currentGroup.push(currentInterval);

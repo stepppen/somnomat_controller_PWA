@@ -269,44 +269,61 @@ export const useDevice = () => {
     }
 
     const loadSleepSummary = async () => {
-    if (!globalDeviceId.value) {
-        console.error('No device ID available')
-        return
-    }
-    
-    globalSummaryLoading.value = true
-    globalError.value = null
-    
-    try {
-        const { getSleepDayBoundary } = useUserSettings()
-        const sleepBoundary = getSleepDayBoundary()
-        
-        const config = useRuntimeConfig()
-        const apiBase = config.public.apiBase
-        
-        const response = await $fetch(`${apiBase}/sleep/${globalDeviceId.value}/summary`, {
-        params: {
-            period: globalPeriod.value,
-            date: globalDate.value,
-            sleep_boundary_hour: sleepBoundary.hour
+        if (!globalDeviceId.value) {
+            console.error('No device ID available')
+            return
         }
-        })
         
-        globalSleepSummary.value = response
-        // if (globalSleepSummary.value) { 
-        //     globalSummaryLoading.value = false
-        //     console.log("summary loader in use device: ", globalSummaryLoading.value)
-        // }
-        console.log('Sleep summary loaded:', response)
-        return response
+        globalSummaryLoading.value = true
+        globalError.value = null
         
-    } catch (error) {
-        console.error('Failed to load sleep summary:', error)
-        globalError.value = error
-        throw error
-    } finally {
-        globalSummaryLoading.value = false
-    }
+        try {
+            const { getSleepDayBoundary } = useUserSettings()
+            const sleepBoundary = getSleepDayBoundary()
+            
+            const config = useRuntimeConfig()
+            const apiBase = config.public.apiBase
+            
+            const response = await $fetch(`${apiBase}/sleep/${globalDeviceId.value}/summary`, {
+            params: {
+                period: globalPeriod.value,
+                date: globalDate.value,
+                sleep_boundary_hour: sleepBoundary.hour
+            }
+            })
+            if (response?.summary?.intervals) {
+            response.summary.intervals = response.summary.intervals.map(interval => {
+                const startDate = new Date(interval.start);
+                const endDate = new Date(interval.end);
+                
+                startDate.setHours(startDate.getHours() + 1);
+                endDate.setHours(endDate.getHours() + 1);
+                
+                return {
+                    ...interval,
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString()
+                };
+            });
+        }
+            
+            globalSleepSummary.value = response
+
+            console.log("adjusted summary: ", globalSleepSummary.value.summary.intervals)
+            // if (globalSleepSummary.value) { 
+            //     globalSummaryLoading.value = false
+            //     console.log("summary loader in use device: ", globalSummaryLoading.value)
+            // }
+            console.log('Sleep summary loaded:', response)
+            return response
+            
+        } catch (error) {
+            console.error('Failed to load sleep summary:', error)
+            globalError.value = error
+            throw error
+        } finally {
+            globalSummaryLoading.value = false
+        }
     }
     const loadUserSettings = async () => {
         try {
