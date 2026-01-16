@@ -63,8 +63,11 @@
             <!-- <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg> -->
-            <div class="p-2 rounded-lg flex inset-0 justify-center" :class="comment.bgIcon">
-              <Icon :name="comment.icon" :class="comment.iconColor size="1em"/>
+            <div class="h-8 w-8 rounded-lg flex inset-0 justify-center align-center" :class="comment.bgIcon">
+              <span :style="{ color: comment.iconColor }" class="flex flex-col justify-center">
+                <Icon :name="comment.icon" size="1em"/>
+              </span>
+              <!-- <Icon :name="comment.icon" :class="comment.iconColor" size="1em"/> -->
             </div>
             <p class="p-small text-gray-700">{{ comment.text }}</p>
         </div>
@@ -111,7 +114,7 @@ const props = withDefaults(defineProps<Props>(), {
     comment: { 
       icon: "material-symbols:exclamation-rounded",
       bgIcon: "bg-indigo-50",
-      iconColor: "bg-blue-500",
+      iconColor: "#ff0000",
       text: "No data loaded"
     }
     

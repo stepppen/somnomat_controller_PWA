@@ -172,32 +172,32 @@ const sleepCommentDay = computed(() => { 
     if(sleepMetrics.value.quality > 80){ 
         return {
             icon: "material-symbols:sentiment-satisfied-outline-rounded",
-            bgIcon: "bg-blue-50",
-            iconColor: "bg-blue-500",
+            bgIcon: "bg-indigo-50",
+            iconColor: "#5765CF",
             text: "Great sleep! Continue in the same way."
         }
     }
     else if(sleepMetrics.value.quality > 60){ 
         return {
             icon: "material-symbols:sentiment-content-outline-rounded",
-            bgIcon: "bg-green-50",
-            iconColor: "bg-blue-500",
+            bgIcon: "bg-violet-100",
+            iconColor: "#8953DB",
             text: "Good sleep quality. Be more consistent with achieving your sleep goal."
         }
     }
     else if(sleepMetrics.value.quality > 40){ 
         return {
             icon: "material-symbols:sentiment-neutral-outline-rounded",
-            bgIcon: "bg-indigo-50",
-            iconColor: "bg-blue-500",
-            text: "There are a lot of needed improvements."
+            bgIcon: "bg-red-50",
+            iconColor: "#DB5395",
+            text: "Bad Sleep Quality. There are a lot of needed improvements."
         }
     } else { 
         return {
-            icon: "material-symbols:sentiment-dissatisfied-outline-rounded",
-            bgIcon: "bg-red-50",
-            iconColor: "bg-blue-500",
-            text: "There are a lot of needed improvements."
+            icon: "material-symbols:data-alert-rounded",
+            bgIcon: "bg-gray-100",
+            iconColor: "#5E5E5E",
+            text: "No data collected"
         }
     }
 })
