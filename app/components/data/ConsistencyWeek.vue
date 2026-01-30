@@ -20,94 +20,89 @@
                     </span>
                 </div>
     
-                <div class="space-y-3 relative">
-                    <!-- Tolerance zones background -->
-                    <div class="absolute top-0 bottom-0 left-12 right-0 pointer-events-none">
-                        <!-- Bedtime tolerance zone -->
-                        <div 
-                            @click.stop="toggleZone('bed')"
-                            class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto"
-                            :class="selectedZone === 'bed' ? 'ring-2 ring-indigo-400 z-30' : 'z-10'"
-                            :style="{ left: `${bedToleranceStart}%`, width: `${bedToleranceWidth}%` }">
-                            <transition name="pop">
-                                <div v-if="selectedZone === 'bed'" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-xl z-[100] whitespace-nowrap">
-                                    <div class="p-small font-bold text-gray-400">Bedtime Target</div>
-                                    <div class="text-[11px]">{{ localBedTime }} (±{{ localBedTolerance }}m)</div>
-                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
-                                </div>
-                            </transition>
-                        </div>
+                <div class="relative">
 
-                        <!-- Wake time tolerance zone -->
-                        <div 
-                            @click.stop="toggleZone('wake')"
-                            class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto"
-                            :class="selectedZone === 'wake' ? 'ring-2 ring-indigo-400 z-30' : 'z-10'"
-                            :style="{ left: `${wakeToleranceStart}%`, width: `${wakeToleranceWidth}%` }">
-                            <transition name="pop">
-                                <div v-if="selectedZone === 'wake'" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-xl z-[100] whitespace-nowrap">
-                                    <div class="p-small font-bold text-gray-400">Wake Target</div>
-                                    <div class="text-[11px]">{{ localWakeTime }} (±{{ localWakeTolerance }}m)</div>
-                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
-                                </div>
-                            </transition>
-                        </div>
-                    </div>
-
-                    <!-- Day rows -->
-                    <div v-for="(dayRow, idx) in processedWeekDays" :key="idx" class="flex items-center gap-3 relative z-10">
-                        <!-- Day bubble -->
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center border transition-colors duration-200"
-                             :class="getDayBubbleClass(dayRow)">
-                            <span class="text-xs font-bold">{{ dayRow.label }}</span>
-                        </div>
-                        
-                        <!-- Timeline bar -->
-                        <div class="flex-1 relative h-10 rounded-xl border border-gray-100 bg-gray-50 overflow-visible">
-                            <!-- Grid lines -->
-                            <div class="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
-                                <div class="absolute inset-0 flex opacity-30">
-                                    <div v-for="i in 4" :key="i" class="flex-1 border-r border-gray-100 last:border-0" />
-                                </div>
+                    <div class="flex flex-col gap-2 relative z-10">
+                        <div v-for="(dayRow, idx) in processedWeekDays" :key="idx" class="flex items-center gap-3 relative z-10 mb-4">
+                            <!-- Day bubble -->
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center border transition-colors duration-200"
+                                 :class="getDayBubbleClass(dayRow)">
+                                <span class="text-xs font-bold">{{ dayRow.label }}</span>
                             </div>
-                            
-                            <div class="relative h-full w-full pointer-events-none">
-                                <!-- Total bed time indicator -->
-                                <div v-if="dayRow.hasData"
-                                     class="absolute h-1 bottom-4 rounded-full bg-gray-200"
-                                     :style="{
-                                        left: `${getBarPosition(dayRow.minStart)}%`,
-                                        width: `${getBarWidth(dayRow.minStart, dayRow.maxEnd)}%`
-                                     }">
-                                </div>
+                                                    <!-- Tolerance zones background -->
+                        <div class="absolute top-0 bottom-0 left-12 right-0 pointer-events-none">
+                            <!-- Bedtime tolerance zone -->
+                            <div 
+                                @click.stop="toggleZone('bed', dayRow.dateKey)"
+                                class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto z-11"
+                                :class="selectedZone?.type === 'bed' && selectedZone?.day === dayRow.dateKey ? 'ring-2 ring-indigo-400 z-30' : 'z-10'"
+                                :style="{ left: `${bedToleranceStart}%`, width: `${bedToleranceWidth}%` }">
+                                <transition name="pop">
+                                    <div v-if="selectedZone?.type === 'bed' && selectedZone?.day === dayRow.dateKey" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-xl z-[100] whitespace-nowrap">
+                                        <div class="p-small font-bold text-gray-400">Bedtime Target</div>
+                                        <div class="text-[11px]">{{ localBedTime }} (±{{ localBedTolerance }}m)</div>
+                                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
+                                    </div>
+                                </transition>
+                            </div>
 
-                                <!-- Sleep intervals -->
-                                <div
-                                    v-for="(interval, i) in dayRow.intervals"
-                                    :key="interval.start + interval.end"
-                                    @click.stop="handleSelect(interval, dayRow.dateKey)"
-                                    class="absolute top-1 h-4 transition-all duration-200 flex items-center justify-center rounded-md cursor-pointer pointer-events-auto active:opacity-70"
-                                    :class="[
-                                        getIntervalColor(interval),
-                                        isIntervalSelected(interval, dayRow.dateKey) ? 'ring-2 ring-indigo-900 ring-offset-2 z-50' : 'z-20'
-                                    ]"
-                                    :style="{
-                                        left: `${getBarPosition(interval.start)}%`,
-                                        width: `${getBarWidth(interval.start, interval.end)}%`
-                                    }"
-                                >
-                                    <transition name="pop">
-                                        <div v-if="isIntervalSelected(interval, dayRow.dateKey)" 
-                                             class="absolute -top-16 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-2xl whitespace-nowrap z-[100]">
-                                            <div class="flex flex-col items-center gap-0.5">
-                                                <span class="p-small text-gray-400 font-bold">Sleep Session</span>
-                                                <span class="text-[11px] font-medium">
-                                                    {{ formatTimeShort(interval.start) }} — {{ formatTimeShort(interval.end) }}
-                                                </span>
+                            <!-- Wake time tolerance zone -->
+                            <div 
+                                @click.stop="toggleZone('wake', dayRow.dateKey)"
+                                class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto z-11"
+                                :class="selectedZone?.type === 'wake' && selectedZone?.day === dayRow.dateKey ? 'ring-2 ring-indigo-400 z-30' : 'z-10'"
+                                :style="{ left: `${wakeToleranceStart}%`, width: `${wakeToleranceWidth}%` }">
+                                <transition name="pop">
+                                    <div v-if="selectedZone?.type === 'wake' && selectedZone?.day === dayRow.dateKey" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-xl z-[100] whitespace-nowrap">
+                                        <div class="p-small font-bold text-gray-400">Wake Target</div>
+                                        <div class="text-[11px]">{{ localWakeTime }} (±{{ localWakeTolerance }}m)</div>
+                                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
+                                    </div>
+                                </transition>
+                            </div>
+                        </div>
+                            
+                            <!-- Timeline bar -->
+                            <div class="flex-1 relative h-10 rounded-xl border border-gray-100 bg-gray-50">
+                                
+                                <div class="relative h-full w-full pointer-events-none">
+                                    <!-- Total bed time indicator -->
+                                    <div v-if="dayRow.hasData"
+                                         class="absolute h-1 bottom-2 rounded-full bg-gray-200"
+                                         :style="{
+                                            left: `${getBarPosition(dayRow.minStart)}%`,
+                                            width: `${getBarWidth(dayRow.minStart, dayRow.maxEnd)}%`
+                                         }">
+                                    </div>
+    
+                                    <!-- Sleep intervals -->
+                                    <div
+                                        v-for="(interval, i) in dayRow.intervals"
+                                        :key="interval.start + interval.end"
+                                        @click.stop="handleSelect(interval, dayRow.dateKey)"
+                                        class="absolute top-2 h-4 transition-all duration-200 flex items-center justify-center rounded-md cursor-pointer pointer-events-auto active:opacity-70"
+                                        :class="[
+                                            getIntervalColor(interval),
+                                            isIntervalSelected(interval, dayRow.dateKey) ? 'ring-2 ring-indigo-900 ring-offset-2 z-50' : 'z-20'
+                                        ]"
+                                        :style="{
+                                            left: `${getBarPosition(interval.start)}%`,
+                                            width: `${getBarWidth(interval.start, interval.end)}%`
+                                        }"
+                                    >
+                                        <transition name="pop">
+                                            <div v-if="isIntervalSelected(interval, dayRow.dateKey)" 
+                                                 class="absolute -top-16 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-2xl whitespace-nowrap z-[100]">
+                                                <div class="flex flex-col items-center gap-0.5">
+                                                    <span class="p-small text-gray-400 font-bold">Sleep Session</span>
+                                                    <span class="text-[11px] font-medium">
+                                                        {{ formatTimeShort(interval.start) }} — {{ formatTimeShort(interval.end) }}
+                                                    </span>
+                                                </div>
+                                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
                                             </div>
-                                            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
-                                        </div>
-                                    </transition>
+                                        </transition>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -247,13 +242,13 @@ const wakeToleranceWidth = computed(() => {
 });
 
 // Toggle zone selection (matching DataConsistencyDay)
-const toggleZone = (zone) => {
+const toggleZone = (zone, key) => {
     selectedInterval.value = null;
     selectedDay.value = null;
-    if (selectedZone.value === zone) {
+    if (selectedZone.value?.type === zone && selectedZone.value?.day === key) {
         selectedZone.value = null;
     } else {
-        selectedZone.value = zone;
+        selectedZone.value = { type: zone, day: key };
     }
 };
 
