@@ -112,7 +112,6 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
     intervals: { type: Array, default: () => [] }
@@ -144,15 +143,12 @@ onMounted(async () => {
     }
 });
 
-/** * DYNAMIC WINDOW (Focus on sleep period)
- */
 const windowRange = computed(() => {
     const points = props.intervals.flatMap(i => [
         isoToRelativeHours(i.start),
         isoToRelativeHours(i.end)
     ]);
     
-    // Fallback if no intervals
     if (!points.length) return { start: 9, end: 21, duration: 12 };
 
     const min = Math.min(...points, bedToleranceStartHours.value) - 1;
@@ -181,8 +177,6 @@ const axisLabels = computed(() => {
     return labels;
 });
 
-/** * INTERACTIONS
- */
 const toggleZone = (zone) => {
     selectedInterval.value = null;
     if (selectedZone.value === zone) {
@@ -199,7 +193,7 @@ const toggleZone = (zone) => {
 // };
 
 const handleSelect = (interval) => {
-    selectedZone.value = null; // Close any open tolerance zones
+    selectedZone.value = null; 
     if (selectedInterval.value === interval) {
         selectedInterval.value = null;
     } else {
@@ -224,8 +218,7 @@ const getIntervalColor = (interval) => {
 
 const formatTimeShort = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-/** * TOLERANCE CALCULATIONS
- */
+
 const getRelativeFromStr = (timeStr) => {
     const [h, m] = timeStr.split(':').map(Number);
     const dec = h + (m/60);

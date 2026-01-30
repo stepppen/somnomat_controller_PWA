@@ -2,7 +2,7 @@
     <primitives-container>
         <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-semibold text-gray-900">Consistency</h3>
+                <h3 class="font-semibold text-gray-900">This Week</h3>
                 <div class="flex flex-col text-right">
                     <span class="text-sm font-bold text-indigo-600">
                         Streak: {{ streakStats.current }} days
@@ -15,59 +15,100 @@
     
             <div class="relative w-full select-none">
                 <div class="flex justify-between mb-2 pl-12 pr-4">
-                    <span v-for="label in axisLabels" :key="label" class="text-xs text-gray-400 w-8 text-center">
+                    <span v-for="label in axisLabels" :key="label" class="text-[10px] text-gray-400 w-4 text-center">
                         {{ label }}
                     </span>
                 </div>
     
                 <div class="space-y-3 relative">
-                    
+                    <!-- Tolerance zones background -->
                     <div class="absolute top-0 bottom-0 left-12 right-0 pointer-events-none">
-                        <div class="absolute top-0 bottom-0 bg-indigo-50/50 border-l border-r border-indigo-100 transition-all duration-500 ease-in-out"
-                             :style="{ left: `${bedToleranceStart}%`, width: `${bedToleranceWidth}%` }">
+                        <!-- Bedtime tolerance zone -->
+                        <div 
+                            @click.stop="toggleZone('bed')"
+                            class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto"
+                            :class="selectedZone === 'bed' ? 'ring-2 ring-indigo-400 z-30' : 'z-10'"
+                            :style="{ left: `${bedToleranceStart}%`, width: `${bedToleranceWidth}%` }">
+                            <transition name="pop">
+                                <div v-if="selectedZone === 'bed'" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-xl z-[100] whitespace-nowrap">
+                                    <div class="p-small font-bold text-gray-400">Bedtime Target</div>
+                                    <div class="text-[11px]">{{ localBedTime }} (±{{ localBedTolerance }}m)</div>
+                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
+                                </div>
+                            </transition>
                         </div>
-                        <div class="absolute top-0 bottom-0 bg-indigo-50/50 border-l border-r border-indigo-100 transition-all duration-500 ease-in-out"
-                             :style="{ left: `${wakeToleranceStart}%`, width: `${wakeToleranceWidth}%` }">
-                        </div>
-                         <div class="absolute top-0 bottom-0 bg-indigo-50/20 transition-all duration-500 ease-in-out"
-                             :style="{ left: `${bedToleranceStart + bedToleranceWidth}%`, right: `${100 - wakeToleranceStart}%` }">
+
+                        <!-- Wake time tolerance zone -->
+                        <div 
+                            @click.stop="toggleZone('wake')"
+                            class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto"
+                            :class="selectedZone === 'wake' ? 'ring-2 ring-indigo-400 z-30' : 'z-10'"
+                            :style="{ left: `${wakeToleranceStart}%`, width: `${wakeToleranceWidth}%` }">
+                            <transition name="pop">
+                                <div v-if="selectedZone === 'wake'" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-xl z-[100] whitespace-nowrap">
+                                    <div class="p-small font-bold text-gray-400">Wake Target</div>
+                                    <div class="text-[11px]">{{ localWakeTime }} (±{{ localWakeTolerance }}m)</div>
+                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
+                                </div>
+                            </transition>
                         </div>
                     </div>
 
-                    <div v-for="(dayRow, idx) in processedWeekDays" :key="idx" class="flex items-center gap-3 relative z-10 group">
-                        
+                    <!-- Day rows -->
+                    <div v-for="(dayRow, idx) in processedWeekDays" :key="idx" class="flex items-center gap-3 relative z-10">
+                        <!-- Day bubble -->
                         <div class="w-8 h-8 rounded-full flex items-center justify-center border transition-colors duration-200"
                              :class="getDayBubbleClass(dayRow)">
                             <span class="text-xs font-bold">{{ dayRow.label }}</span>
                         </div>
                         
-                        <div class="flex-1 relative h-10 rounded-lg border border-gray-100 bg-transparent overflow-hidden">
-                            <div class="absolute inset-0 flex opacity-50">
-                                <div v-for="i in 5" :key="i" class="flex-1 border-r border-gray-100 last:border-0" />
+                        <!-- Timeline bar -->
+                        <div class="flex-1 relative h-10 rounded-xl border border-gray-100 bg-gray-50 overflow-visible">
+                            <!-- Grid lines -->
+                            <div class="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+                                <div class="absolute inset-0 flex opacity-30">
+                                    <div v-for="i in 4" :key="i" class="flex-1 border-r border-gray-100 last:border-0" />
+                                </div>
                             </div>
                             
-                            <div v-if="dayRow.hasData"
-                                 class="absolute h-[60%] top-[20%] rounded-sm bg-gray-100 border border-gray-200 transition-all duration-500"
-                                 :style="{
-                                    left: `${getBarPosition(dayRow.minStart)}%`,
-                                    width: `${getBarWidth(dayRow.minStart, dayRow.maxEnd)}%`
-                                 }">
-                            </div>
+                            <div class="relative h-full w-full pointer-events-none">
+                                <!-- Total bed time indicator -->
+                                <div v-if="dayRow.hasData"
+                                     class="absolute h-1 bottom-4 rounded-full bg-gray-200"
+                                     :style="{
+                                        left: `${getBarPosition(dayRow.minStart)}%`,
+                                        width: `${getBarWidth(dayRow.minStart, dayRow.maxEnd)}%`
+                                     }">
+                                </div>
 
-                            <div
-                                v-for="(interval, i) in dayRow.intervals"
-                                :key="i"
-                                class="absolute h-full top-0 bottom-0 rounded-md transition-all duration-500 border-2 border-white shadow-sm flex items-center justify-center group/bar"
-                                :class="getIntervalColor(interval)"
-                                :style="{
-                                    left: `${getBarPosition(interval.start)}%`,
-                                    width: `${getBarWidth(interval.start, interval.end)}%`
-                                }"
-                            >
-                                <span v-if="getBarWidth(interval.start, interval.end) > 15" 
-                                      class="text-[10px] text-white font-medium whitespace-nowrap overflow-hidden px-1">
-                                    {{ formatTimeShort(interval.start) }}
-                                </span>
+                                <!-- Sleep intervals -->
+                                <div
+                                    v-for="(interval, i) in dayRow.intervals"
+                                    :key="interval.start + interval.end"
+                                    @click.stop="handleSelect(interval, dayRow.dateKey)"
+                                    class="absolute top-1 h-4 transition-all duration-200 flex items-center justify-center rounded-md cursor-pointer pointer-events-auto active:opacity-70"
+                                    :class="[
+                                        getIntervalColor(interval),
+                                        isIntervalSelected(interval, dayRow.dateKey) ? 'ring-2 ring-indigo-900 ring-offset-2 z-50' : 'z-20'
+                                    ]"
+                                    :style="{
+                                        left: `${getBarPosition(interval.start)}%`,
+                                        width: `${getBarWidth(interval.start, interval.end)}%`
+                                    }"
+                                >
+                                    <transition name="pop">
+                                        <div v-if="isIntervalSelected(interval, dayRow.dateKey)" 
+                                             class="absolute -top-16 left-1/2 -translate-x-1/2 bg-[#00033D] text-white p-2 rounded-lg shadow-2xl whitespace-nowrap z-[100]">
+                                            <div class="flex flex-col items-center gap-0.5">
+                                                <span class="p-small text-gray-400 font-bold">Sleep Session</span>
+                                                <span class="text-[11px] font-medium">
+                                                    {{ formatTimeShort(interval.start) }} — {{ formatTimeShort(interval.end) }}
+                                                </span>
+                                            </div>
+                                            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00033D] rotate-45"></div>
+                                        </div>
+                                    </transition>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -75,16 +116,16 @@
     
                 <div class="flex gap-6 pt-6 justify-center flex-wrap">
                     <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-indigo-500 rounded" />
-                        <span class="text-xs text-gray-500">Sleep</span>
+                        <div class="w-3 h-3 rounded-sm border bg-[#0600AB]" />
+                        <span class="text-[10px] text-gray-500 font-semibold">Sleep</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-gray-400 rounded" />
-                        <span class="text-xs text-gray-500">Interval</span>
+                        <div class="w-3 h-3 rounded-sm bg-indigo-100 border border-indigo-300" />
+                        <span class="text-[10px] text-gray-500 font-semibold">Tolerance</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-gray-100 border border-gray-200 rounded" />
-                        <span class="text-xs text-gray-500">Total Bed Time</span>
+                        <div class="w-3 h-3 rounded-sm bg-gray-100 border border-gray-300" />
+                        <span class="text-[10px] text-gray-500 font-semibold">Bed Time</span>
                     </div>
                 </div>
             </div>
@@ -92,29 +133,40 @@
     </primitives-container>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue';
+<script setup>
+import { computed, ref, onMounted } from 'vue';
 
-// 1. Props
 const props = defineProps({
-    intervals: {
-        type: Array as PropType<any[]>,
-        default: () => []
-    },
-    currentDate: {
-        type: String,
-        default: () => new Date().toISOString().split('T')[0]
+    intervals: { type: Array, default: () => [] }
+});
+
+const { globalDeviceId, globalDeviceSettings, globalDate, loadDeviceSettings } = useDevice();
+const { bedTime, wakeUpTime, bedTimeTolerance, wakeUpTolerance } = useUserSettings();
+const { intervalGrouping } = useCalculations();
+
+const localBedTime = ref(bedTime.value || "22:30");
+const localWakeTime = ref(wakeUpTime.value || "07:30");
+const localBedTolerance = ref(bedTimeTolerance.value || 30);
+const localWakeTolerance = ref(wakeUpTolerance.value || 30);
+
+// Selection states (matching DataConsistencyDay)
+const selectedInterval = ref(null);
+const selectedDay = ref(null);
+const selectedZone = ref(null); // 'bed' or 'wake'
+
+onMounted(async () => {
+    if (globalDeviceId.value) { 
+        await loadDeviceSettings();
+        if (globalDeviceSettings.value) {
+            localBedTime.value = globalDeviceSettings.value.bed_time ?? "22:30";
+            localWakeTime.value = globalDeviceSettings.value.wake_up_time ?? "07:30";
+            localBedTolerance.value = globalDeviceSettings.value.bed_time_tolerance ?? 30;
+            localWakeTolerance.value = globalDeviceSettings.value.wake_up_tolerance ?? 30;
+        }
     }
 });
 
-// 2. Real User Settings (No Mocks)
-// Since this is Nuxt, useUserSettings is likely auto-imported.
-// If not, add: import { useUserSettings } from '~/composables/useUserSettings';
-const { bedTime, wakeUpTime, bedTimeTolerance, wakeUpTolerance } = useUserSettings();
-
-// --- CORE HELPERS ---
-
-const getLocalYMD = (dateStr: string) => {
+const getLocalYMD = (dateStr) => {
     const d = new Date(dateStr);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -122,112 +174,127 @@ const getLocalYMD = (dateStr: string) => {
     return `${year}-${month}-${day}`;
 };
 
-const timeToDecimal = (timeStr: string) => {
-    if(!timeStr) return 0;
+const timeToDecimal = (timeStr) => {
+    if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
     return h + (m / 60);
 };
 
-// --- CHART SCALING (Now Reactive to bedTime/wakeUpTime) ---
-
-// Start the chart 2 hours before bedtime
-const chartStartHour = computed(() => {
-    const bed = timeToDecimal(bedTime.value);
-    // If bedtime is 00:00, start is 22:00. If 01:00, start is 23:00.
-    return (bed - 2 + 24) % 24; 
-});
-
-// Calculate total window duration (e.g., 22:00 -> 09:00 is 11 hours)
-const chartDuration = computed(() => {
-    const start = chartStartHour.value;
-    let end = timeToDecimal(wakeUpTime.value) + 2; // End 2 hours after wake up
-    
-    // Handle midnight crossing (e.g. Start 22, End 09)
-    // If End (9) < Start (22), add 24 to End => 33 - 22 = 11 hours
-    if (end < start) end += 24;
-    
-    // Ensure minimum window to prevent breaking
-    return Math.max(8, end - start);
-});
-
-const getPercentPosition = (hourDecimal: number) => {
-    const start = chartStartHour.value;
-    let target = hourDecimal;
-    
-    // Normalize target relative to start
-    // Case: Start 22:00, Target 01:00. Target needs to be treated as 25.0
-    // Threshold: if chart starts late (e.g. >12:00) and target is early (<12:00), add 24h
-    if (start > 12 && target < 12) {
-        target += 24;
-    } else if (target < start) {
-        // Fallback for rare edge cases or if start is early morning
-        target += 24;
-    }
-
-    return ((target - start) / chartDuration.value) * 100;
+// Use the same relative hours conversion as DataConsistencyDay
+const isoToRelativeHours = (isoStr) => {
+    const d = new Date(isoStr);
+    const hrs = d.getHours() + (d.getMinutes() / 60);
+    return hrs >= 12 ? hrs - 12 : hrs + 12;
 };
 
-// Axis Labels (Regenerates when settings change)
+// Window range calculation (like DataConsistencyDay)
+const windowRange = computed(() => {
+    const points = props.intervals.flatMap(i => [
+        isoToRelativeHours(i.start),
+        isoToRelativeHours(i.end)
+    ]);
+    
+    if (!points.length) return { start: 9, end: 21, duration: 12 };
+
+    const bedStart = getRelativeFromStr(localBedTime.value) - (localBedTolerance.value / 60);
+    const wakeEnd = getRelativeFromStr(localWakeTime.value) + (localWakeTolerance.value / 60);
+
+    const min = Math.min(...points, bedStart) - 1;
+    const max = Math.max(...points, wakeEnd) + 1;
+    return { start: min, end: max, duration: max - min };
+});
+
+const getPercentPosition = (relHour) => ((relHour - windowRange.value.start) / windowRange.value.duration) * 100;
+const getPercentWidth = (durationHrs) => (durationHrs / windowRange.value.duration) * 100;
+const getDurationHours = (start, end) => (new Date(end) - new Date(start)) / (1000 * 60 * 60);
+
 const axisLabels = computed(() => {
     const labels = [];
-    const start = Math.floor(chartStartHour.value);
-    const duration = Math.ceil(chartDuration.value);
-    
-    // Show label every ~3 hours
-    const step = Math.ceil(duration / 5); 
-
-    for (let i = 0; i <= duration; i += step) {
-        let h = (start + i) % 24;
-        labels.push(String(h).padStart(2, '0'));
+    const step = windowRange.value.duration / 4;
+    for (let i = 0; i <= 4; i++) {
+        const relHour = windowRange.value.start + (i * step);
+        const actualHour = Math.floor(relHour + 12) % 24;
+        labels.push(`${String(actualHour).padStart(2, '0')}:00`);
     }
     return labels;
 });
 
-// --- TOLERANCE ZONES ---
+const getRelativeFromStr = (timeStr) => {
+    const [h, m] = timeStr.split(':').map(Number);
+    const dec = h + (m/60);
+    return dec >= 12 ? dec - 12 : dec + 12;
+};
 
+// Tolerance zones (matching DataConsistencyDay calculations)
 const bedToleranceStart = computed(() => {
-    const bed = timeToDecimal(bedTime.value);
-    const startH = bed - (bedTimeTolerance.value / 60);
-    return Math.max(0, getPercentPosition(startH));
+    const start = getRelativeFromStr(localBedTime.value) - (localBedTolerance.value / 60);
+    return getPercentPosition(start);
 });
 
 const bedToleranceWidth = computed(() => {
-    const widthHours = (bedTimeTolerance.value * 2) / 60;
-    return (widthHours / chartDuration.value) * 100;
+    const widthHours = (localBedTolerance.value * 2) / 60;
+    return getPercentWidth(widthHours);
 });
 
 const wakeToleranceStart = computed(() => {
-    const wake = timeToDecimal(wakeUpTime.value);
-    const startH = wake - (wakeUpTolerance.value / 60);
-    return Math.max(0, getPercentPosition(startH));
+    const start = getRelativeFromStr(localWakeTime.value) - (localWakeTolerance.value / 60);
+    return getPercentPosition(start);
 });
 
 const wakeToleranceWidth = computed(() => {
-    const widthHours = (wakeUpTolerance.value * 2) / 60;
-    return (widthHours / chartDuration.value) * 100;
+    const widthHours = (localWakeTolerance.value * 2) / 60;
+    return getPercentWidth(widthHours);
 });
 
-// --- DATA PROCESSING & STREAKS ---
+// Toggle zone selection (matching DataConsistencyDay)
+const toggleZone = (zone) => {
+    selectedInterval.value = null;
+    selectedDay.value = null;
+    if (selectedZone.value === zone) {
+        selectedZone.value = null;
+    } else {
+        selectedZone.value = zone;
+    }
+};
 
-const checkTolerance = (startIso: string, endIso: string) => {
+// Handle interval selection (matching DataConsistencyDay)
+const handleSelect = (interval, dayKey) => {
+    selectedZone.value = null;
+    if (selectedInterval.value === interval && selectedDay.value === dayKey) {
+        selectedInterval.value = null;
+        selectedDay.value = null;
+    } else {
+        selectedInterval.value = interval;
+        selectedDay.value = dayKey;
+    }
+};
+
+// Check if interval is selected
+const isIntervalSelected = (interval, dayKey) => {
+    return selectedInterval.value === interval && selectedDay.value === dayKey;
+};
+
+// Check if sleep is within tolerance
+const checkTolerance = (startIso, endIso) => {
     const startD = new Date(startIso);
     const endD = new Date(endIso);
     
     let actualBed = startD.getHours() + (startD.getMinutes() / 60);
-    const targetBed = timeToDecimal(bedTime.value);
+    const targetBed = timeToDecimal(localBedTime.value);
     let bedDiff = Math.abs(actualBed - targetBed);
     if (bedDiff > 12) bedDiff = 24 - bedDiff;
 
     let actualWake = endD.getHours() + (endD.getMinutes() / 60);
-    const targetWake = timeToDecimal(wakeUpTime.value);
+    const targetWake = timeToDecimal(localWakeTime.value);
     let wakeDiff = Math.abs(actualWake - targetWake);
     if (wakeDiff > 12) wakeDiff = 24 - wakeDiff;
 
-    return bedDiff <= (bedTimeTolerance.value/60) && wakeDiff <= (wakeUpTolerance.value/60);
+    return bedDiff <= (localBedTolerance.value/60) && wakeDiff <= (localWakeTolerance.value/60);
 };
 
+// Process intervals by day
 const dailyStats = computed(() => {
-    const stats: Record<string, any> = {};
+    const stats = {};
     if (!props.intervals || props.intervals.length === 0) return stats;
 
     props.intervals.forEach(interval => {
@@ -255,6 +322,7 @@ const dailyStats = computed(() => {
     return stats;
 });
 
+// Calculate streak statistics
 const streakStats = computed(() => {
     const days = Object.keys(dailyStats.value).sort();
     if (days.length === 0) return { current: 0, record: 0 };
@@ -283,8 +351,9 @@ const streakStats = computed(() => {
 
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
+// Process week data based on current globalDate
 const processedWeekDays = computed(() => {
-    const refDate = new Date(props.currentDate);
+    const refDate = globalDate.value ? new Date(globalDate.value) : new Date();
     const dayOfWeek = refDate.getDay(); 
     const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     
@@ -302,7 +371,10 @@ const processedWeekDays = computed(() => {
         const isToday = dateKey === todayStr;
 
         return {
-            label, dateKey, isFuture, isToday,
+            label, 
+            dateKey, 
+            isFuture, 
+            isToday,
             hasData: !!data,
             intervals: data?.intervals || [],
             minStart: data?.minStart,
@@ -312,29 +384,28 @@ const processedWeekDays = computed(() => {
     });
 });
 
-// --- STYLING & BARS ---
-
-const getBarPosition = (isoStart: string) => {
+// Bar positioning using the same logic as DataConsistencyDay
+const getBarPosition = (isoStart) => {
     if (!isoStart) return 0;
-    const d = new Date(isoStart);
-    const h = d.getHours() + d.getMinutes() / 60;
-    return Math.max(0, getPercentPosition(h));
+    const relHour = isoToRelativeHours(isoStart);
+    return Math.max(0, getPercentPosition(relHour));
 };
 
-const getBarWidth = (isoStart: string, isoEnd: string) => {
+const getBarWidth = (isoStart, isoEnd) => {
     if (!isoStart || !isoEnd) return 0;
-    const startD = new Date(isoStart);
-    const endD = new Date(isoEnd);
-    const diffMs = endD.getTime() - startD.getTime();
-    const diffHours = diffMs / (1000 * 60 * 60);
-    return (diffHours / chartDuration.value) * 100;
+    const durationHrs = getDurationHours(isoStart, isoEnd);
+    return getPercentWidth(durationHrs);
 };
 
-const getIntervalColor = (interval: any) => {
-    return (interval.duration_min > 45) ? 'bg-indigo-500 z-20' : 'bg-gray-400 z-30';
+// Color intervals based on if they're sleep sessions (matching DataConsistencyDay exactly)
+const getIntervalColor = (interval) => {
+    const isSleep = intervalGrouping.value?.some(group => 
+        group.some(item => item.start === interval.start)
+    );
+    return isSleep ? 'bg-[#0600AB]' : 'bg-gray-200';
 };
 
-const getDayBubbleClass = (day: any) => {
+const getDayBubbleClass = (day) => {
     if (day.isFuture) return "bg-white border-dashed border-gray-200 text-gray-300";
     let cls = "border-transparent"; 
     if (day.isSuccess) cls = "bg-indigo-600 text-white";
@@ -344,8 +415,17 @@ const getDayBubbleClass = (day: any) => {
     return cls;
 };
 
-const formatTimeShort = (iso: string) => {
+const formatTimeShort = (iso) => {
     const d = new Date(iso);
-    return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-}
+    return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false});
+};
 </script>
+
+<style scoped>
+.pop-enter-active { animation: pop-in 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.pop-leave-active { animation: pop-in 0.15s reverse ease-in; }
+@keyframes pop-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
