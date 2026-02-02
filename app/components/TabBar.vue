@@ -46,12 +46,11 @@ const sliderPos = computed (() => {
     }
 })
 
-const originPath = ref("home") // The tab they came from
+const originPath = ref("home") //prev. tab
 
 watch (
     () => route.path,
     (newPath) => {
-        // Don't update originPath if navigating TO notifications
         if (newPath !== '/notifications') {
             if (newPath === '/' || newPath === '/recommendations'){
                 currentPath.value = "home"
@@ -64,7 +63,6 @@ watch (
                 originPath.value = "settings"
             }
         }
-        // If on notifications, currentPath stays as originPath (doesn't change)
     }, { immediate: true }
 )
 </script>

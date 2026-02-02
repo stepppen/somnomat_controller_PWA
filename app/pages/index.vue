@@ -9,14 +9,15 @@
             </div>
         </div>
     </div>
-        <div class="main-container py-2">
+    <!-- mock data component -->
+        <!-- <div class="main-container py-2">
             <div class="text-sm mt-2 bg-red-200 rounded-2xl p-2 flex items-center justify-center gap-2">
                 <Icon name="material-symbols:info-outline-rounded" size="1em"/>
                 <p class="p-small text-center">
                     This is mock data
                 </p>
             </div>
-        </div>  
+        </div>   -->
     <div class="main-container ">
           <UTabs @update:modelValue="handleToggle" :items="items" color="info" :ui="{ 
             indicator: 'rounded-full',
@@ -287,8 +288,21 @@ const activity = computed(() => sleepMetrics.value.activity);
 const sleepQuality = computed(() => sleepMetrics.value.quality);
 
 //safe computed properties for overview props
+// const totalPlannedMinutes = computed(() => {
+//     return totalPlannedSleep.value?.totalMinutes ? Math.round(totalPlannedSleep.value.totalMinutes) : 0;
+// });
+
 const totalPlannedMinutes = computed(() => {
-    return totalPlannedSleep.value?.totalMinutes ? Math.round(totalPlannedSleep.value.totalMinutes) : 0;
+    const baseMinutes = totalPlannedSleep.value?.totalMinutes || 0;
+    
+    if (globalPeriod.value === "week") {
+        return Math.round(baseMinutes * 7);
+    } else if (globalPeriod.value === "month") {
+        const daysInMonth = endMonth.value[0] || 30;
+        return Math.round(baseMinutes * daysInMonth);
+    }
+    
+    return Math.round(baseMinutes); 
 });
 
 const timeInBedMinutes = computed(() => {

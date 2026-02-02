@@ -43,7 +43,7 @@ export const useCalculations = () => {
         
         groups.push(currentGroup);
         
-        // Filter out groups where total duration is less than 5 minutes
+        //filter out if < 5min
         const validGroups = groups.filter(group => {
             const totalDuration = group.reduce((sum, interval) => sum + interval.duration_min, 0);
             console.log("totalDuration:", totalDuration)

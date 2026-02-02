@@ -24,14 +24,12 @@
 
                     <div class="flex flex-col gap-2 relative z-10">
                         <div v-for="(dayRow, idx) in processedWeekDays" :key="idx" class="flex items-center gap-3 relative z-10 mb-4">
-                            <!-- Day bubble -->
                             <div class="w-8 h-8 rounded-full flex items-center justify-center border transition-colors duration-200"
                                  :class="getDayBubbleClass(dayRow)">
                                 <span class="text-xs font-bold">{{ dayRow.label }}</span>
                             </div>
-                                                    <!-- Tolerance zones background -->
                         <div class="absolute top-0 bottom-0 left-12 right-0 pointer-events-none">
-                            <!-- Bedtime tolerance zone -->
+                            <!-- bedtime tol. -->
                             <div 
                                 @click.stop="toggleZone('bed', dayRow.dateKey)"
                                 class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto z-11"
@@ -46,7 +44,7 @@
                                 </transition>
                             </div>
 
-                            <!-- Wake time tolerance zone -->
+                            <!-- wake time tol. -->
                             <div 
                                 @click.stop="toggleZone('wake', dayRow.dateKey)"
                                 class="absolute top-0 bottom-0 bg-indigo-50/60 border-l border-r border-indigo-200 transition-all cursor-pointer pointer-events-auto z-11"
@@ -62,25 +60,23 @@
                             </div>
                         </div>
                             
-                            <!-- Timeline bar -->
+                            <!-- bar with data -->
                             <div class="flex-1 relative h-10 rounded-xl border border-gray-100 bg-gray-50">
                                 
                                 <div class="relative h-full w-full pointer-events-none">
-                                    <!-- Total bed time indicator -->
-                                    <div v-if="dayRow.hasData"
+                                    <!-- not sure if the bed time data is needed in this view -->
+                                    <!-- <div v-if="dayRow.hasData"
                                          class="absolute h-1 bottom-2 rounded-full bg-gray-200"
                                          :style="{
                                             left: `${getBarPosition(dayRow.minStart)}%`,
                                             width: `${getBarWidth(dayRow.minStart, dayRow.maxEnd)}%`
                                          }">
-                                    </div>
-    
-                                    <!-- Sleep intervals -->
+                                    </div> -->
                                     <div
                                         v-for="(interval, i) in dayRow.intervals"
                                         :key="interval.start + interval.end"
                                         @click.stop="handleSelect(interval, dayRow.dateKey)"
-                                        class="absolute top-2 h-4 transition-all duration-200 flex items-center justify-center rounded-md cursor-pointer pointer-events-auto active:opacity-70"
+                                        class="absolute top-3 h-4 transition-all duration-200 flex items-center justify-center rounded-md cursor-pointer pointer-events-auto active:opacity-70"
                                         :class="[
                                             getIntervalColor(interval),
                                             isIntervalSelected(interval, dayRow.dateKey) ? 'ring-2 ring-indigo-900 ring-offset-2 z-50' : 'z-20'
@@ -118,10 +114,6 @@
                         <div class="w-3 h-3 rounded-sm bg-indigo-100 border border-indigo-300" />
                         <span class="text-[10px] text-gray-500 font-semibold">Tolerance</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-sm bg-gray-100 border border-gray-300" />
-                        <span class="text-[10px] text-gray-500 font-semibold">Bed Time</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -144,10 +136,9 @@ const localWakeTime = ref(wakeUpTime.value || "07:30");
 const localBedTolerance = ref(bedTimeTolerance.value || 30);
 const localWakeTolerance = ref(wakeUpTolerance.value || 30);
 
-// Selection states (matching DataConsistencyDay)
 const selectedInterval = ref(null);
 const selectedDay = ref(null);
-const selectedZone = ref(null); // 'bed' or 'wake'
+const selectedZone = ref(null);
 
 onMounted(async () => {
     if (globalDeviceId.value) { 
@@ -175,14 +166,12 @@ const timeToDecimal = (timeStr) => {
     return h + (m / 60);
 };
 
-// Use the same relative hours conversion as DataConsistencyDay
 const isoToRelativeHours = (isoStr) => {
     const d = new Date(isoStr);
     const hrs = d.getHours() + (d.getMinutes() / 60);
     return hrs >= 12 ? hrs - 12 : hrs + 12;
 };
 
-// Window range calculation (like DataConsistencyDay)
 const windowRange = computed(() => {
     const points = props.intervals.flatMap(i => [
         isoToRelativeHours(i.start),
@@ -220,7 +209,6 @@ const getRelativeFromStr = (timeStr) => {
     return dec >= 12 ? dec - 12 : dec + 12;
 };
 
-// Tolerance zones (matching DataConsistencyDay calculations)
 const bedToleranceStart = computed(() => {
     const start = getRelativeFromStr(localBedTime.value) - (localBedTolerance.value / 60);
     return getPercentPosition(start);
@@ -241,7 +229,6 @@ const wakeToleranceWidth = computed(() => {
     return getPercentWidth(widthHours);
 });
 
-// Toggle zone selection (matching DataConsistencyDay)
 const toggleZone = (zone, key) => {
     selectedInterval.value = null;
     selectedDay.value = null;
@@ -252,7 +239,6 @@ const toggleZone = (zone, key) => {
     }
 };
 
-// Handle interval selection (matching DataConsistencyDay)
 const handleSelect = (interval, dayKey) => {
     selectedZone.value = null;
     if (selectedInterval.value === interval && selectedDay.value === dayKey) {
@@ -264,12 +250,10 @@ const handleSelect = (interval, dayKey) => {
     }
 };
 
-// Check if interval is selected
 const isIntervalSelected = (interval, dayKey) => {
     return selectedInterval.value === interval && selectedDay.value === dayKey;
 };
 
-// Check if sleep is within tolerance
 const checkTolerance = (startIso, endIso) => {
     const startD = new Date(startIso);
     const endD = new Date(endIso);
@@ -287,7 +271,7 @@ const checkTolerance = (startIso, endIso) => {
     return bedDiff <= (localBedTolerance.value/60) && wakeDiff <= (localWakeTolerance.value/60);
 };
 
-// Process intervals by day
+//process intervals by day
 const dailyStats = computed(() => {
     const stats = {};
     if (!props.intervals || props.intervals.length === 0) return stats;
@@ -317,7 +301,6 @@ const dailyStats = computed(() => {
     return stats;
 });
 
-// Calculate streak statistics
 const streakStats = computed(() => {
     const days = Object.keys(dailyStats.value).sort();
     if (days.length === 0) return { current: 0, record: 0 };
@@ -346,7 +329,6 @@ const streakStats = computed(() => {
 
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-// Process week data based on current globalDate
 const processedWeekDays = computed(() => {
     const refDate = globalDate.value ? new Date(globalDate.value) : new Date();
     const dayOfWeek = refDate.getDay(); 
@@ -379,7 +361,6 @@ const processedWeekDays = computed(() => {
     });
 });
 
-// Bar positioning using the same logic as DataConsistencyDay
 const getBarPosition = (isoStart) => {
     if (!isoStart) return 0;
     const relHour = isoToRelativeHours(isoStart);
@@ -392,7 +373,6 @@ const getBarWidth = (isoStart, isoEnd) => {
     return getPercentWidth(durationHrs);
 };
 
-// Color intervals based on if they're sleep sessions (matching DataConsistencyDay exactly)
 const getIntervalColor = (interval) => {
     const isSleep = intervalGrouping.value?.some(group => 
         group.some(item => item.start === interval.start)

@@ -6,7 +6,7 @@
                     <h3 class="font-semibold text-gray-900">Consistency</h3>
                 </div>
                 <div class="text-right">
-                    <span class="text-sm font-bold text-indigo-600">{{ successCount }} Days</span>
+                    <span class="text-sm font-bold text-indigo-600">Streak: {{ successCount }} Days</span>
                 </div>
             </div>
 
@@ -34,7 +34,7 @@
             <transition name="pop" mode="out-in">
                 <div v-if="focusedDay" :key="focusedDay.dateKey" class="mt-2 flex flex-col gap-2">
                     <div class="flex justify-between items-center mb-2">
-                        <h3 class="font-semibold text-gray-900">{{ formatFullDate(focusedDay.dateKey) }}</h3>
+                        <h3 class=" text-gray-900">{{ formatFullDate(focusedDay.dateKey) }}</h3>
                         <div v-if="focusedDay.isSuccess" class="flex items-center gap-1">
                             <div class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
                             <span class="text-[10px] font-bold text-indigo-600 uppercase">Consistency Goal Hit</span>
@@ -46,7 +46,7 @@
                             <span v-for="label in axisLabels" :key="label" class="text-[10px] text-gray-400 w-4 text-center">{{ label }}</span>
                         </div>
 
-                        <div class="relative h-20 rounded-xl border border-gray-100 bg-white shadow-sm overflow-visible">
+                        <div class="relative h-20 rounded-xl border border-gray-100 bg-gray-50 overflow-visible">
                             <div class="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
                                 <div class="absolute inset-0 flex opacity-30">
                                     <div v-for="i in 4" :key="i" class="flex-1 border-r border-gray-100 last:border-0" />
@@ -78,10 +78,6 @@
                             </div>
 
                             <div class="relative h-full w-full pointer-events-none">
-                                <div v-for="(startTime, index) in focusedDay.totalBedTimeStart" :key="'bed-'+index"
-                                    class="absolute h-1 bottom-3 rounded-full bg-gray-200"
-                                    :style="{ left: `${getPercentPosition(isoToRelativeHours(startTime))}%`, width: `${getPercentWidth(getDurationHours(startTime, focusedDay.totalBedTimeEnd[index]))}%` }">
-                                </div>
 
                                 <div v-for="(interval, i) in focusedDay.intervals" :key="interval.start"
                                     @click.stop="handleSelect(interval)"
@@ -104,7 +100,7 @@
                 </div>
             </transition>
 
-                <div class="flex gap-6 pt-6 justify-center flex-wrap">
+                <div class="flex gap-6 justify-center flex-wrap">
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-sm border bg-[#0600AB]" />
                         <span class="text-[10px] text-gray-500 font-semibold">Sleep</span>
@@ -112,10 +108,6 @@
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-sm bg-indigo-100 border border-indigo-300" />
                         <span class="text-[10px] text-gray-500 font-semibold">Tolerance</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-sm bg-gray-100 border border-gray-300" />
-                        <span class="text-[10px] text-gray-500 font-semibold">Bed Time</span>
                     </div>
                 </div>
         </div>
@@ -133,7 +125,7 @@ const { globalDate, globalDeviceSettings, loadDeviceSettings } = useDevice();
 const { bedTime, wakeUpTime, bedTimeTolerance, wakeUpTolerance } = useUserSettings();
 const { intervalGrouping } = useCalculations();
 
-// Local State
+//local states
 const localBedTime = ref(bedTime.value || "22:30");
 const localWakeTime = ref(wakeUpTime.value || "07:30");
 const localBedTolerance = ref(bedTimeTolerance.value || 30);
@@ -154,10 +146,10 @@ onMounted(async () => {
     }
 });
 
-// Logic: Date Parsing
+//parsing the date
 const getLocalYMD = (isoStr) => new Date(isoStr).toISOString().split('T')[0];
 
-// Logic: Calendar Construction
+//calender
 const calendarDays = computed(() => {
     const d = globalDate.value ? new Date(globalDate.value) : new Date();
     const year = d.getFullYear();
@@ -170,16 +162,13 @@ const calendarDays = computed(() => {
     if (startOffset === -1) startOffset = 6;
 
     const days = [];
-    // Padding
     for (let i = 0; i < startOffset; i++) days.push({ isPadding: true, dateKey: `pad-${i}` });
 
-    // Days with Data
     for (let i = 1; i <= lastDay.getDate(); i++) {
         const date = new Date(year, month, i);
         const dateKey = getLocalYMD(date);
         const dayIntervals = props.intervals.filter(inv => getLocalYMD(inv.end) === dateKey);
         
-        // Success Logic: Check if any interval ends near wake time AND starts near bed time
         const hasSuccess = dayIntervals.some(inv => {
             const relStart = isoToRelativeHours(inv.start);
             const relEnd = isoToRelativeHours(inv.end);
@@ -197,8 +186,7 @@ const calendarDays = computed(() => {
             intervals: dayIntervals,
             hasData: dayIntervals.length > 0,
             isSuccess: hasSuccess,
-            // Pre-calculate grouping for the detail view
-            totalBedTimeStart: dayIntervals.length > 0 ? [dayIntervals[0].start] : [], // Simplified for heatmap
+            totalBedTimeStart: dayIntervals.length > 0 ? [dayIntervals[0].start] : [], 
             totalBedTimeEnd: dayIntervals.length > 0 ? [dayIntervals[dayIntervals.length-1].end] : []
         });
     }
@@ -208,7 +196,6 @@ const calendarDays = computed(() => {
 const focusedDay = computed(() => calendarDays.value.find(d => d.dateKey === selectedDayKey.value));
 const successCount = computed(() => calendarDays.value.filter(d => d.isSuccess).length);
 
-// Logic: Coordinate System (Shared with ConsistencyDay)
 const isoToRelativeHours = (isoStr) => {
     const d = new Date(isoStr);
     const hrs = d.getHours() + (d.getMinutes() / 60);
@@ -247,7 +234,7 @@ const axisLabels = computed(() => {
     return labels;
 });
 
-// Interaction Methods
+//interactions
 const selectDay = (day) => {
     if (day.isPadding) return;
     selectedDayKey.value = day.dateKey;
@@ -285,7 +272,6 @@ const getDayClass = (day) => {
 const formatFullDate = (key) => new Date(key).toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' });
 const formatTimeShort = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-// Watch for month changes from parent to reset selection
 watch(() => globalDate.value, () => {
     selectedDayKey.value = null;
 });

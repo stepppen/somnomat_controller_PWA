@@ -147,9 +147,6 @@
 </template>
 
 <script setup lang="ts">
-// Assuming TimePeriodToggle is auto-imported or registered globally
-// If not, import it: import TimePeriodToggle from '@/components/TimePeriodToggle.vue'
-
 const { 
     bedTime, 
     wakeUpTime, 
@@ -167,7 +164,6 @@ const {
   loadDeviceSettings,
 } = useDevice()
 
-// --- State ---
 const localBedTime = ref(bedTime.value && bedTime.value !== "0" ? bedTime.value : "22:00")
 const localWakeTime = ref(wakeUpTime.value && wakeUpTime.value !== "0" ? wakeUpTime.value : "06:00")
 const localBedTolerance = ref(bedTimeTolerance.value || 0)
@@ -184,7 +180,6 @@ let endAngle: any = {}
 let wakeAngle: any = {}
 let bedAngle: any = {}
 
-// Determine initial AM/PM based on the string (e.g., "14:00" is PM)
 const getPeriodFromTime = (time: string): 'AM' | 'PM' => {
   const hours = parseInt(time.split(':')[0])
   return hours >= 12 ? 'PM' : 'AM'
@@ -216,17 +211,12 @@ onMounted(async () => {
     }
 });
 
-// --- Helpers ---
-
-// Convert time string to angle
 const timeToAngle = (time: string): number => {
     if (!time) return 0
     const [hours, minutes] = time.split(':').map(Number)
     return ((hours % 12) * 30 + minutes * 0.5 - 90) * Math.PI / 180
 }
 
-// Convert angle to raw hours/minutes (0-11 range)
-// Note: This no longer returns a string, but raw numbers for calculation
 const angleToRawTime = (angle: number): { hours: number, minutes: number } => {
     let degrees = (angle * 180 / Math.PI + 90) % 360
     if (degrees < 0) degrees += 360
@@ -244,19 +234,15 @@ const angleToRawTime = (angle: number): { hours: number, minutes: number } => {
     return { hours, minutes }
 }
 
-// Helper to flip AM/PM without changing position
 const convertToPeriod = (time: string, targetPeriod: 'AM' | 'PM'): string => {
   let [hours, minutes] = time.split(':').map(Number)
   
-  // If we want PM, and it's currently AM (hours < 12), add 12
   if (targetPeriod === 'PM' && hours < 12) hours += 12
-  // If we want AM, and it's currently PM (hours >= 12), subtract 12
   if (targetPeriod === 'AM' && hours >= 12) hours -= 12
   
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 }
 
-// --- Toggle Handlers ---
 const toggleBedPeriod = (newVal: 'AM' | 'PM') => {
   bedPeriod.value = newVal
   localBedTime.value = convertToPeriod(localBedTime.value, newVal)
@@ -267,7 +253,6 @@ const toggleWakePeriod = (newVal: 'AM' | 'PM') => {
   localWakeTime.value = convertToPeriod(localWakeTime.value, newVal)
 }
 
-// --- Visual Position Calculators ---
 const getBedHandlePosition = () => {
     bedAngle = timeToAngle(localBedTime.value)
     const radius = 120
@@ -304,7 +289,7 @@ const getArcPath = () => {
     return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`
 }
 
-// --- Computed Logic ---
+//computed logic
 const sleepDurationText = computed(() => {
     console.log("localBedTime.value: ", localBedTime.value, "localWakeTime.value: ", localWakeTime.value)
     if (localBedTime.value != "0" && localWakeTime.value != "0") { 
@@ -314,7 +299,6 @@ const sleepDurationText = computed(() => {
         
     let bedMinutes = bedHour * 60 + bedMin
     let wakeMinutes = wakeHour * 60 + wakeMin
-    // If wake time is earlier than bed time (e.g. 23:00 -> 07:00), add 24h
     if (wakeMinutes <= bedMinutes) {
         wakeMinutes += 24 * 60
     }
@@ -327,11 +311,11 @@ const sleepDurationText = computed(() => {
     return `${hours}h ${minutes}m`
 })
 
-// --- Drag Events ---
+//dragging interaction
 const startDrag = (type: 'bed' | 'wake', event: MouseEvent | TouchEvent) => {
     isDragging.value = true
     dragType.value = type
-    event.preventDefault() // Prevents scrolling on touch devices
+    event.preventDefault()
     
     document.addEventListener('mousemove', onDrag)
     document.addEventListener('mouseup', stopDrag)
@@ -356,19 +340,10 @@ const onDrag = (event: MouseEvent | TouchEvent) => {
     const dy = clientY - centerY
     const angle = Math.atan2(dy, dx)
     
-    // 1. Get raw 0-11 time from angle
     let { hours, minutes } = angleToRawTime(angle)
     
-    // 2. Adjust based on current Toggle State (AM/PM)
     if (dragType.value === 'bed') {
         if (bedPeriod.value === 'PM') hours += 12
-        
-        // Handle 12 AM vs 12 PM edge case if necessary, 
-        // but generally 0-11 + 12 = 12-23 (PM) and 0-11 (AM) covers it.
-        // Specifically: 12 PM is represented as 12:00. 12 AM is 00:00.
-        // If angle is 0 (12 oclock position) -> returns 0 hours.
-        // If PM -> 0 + 12 = 12 (12:00). Correct.
-        // If AM -> 0 (00:00). Correct.
 
         localBedTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
     } else {
@@ -387,7 +362,6 @@ const stopDrag = () => {
     document.removeEventListener('touchend', stopDrag)
 }
 
-// --- Tolerance ---
 const adjustBedTimeTolerance = (delta: number) => {
     localBedTolerance.value = Math.max(0, localBedTolerance.value + delta)
 }
@@ -396,7 +370,7 @@ const adjustWakeUpTolerance = (delta: number) => {
     localWakeTolerance.value = Math.max(0, localWakeTolerance.value + delta)
 }
 
-// --- Save ---
+//save
 const saveSettings = async () => {
     setBedTime(localBedTime.value)
     setWakeUpTime(localWakeTime.value)

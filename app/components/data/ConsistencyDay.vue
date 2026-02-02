@@ -117,7 +117,7 @@ const props = defineProps({
     intervals: { type: Array, default: () => [] }
 });
 
-// Settings & Calculations
+//settings and calcs
 const { globalDeviceId, globalDeviceSettings, loadDeviceSettings } = useDevice()
 const { bedTime, wakeUpTime, bedTimeTolerance, wakeUpTolerance } = useUserSettings()
 const { intervalGrouping } = useCalculations()
@@ -127,9 +127,8 @@ const localWakeTime = ref(wakeUpTime)
 const localBedTolerance = ref(bedTimeTolerance)
 const localWakeTolerance = ref(wakeUpTolerance)
 
-// Selection States
 const selectedInterval = ref(null);
-const selectedZone = ref(null); // 'bed' or 'wake'
+const selectedZone = ref(null);
 
 onMounted(async () => {
     if (globalDeviceId.value) { 

@@ -75,11 +75,9 @@ const error = ref('');
 const successMessage = ref('');
 const deviceInfo = ref(null);
 
-// Access the global state
 const globalDeviceId = useState('globalDeviceId', () => "")
 const globalDeviceName = useState('globalDeviceName', () => "")
 
-// Load current device info on mount
 onMounted(async () => {
     if (globalDeviceId.value) {
         inputValue.value = globalDeviceId.value;

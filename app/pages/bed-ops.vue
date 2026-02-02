@@ -96,7 +96,6 @@
                 </div>
             </div>
             <div class="main-container flex flex-col gap-4" >
-                        <!-- Control Panel -->
                          <primitives-container>
                             <div class="flex flex-col gap-2">
                                 <div class="flex flex-col gap-2">
@@ -196,7 +195,7 @@ onMounted(async () => {
             const settings = await loadDeviceSettings(true);
             
             if (settings) {
-                // Check intensity
+                //intensity
                 if (!shouldBlockUpdate('intensity', settings.intensity)) {
                     if (valueIntensity.value !== settings.intensity) {
                         console.log("Intensity changed remotely:", settings.intensity);
@@ -206,7 +205,7 @@ onMounted(async () => {
                     console.log("Blocking intensity update - waiting for ESP confirmation")
                 }
                 
-                // Check vibration
+                //vibration
                 if (!shouldBlockUpdate('vibration', settings.vibration)) {
                     if (valueVibration.value !== settings.vibration) {
                         console.log("Vibration changed remotely:", settings.vibration);

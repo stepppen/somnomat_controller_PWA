@@ -102,27 +102,23 @@ const formatTimeFromMin = (minutes: number) => {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
-// Convert UTC time string to CET/CEST
 const convertUTCtoCET = (utcTimeString: string) => {
     if (!utcTimeString) return '--:--';
     
     try {
         let date: Date;
-
-        // Simple time string "10:06" (assumed to be in UTC)
         if (utcTimeString.length === 5 && utcTimeString.includes(':')) {
             const [hours, minutes] = utcTimeString.split(':').map(Number);
             const now = new Date();
             date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes));
         } 
-        // Full ISO string
+
         else {
             date = new Date(utcTimeString);
         }
 
         if (isNaN(date.getTime())) return '--:--';
 
-        // Convert to CET/CEST (Europe/Zurich is same as Europe/Paris for timezone)
         return new Intl.DateTimeFormat('en-GB', {
             timeZone: 'Europe/Zurich',
             hour: '2-digit',
@@ -135,7 +131,6 @@ const convertUTCtoCET = (utcTimeString: string) => {
     }
 };
 
-// Convert ISO timestamp to CET time
 const isoToCET = (isoString: string) => {
     if (!isoString) return '--:--';
     
@@ -161,7 +156,6 @@ const sleepDuration = computed(() => {
         const min = Math.round(totalMinutes % 60);
         return `${hrs}h ${min}m`;
     } else { 
-        // For week/month, calculate average
         const nightsCount = props.summary.nights_count || 1;
         const avgHours = (props.summary.sleep_duration_hours || 0) / nightsCount;
         return formatTime(avgHours);
@@ -170,22 +164,14 @@ const sleepDuration = computed(() => {
 
 const avgBedtime = computed(() => {
     if (props.isDayView) { 
-        // For day view, show the actual bedtime from summary (converted to CET)
-        // The backend returns bed_time as "HH:MM" which we need to interpret correctly
         if (!props.summary.bed_time) return '--:--';
         
-        // If intervals exist, use the first interval's start time
         if (props.summary.intervals && props.summary.intervals.length > 0) {
             return isoToCET(props.summary.intervals[0].start);
         }
-        
-        // Otherwise use the bed_time from summary
         return convertUTCtoCET(props.summary.bed_time);
     } else { 
-        // For week/month view, calculate average from all intervals
         if (!props.summary.intervals || props.summary.intervals.length === 0) return '--:--';
-        
-        // Group intervals into sleep sessions
         const sessions: any[] = [];
         let currentSession: any[] = [];
         
@@ -215,7 +201,6 @@ const avgBedtime = computed(() => {
             sessions.push(currentSession);
         }
         
-        // Get first interval start time from each session (bedtime)
         const bedtimes = sessions.map(session => {
             const d = new Date(session[0].start);
             const cetString = new Intl.DateTimeFormat('en-US', { 
@@ -229,7 +214,7 @@ const avgBedtime = computed(() => {
             return h * 60 + m;
         });
         
-        // Handle midnight crossing
+        //midnight crossing
         const adjustedBedtimes = bedtimes.map(m => m < 12 * 60 ? m + 24 * 60 : m);
         let avgMin = adjustedBedtimes.reduce((a, b) => a + b, 0) / adjustedBedtimes.length;
         if (avgMin >= 24 * 60) avgMin -= 24 * 60;
@@ -240,22 +225,16 @@ const avgBedtime = computed(() => {
 
 const avgWakeup = computed(() => {
     if (props.isDayView) { 
-        // For day view, show the actual wake up time (converted to CET)
         if (!props.summary.wake_up_time) return '--:--';
         
-        // If intervals exist, use the last interval's end time
         if (props.summary.intervals && props.summary.intervals.length > 0) {
             const lastInterval = props.summary.intervals[props.summary.intervals.length - 1];
             return isoToCET(lastInterval.end);
         }
-        
-        // Otherwise use the wake_up_time from summary
         return convertUTCtoCET(props.summary.wake_up_time);
     } else { 
-        // For week/month view, calculate average from all intervals
         if (!props.summary.intervals || props.summary.intervals.length === 0) return '--:--';
         
-        // Group intervals into sleep sessions
         const sessions: any[] = [];
         let currentSession: any[] = [];
         
@@ -285,7 +264,6 @@ const avgWakeup = computed(() => {
             sessions.push(currentSession);
         }
         
-        // Get last interval end time from each session (wake up time)
         const wakeups = sessions.map(session => {
             const d = new Date(session[session.length - 1].end);
             const cetString = new Intl.DateTimeFormat('en-US', { 

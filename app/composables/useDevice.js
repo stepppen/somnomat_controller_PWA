@@ -392,7 +392,7 @@ export const useDevice = () => {
         }, 5000);
     }
 
-    // Helper functions
+    //helpers
     function formatDate(isoDate) {
         const d = new Date(isoDate);
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -404,7 +404,6 @@ export const useDevice = () => {
     }
 
     return {
-        // State
         globalDeviceId,
         globalDeviceName,
         globalTargetDevice, 
@@ -424,7 +423,6 @@ export const useDevice = () => {
         globalPeriod,
         globalDate,
         
-        // Functions
         loadDeviceData,
         loadSleepSummary,
         loadDeviceSettings,
@@ -436,7 +434,6 @@ export const useDevice = () => {
         shouldBlockUpdate,
         loadUserSettings,
         
-        // Helpers
         formatDate,
         formatTime
     }

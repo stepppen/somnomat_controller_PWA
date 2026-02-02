@@ -30,7 +30,6 @@ const props = defineProps({
 const recommendations = computed(() => {
     let recs = [];
     
-    // Sleep duration check
     if (props.summary.avg_sleep_per_night_hours >= 7.5) {
         recs.push({
             icon: 'material-symbols:check-circle-outline',
@@ -58,8 +57,6 @@ const recommendations = computed(() => {
     }else {
         recs = []
     }
-    
-    // Awakenings check
     if (props.summary.avg_awakenings <= 1 && props.summary.avg_sleep_per_night_hours >= 0.5) {
         recs.push({
             icon: 'material-symbols:check-circle-outline',
@@ -85,8 +82,6 @@ const recommendations = computed(() => {
             iconColor: 'text-red-600'
         });
     }
-    
-    // Show max 2 recommendations
-    return recs.slice(0, 2);
+    return recs.slice(0, 3);
 });
 </script>

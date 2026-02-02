@@ -1,4 +1,3 @@
-// composables/useUserSettings.ts
 export const useUserSettings = () => {
   let globalDeviceId = useState('globalDeviceId', () => "987")
   const bedTime = useState<string>('bedTime', () => '00:00')
@@ -69,7 +68,6 @@ export const useUserSettings = () => {
     }
   }
   const getSleepDayBoundary = () => {
-    // 3pm boundary - captures previous night's sleep
     return {
       hour: 15,
       minute: 0,
